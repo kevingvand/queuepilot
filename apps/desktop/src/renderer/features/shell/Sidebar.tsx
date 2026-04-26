@@ -2,17 +2,17 @@ import { useQuery } from '@tanstack/react-query';
 import {
   CheckCircle2,
   CircleDot,
-  Filter,
   Inbox,
   Plus,
   RotateCcw,
   Tag,
 } from 'lucide-react';
-import type { Cycle, SavedFilter, Tag as TagType } from '@queuepilot/core/types';
+import type { Cycle, Tag as TagType } from '@queuepilot/core/types';
 import { Button } from '../../components/ui/button';
 import { useApi } from '../../hooks/useApi';
 import { cn } from '../../lib/utils';
 import { type FilterState, useUiStore } from '../../store/ui.store';
+import { SavedFiltersList } from '../items/SavedFiltersList';
 
 type NavItem = {
   label: string;
@@ -30,14 +30,6 @@ const INBOX_ITEMS: NavItem[] = [
 export function Sidebar() {
   const { filterState, setFilterState, setAddDialogOpen } = useUiStore();
   const api = useApi();
-
-  const { data: filtersData } = useQuery({
-    queryKey: ['filters'],
-    queryFn: async () => {
-      const res = await api.filters.list();
-      return res.data as SavedFilter[];
-    },
-  });
 
   const { data: cyclesData } = useQuery({
     queryKey: ['cycles'],
@@ -86,17 +78,7 @@ export function Sidebar() {
           ))}
         </SidebarSection>
 
-        <SidebarSection label="Smart Lists" icon={<Filter size={12} />}>
-          {filtersData?.map((f) => (
-            <NavRow
-              key={f.id}
-              icon={<Filter size={14} />}
-              label={f.name}
-              active={isActive({ q: f.id })}
-              onClick={() => setFilterState({ q: f.id })}
-            />
-          ))}
-        </SidebarSection>
+        <SavedFiltersList />
 
         <SidebarSection label="Cycles" icon={<RotateCcw size={12} />}>
           {cyclesData
