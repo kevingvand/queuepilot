@@ -1,7 +1,7 @@
 # QueuePilot Design System
 
 **Status**: ✅ Complete (Research + Framework)  
-**Aesthetic Direction**: Clean + Modern (polished, slightly more visual depth)  
+**Aesthetic Direction**: Clean + Modern (polished, intentional, professional)  
 **Last Updated**: 2026-04-26
 
 ---
@@ -19,65 +19,11 @@ QueuePilot is a task inbox for humans and AI to process together. Our design pri
 
 ---
 
-## Design Inspiration & Why We Reference Them
-
-### Discord
-**What we learn**: Efficient multi-pane layouts for power users, compact spacing grid, clear status indicators.  
-**Specific patterns we adopt**: 3-pane layout (Sidebar | List | Detail), status badges for task state, consistent spacing.  
-**What we DON'T copy**: Discord's gamification, complex nested interactions, or dark-first-only approach.
-
-### Paperclip  
-**What we learn**: Minimalist AI assistant interfaces with generous whitespace, clean typography, purposeful color use.  
-**Specific patterns we adopt**: Single accent color, high line-height for readability, reduced visual clutter.  
-**What we DON'T copy**: Single-pane chat layout (we need multi-pane for task management).
-
-### Obsidian
-**What we learn**: Keyboard-first navigation, collapsible sidebar sections, command palette (Cmd+K), power-user customization.  
-**Specific patterns we'll consider**: Tab/panel navigation, keyboard shortcuts, optional advanced features.  
-**What we DON'T copy**: Knowledge graph visualization (not needed for task inbox).
-
-### Notion  
-**What we learn**: Multiple views of same data (list, kanban, timeline), inline editing, block-based flexibility.  
-**Specific patterns we'll consider**: View switcher, inline task updates, drag-and-drop organization.  
-**What we DON'T copy**: Full database-heavy architecture (we have simpler task model).
-
-### Vercel & Anthropic Guidelines
-**What we apply**: Accessibility standards (WCAG AAA), semantic HTML, visible focus states, motion respect, distinctive typography without cliché.
-
----
-
-## QueuePilot Use Case
-
-We're building an inbox where:
-- **Fast ingestion matters** — add ideas quickly without friction
-- **Quick decisions matter** — mark done, defer, archive, or comment in one click
-- **Power users exist** — keyboard shortcuts for speed
-- **Casual users exist** — visual clarity for newcomers
-- **Collaboration is lightweight** — comments and assignments, not real-time chat
-- **Mobile matters** — people triage tasks on the go
-
-**Not** a chat app (Discord), **not** a knowledge graph (Obsidian), **not** enterprise software (Notion). We're **focused and purposeful**.
-
----
-
-## Design Decision Framework
-
-For each feature, component, or interaction, we ask:
-
-1. **Purpose** — What problem does this solve for task management?
-2. **Audience** — Power user (keyboard, density) or new user (visual clarity)?
-3. **Efficiency** — Fewest clicks/keystrokes to accomplish the goal?
-4. **Clarity** — Is the purpose immediately obvious?
-5. **Consistency** — Does it match established patterns?
-6. **Accessibility** — Keyboard accessible? Visible focus? High contrast? Motion safe?
-
----
-
 ## Aesthetic Direction: Clean + Modern
 
 **Visual signature**: Polished, intentional, professional  
 **Mood**: Trustworthy, organized, productive  
-**Energy**: Not playful, not brutalist—just right  
+**Energy**: Refined without being cold, modern without being trendy
 
 **Key characteristics**:
 - **Color palette**: Neutral backgrounds with a single accent color (#6366F1 indigo)
@@ -184,6 +130,44 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubun
 
 ---
 
+## Component Patterns
+
+### Button
+- **Height**: 36px (standard), 44px (mobile)
+- **Padding**: 8px 16px (standard)
+- **Border radius**: 4px
+- **Font size**: 14px, weight 500
+- **Variants**: Primary (accent bg), Secondary (ghost), Danger (red)
+- **Touch targets**: Minimum 44px on mobile
+
+### Input
+- **Height**: 36px (standard), 44px (mobile, must have 16px font to prevent iOS zoom)
+- **Padding**: 8px 12px
+- **Border**: 1px solid `#334155`
+- **Focus**: 2px accent outline, 2px offset
+- **Placeholder**: Grayed-out, shows example (`e.g., task name…`)
+
+### Badge
+- **Height**: 20px
+- **Padding**: 2px 8px
+- **Border radius**: 3px
+- **Font size**: 12px
+- **Status**: Use color (green, yellow, red) + text (never color alone)
+
+### List Item
+- **Padding**: 12px horizontal, 8px vertical
+- **Border**: None (subtle background change on hover)
+- **Hover**: 2–5% background shift
+- **Selected**: Accent highlight, bold text
+
+### Card
+- **Padding**: 16px
+- **Border radius**: 6px
+- **Border**: 1px soft border
+- **Box shadow**: Subtle lift (0 1px 3px rgba(0,0,0,0.1))
+
+---
+
 ## Interactions & Motion
 
 ### Transitions
@@ -266,44 +250,6 @@ Bottom navigation for quick filter access
 
 ---
 
-## Component Patterns
-
-### Button
-- **Height**: 36px (standard), 44px (mobile)
-- **Padding**: 8px 16px (standard)
-- **Border radius**: 4px
-- **Font size**: 14px, weight 500
-- **Variants**: Primary (accent bg), Secondary (ghost), Danger (red)
-- **Touch targets**: Minimum 44px on mobile
-
-### Input
-- **Height**: 36px (standard), 44px (mobile, must have 16px font to prevent iOS zoom)
-- **Padding**: 8px 12px
-- **Border**: 1px solid `#334155`
-- **Focus**: 2px accent outline, 2px offset
-- **Placeholder**: Grayed-out, shows example (`e.g., task name…`)
-
-### Badge
-- **Height**: 20px
-- **Padding**: 2px 8px
-- **Border radius**: 3px
-- **Font size**: 12px
-- **Status**: Use color (green, yellow, red) + text (never color alone)
-
-### List Item
-- **Padding**: 12px horizontal, 8px vertical
-- **Border**: None (subtle background change on hover)
-- **Hover**: 2–5% background shift
-- **Selected**: Accent highlight, bold text
-
-### Card
-- **Padding**: 16px
-- **Border radius**: 6px
-- **Border**: 1px soft border
-- **Box shadow**: Subtle lift (0 1px 3px rgba(0,0,0,0.1))
-
----
-
 ## Accessibility Standards
 
 ### WCAG AAA Target (7:1 contrast where possible)
@@ -339,6 +285,25 @@ Bottom navigation for quick filter access
   .container { padding-left: max(16px, env(safe-area-inset-left)); }
 }
 ```
+
+### Zoom & Text Scaling
+
+- **No fixed widths**: Use `max-width`, `min-width`, flexible layouts
+- **Readable at 200% zoom**: Test page functionality and layout integrity at 2x zoom
+- **Avoid fixed heights**: Use `min-height` for flexible content
+
+### Testing Checklist
+
+- [ ] **Contrast**: All text ≥4.5:1 (AA) or ≥7:1 (AAA) using WebAIM Contrast Checker
+- [ ] **Keyboard**: Tab through all elements; focus visible at all times; Escape closes modals
+- [ ] **Screen reader**: Test with VoiceOver (macOS/iOS), NVDA (Windows); semantic HTML + ARIA labels present
+- [ ] **Mobile**: Test on 375px, 640px, 768px widths; no horizontal scroll; touch targets ≥44px
+- [ ] **Dark mode**: System `prefers-color-scheme` respected; no flash of wrong theme on reload
+- [ ] **Reduced motion**: `prefers-reduced-motion: reduce` disables animations
+- [ ] **High contrast**: Windows High Contrast Mode; borders/indicators visible
+- [ ] **Touch**: No hover-only functionality; all interactions work via tap
+- [ ] **Focus management**: Focus ring visible, moved appropriately in dynamic content
+- [ ] **Internationalization**: Long translations (German, Russian) don't break layout
 
 ---
 
@@ -432,16 +397,6 @@ initializeTheme();
 - [ ] Dark/light theme toggle works
 - [ ] Motion preference respected
 
-### Accessibility Testing
-- [ ] All text ≥4.5:1 contrast (AA) or ≥7:1 (AAA) via WebAIM checker
-- [ ] Keyboard: Tab through all elements, focus visible at all times
-- [ ] Keyboard: Enter activates buttons, Escape closes modals
-- [ ] Screen reader: VoiceOver (macOS), NVDA (Windows), or similar
-- [ ] Focus indicators present, not hidden
-- [ ] Form labels associated with inputs
-- [ ] Icon buttons have aria-labels
-- [ ] Reduced motion respected (no auto-play animations)
-
 ### Performance
 - [ ] No layout thrashing (batch DOM reads/writes)
 - [ ] Large lists virtualized (>50 items)
@@ -451,61 +406,21 @@ initializeTheme();
 
 ---
 
-## Examples: Why We Made These Choices
+## References & Inspiration
 
-**Why 8px base grid?**  
-Discord proved power users appreciate compact layouts. 8px (multiples of 4) gives fine-tuning without chaos. Easier to remember than arbitrary values.
+### Design Principles
+- **Anthropic Frontend Design**: Focus on bold aesthetic direction, intentional choices, precision over generic patterns
+- **Vercel Web Interface Guidelines**: Accessibility-first, semantic HTML, keyboard navigation, visible focus states, performance optimization
 
-**Why 44px touch targets on mobile?**  
-WCAG, Apple, and Google all mandate 44×44px minimum. Our users access QueuePilot on phones; if buttons are too small, they'll make errors or give up.
+### Tools & Patterns We Referenced
 
-**Why dark mode primary?**  
-QueuePilot is an app people use daily. Dark mode reduces eye strain for extended use. Light mode is supported for those who prefer it.
+**Discord**: Multi-pane layout structure (Sidebar | List | Detail), spacing grid approach (8px base for power-user density), status indicator patterns (badges for state)
 
-**Why single accent color?**  
-Too many colors create visual noise. One accent (#6366F1 indigo) creates hierarchy without distraction. Status is conveyed by text + icon + color, not color alone.
+**Paperclip**: Minimalist UI philosophy with generous whitespace, clean typography using system fonts, purposeful use of single accent color, reduced visual clutter
 
-**Why system fonts?**  
-Custom fonts are slower to load (invisible text while downloading). System fonts are instant, accessible, and feel native. We invest design effort in hierarchy and spacing, not font choices.
+**Obsidian**: Keyboard-first interaction model, collapsible sidebar sections, command palette pattern (Cmd+K), power-user customization support
 
-**Why generous spacing?**  
-Whitespace reduces cognitive load. People scan tasks quickly; breathing room helps focus on content. It also makes mobile readable without pinching.
-
-**Why animations disabled by default?**  
-Most people don't need motion; it can distract or cause discomfort. We use animations for specific, high-impact moments (page load, transitions). Always respect `prefers-reduced-motion`.
-
----
-
-## Design System as a Checklist
-
-When building or reviewing components, confirm:
-
-- [ ] **Colors**: Using defined tokens, not arbitrary hex
-- [ ] **Spacing**: Multiple of 4px (4, 8, 12, 16, 24, 32px)
-- [ ] **Typography**: Using scale sizes, system fonts, appropriate weights
-- [ ] **Interactions**: Transitions are 200–300ms, properties explicit, motion respected
-- [ ] **Focus**: Visible ring (2px accent, 2px offset)
-- [ ] **Touch targets**: ≥44px on mobile, ≥32px on desktop
-- [ ] **Contrast**: ≥4.5:1 (AA) or ≥7:1 (AAA)
-- [ ] **Mobile**: Responsive from 375px, no horizontal scroll
-- [ ] **Keyboard**: All features accessible via Tab/Enter/Escape
-- [ ] **Dark mode**: Both themes work, colors readable, no flash on reload
-
----
-
-## References & Research
-
-**Anthropic Frontend Design Skill**:  
-Guides distinctive, production-grade interfaces with intentional aesthetic direction and precise execution.
-
-**Vercel Web Interface Guidelines**:  
-Accessibility-first, semantic HTML, keyboard navigation, focus states, responsive forms, performance optimization.
-
-**Design Inspiration** (learned from, not copied):
-- Discord: 3-pane layout, spacing grid, status indicators
-- Paperclip: Minimalist, generous whitespace, single accent color
-- Obsidian: Keyboard shortcuts, collapsible sections, command palette
-- Notion: Multiple views, inline editing, flexible layouts
+**Notion**: Multiple views of same data (list, kanban, timeline), inline editing patterns, flexible layout system, drag-and-drop organization concepts
 
 ---
 
