@@ -54,9 +54,11 @@ async function rebuildNativeModulesForElectron(appDir: string) {
   const electronPkg = JSON.parse(
     fs.readFileSync(path.join(appDir, '../../node_modules/electron/package.json'), 'utf8')
   )
-  const linkPath = path.join(appDir, '../../node_modules/better-sqlite3')
-  const realPkgPath = fs.realpathSync(fs.existsSync(linkPath) ? linkPath : path.join(appDir, 'node_modules/better-sqlite3'))
-  // buildPath must be the directory that *contains* a node_modules/better-sqlite3 folder
+  // apps/desktop/node_modules/better-sqlite3 is a symlink → .pnpm store — resolve it
+  // to find where Electron actually loads the .node binary from.
+  const localLink = path.join(appDir, 'node_modules/better-sqlite3')
+  const realPkgPath = fs.realpathSync(localLink)
+  // buildPath must be the directory containing a node_modules/better-sqlite3 folder
   const buildPath = path.join(realPkgPath, '..', '..')
   console.log(`[queuepilot] Rebuilding better-sqlite3 for Electron ${electronPkg.version}...`)
   await rebuild({
