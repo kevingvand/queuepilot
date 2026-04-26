@@ -72,7 +72,9 @@ const config: ForgeConfig = {
   packagerConfig: {
     name: 'QueuePilot',
     executableName: 'queuepilot',
-    asar: true,
+    asar: {
+      unpack: '**/*.node',
+    },
     icon: path.resolve(__dirname, 'resources/icon'),
     appBundleId: 'com.queuepilot.app',
     appCategoryType: 'public.app-category.productivity',
@@ -91,6 +93,31 @@ const config: ForgeConfig = {
     preStart: async () => {
       await rebuildNativeModulesForElectron(__dirname)
       codesignNativeModules(__dirname)
+    },
+    // @electron-forge/plugin-vite only packages .vite/ output — it excludes node_modules
+    // entirely because it assumes Vite bundles all JS. Native modules cannot be bundled
+    // by Vite, so we manually copy them into the staging buildPath here. Forge's own
+    // native-module rebuild step then recompiles them for Electron before ASAR creation.
+    packageAfterCopy: async (_config, buildPath) => {
+      const nativeDeps = ['better-sqlite3', 'bindings', 'file-uri-to-path']
+      const destNodeModules = path.join(buildPath, 'node_modules')
+      fs.mkdirSync(destNodeModules, { recursive: true })
+
+      for (const dep of nativeDeps) {
+        let pkgJsonPath: string
+        try {
+          pkgJsonPath = require.resolve(`${dep}/package.json`, { paths: [__dirname] })
+        } catch {
+          console.warn(`[queuepilot] Could not resolve ${dep} — skipping`)
+          continue
+        }
+        const srcDir = path.dirname(fs.realpathSync(pkgJsonPath))
+        const destDir = path.join(destNodeModules, dep)
+        if (!fs.existsSync(destDir)) {
+          fs.cpSync(srcDir, destDir, { recursive: true, dereference: true })
+          console.log(`[queuepilot] Copied native dep: ${dep}`)
+        }
+      }
     },
     postPackage: async (_forgeConfig, packageResult) => {
       if (process.platform !== 'darwin') return
