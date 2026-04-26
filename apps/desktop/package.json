@@ -12,6 +12,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
     "@queuepilot/core": "workspace:*",
     "@queuepilot/ingestion": "workspace:*",
     "@tanstack/react-query": "^5.0.0",

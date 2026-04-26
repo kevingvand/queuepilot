@@ -1,14 +1,19 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
-
-const dataDir = resolveDataDir()
+import { createDb } from '@queuepilot/core/schema'
+import { createApp } from './api/index'
+import { registerIpcBridge } from './ipc-bridge'
 
 function resolveDataDir(): string {
   const flag = process.argv.find((arg) => arg.startsWith('--data-dir='))
   return flag ? flag.slice('--data-dir='.length) : app.getPath('userData')
 }
 
-export { dataDir }
+export const dataDir = resolveDataDir()
+
+const db = createDb(dataDir)
+const honoApp = createApp(db)
+registerIpcBridge(honoApp)
 
 function createWindow(): void {
   const win = new BrowserWindow({
