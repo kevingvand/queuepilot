@@ -1,16 +1,16 @@
 import { defineConfig } from 'vite'
-import { externalizeDepsPlugin } from 'electron-vite'
 import path from 'path'
 
 export default defineConfig({
   build: {
     rollupOptions: {
-      // Only externalize native binaries — workspace packages are bundled so
-      // Vite resolves their TypeScript sources directly (no compiled .js needed).
+      // Only externalize the native binary — it cannot be bundled by Vite/Rollup
+      // and is instead copied to app.asar.unpacked via the packageAfterCopy hook.
+      // All pure-JS deps (hono, zod, etc.) are bundled directly into index.js so
+      // they are available without node_modules being present in the package.
       external: ['better-sqlite3'],
     },
   },
-  plugins: [externalizeDepsPlugin({ exclude: ['@queuepilot/core', '@queuepilot/ingestion'] })],
   resolve: {
     alias: {
       '@queuepilot/core': path.resolve(__dirname, '../../packages/core/src'),
