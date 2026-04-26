@@ -98,6 +98,8 @@ const config: ForgeConfig = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'QueuePilot',
+        authors: 'QueuePilot Contributors',
+        description: 'A local-first task queue companion for humans and AI agents',
       },
     },
     {
