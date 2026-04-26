@@ -42,6 +42,13 @@ function describeEvent(event: ItemEvent): React.ReactNode {
       return 'Title updated';
     case 'comment_added':
       return 'Comment added';
+    case 'field_changed': {
+      const field = String(payload.field ?? '');
+      const to = payload.to != null ? String(payload.to) : '';
+      return to
+        ? <><strong>{field}</strong> changed to <strong>{to}</strong></>
+        : <><strong>{field}</strong> updated</>;
+    }
     case 'tag_added':
       return (
         <>
@@ -74,12 +81,12 @@ function describeEvent(event: ItemEvent): React.ReactNode {
 function AuditSkeleton() {
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium text-muted-foreground">Activity</p>
+      <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Activity</p>
       <div className="space-y-3">
         {[0, 1, 2].map((index) => (
           <div key={index} className="flex items-center gap-3 pl-5">
-            <div className="h-3.5 w-40 rounded bg-muted animate-pulse" />
-            <div className="h-3 w-10 rounded bg-muted animate-pulse ml-auto" />
+            <div className="h-3.5 w-40 rounded animate-pulse" style={{ background: 'var(--bg-secondary)' }} />
+            <div className="h-3 w-10 rounded animate-pulse ml-auto" style={{ background: 'var(--bg-secondary)' }} />
           </div>
         ))}
       </div>
@@ -94,19 +101,19 @@ export function DetailAudit({ events, isLoading }: DetailAuditProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium text-muted-foreground">Activity</p>
+      <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Activity</p>
       {events.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No activity yet</p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No activity yet</p>
       ) : (
         <div className="relative ml-1">
-          <div className="absolute left-[3px] top-1 bottom-1 w-px bg-border" />
+          <div className="absolute left-[3px] top-1 bottom-1 w-px" style={{ background: 'var(--border)' }} />
           <div className="space-y-2.5">
             {events.map((event) => (
               <div key={event.id} className="relative flex items-start gap-3 pl-5">
-                <div className="absolute left-0 top-[5px] w-[7px] h-[7px] rounded-full bg-muted-foreground/30 border border-muted-foreground/40" />
+                <div className="absolute left-0 top-[5px] w-[7px] h-[7px] rounded-full" style={{ background: 'var(--text-muted)', opacity: 0.4, border: '1px solid var(--text-muted)' }} />
                 <div className="flex flex-1 items-start justify-between gap-2 min-w-0">
-                  <p className="text-sm text-foreground/80 leading-snug">{describeEvent(event)}</p>
-                  <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
+                  <p className="text-sm leading-snug" style={{ color: 'var(--text-secondary)' }}>{describeEvent(event)}</p>
+                  <span className="text-xs shrink-0 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
                     {formatRelative(event.created_at)}
                   </span>
                 </div>

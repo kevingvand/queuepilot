@@ -16,6 +16,12 @@ interface QueuePilotAPI {
       list: (id: string) => Promise<any>
       create: (id: string, data: any) => Promise<any>
     }
+    links: {
+      list: (id: string) => Promise<any>
+      create: (id: string, data: any) => Promise<any>
+      delete: (id: string, linkId: string) => Promise<any>
+    }
+    events: (id: string) => Promise<any>
   }
   tags: {
     list: () => Promise<any>
@@ -26,14 +32,9 @@ interface QueuePilotAPI {
   cycles: {
     list: () => Promise<any>
     create: (data: any) => Promise<any>
-  }
-  comments: {
-    list: () => Promise<any>
+    update: (id: string, data: any) => Promise<any>
   }
   filters: {
-    list: () => Promise<any>
-  }
-  sources: {
     list: () => Promise<any>
   }
 }
@@ -97,6 +98,12 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
         list: (id: string) => rawApi.request('GET', `/items/${id}/comments`),
         create: (id: string, data: any) => rawApi.request('POST', `/items/${id}/comments`, data),
       },
+      links: {
+        list: (id: string) => rawApi.request('GET', `/items/${id}/links`),
+        create: (id: string, data: any) => rawApi.request('POST', `/items/${id}/links`, data),
+        delete: (id: string, linkId: string) => rawApi.request('DELETE', `/items/${id}/links/${linkId}`),
+      },
+      events: (id: string) => rawApi.request('GET', `/items/${id}/events`),
     },
     tags: {
       list: () => rawApi.request('GET', '/tags'),
@@ -107,15 +114,10 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
     cycles: {
       list: () => rawApi.request('GET', '/cycles'),
       create: (data: any) => rawApi.request('POST', '/cycles', data),
-    },
-    comments: {
-      list: () => rawApi.request('GET', '/comments'),
+      update: (id: string, data: any) => rawApi.request('PATCH', `/cycles/${id}`, data),
     },
     filters: {
       list: () => rawApi.request('GET', '/filters'),
-    },
-    sources: {
-      list: () => rawApi.request('GET', '/sources'),
     },
   }
 }

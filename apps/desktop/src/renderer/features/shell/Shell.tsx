@@ -123,7 +123,7 @@ function ShellContent() {
 
         {/* Detail panel — inline on wide screens, drag-resizable */}
         {showDetailPanel && (
-          <div style={{ display: 'flex', flexShrink: 0 }}>
+          <div style={{ display: 'flex', flexShrink: 0, height: '100%' }}>
             {/* Drag handle — grab left edge to resize */}
             <div
               onMouseDown={handleDragStart}
@@ -145,6 +145,7 @@ function ShellContent() {
             <div
               style={{
                 width: `${detailPanelWidth}px`,
+                height: '100%',
                 overflowY: 'auto',
                 backgroundColor: 'var(--bg-primary)',
               }}
