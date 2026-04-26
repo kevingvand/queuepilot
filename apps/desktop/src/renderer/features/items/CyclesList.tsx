@@ -10,9 +10,9 @@ import { useCycles, useDeleteCycle } from './hooks/useCycles';
 type CycleStatus = 'planned' | 'active' | 'completed';
 
 const STATUS_BADGE_CLASSES: Record<CycleStatus, string> = {
-  planned: 'bg-muted text-muted-foreground',
-  active: 'bg-green-500/20 text-green-300',
-  completed: 'bg-gray-500/20 text-gray-400',
+  planned: 'bg-blue-500/20 text-blue-700 dark:text-blue-300',
+  active: 'bg-green-500/20 text-green-800 dark:text-green-300',
+  completed: 'bg-gray-500/20 text-gray-600 dark:text-gray-400',
 };
 
 function formatDateRange(startsAt: number | null, endsAt: number | null): string {

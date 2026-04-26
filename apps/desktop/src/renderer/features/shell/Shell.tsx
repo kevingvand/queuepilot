@@ -108,7 +108,7 @@ function ShellContent() {
         )}
 
         {/* Item list — fills remaining space */}
-        <div
+        <main
           style={{
             flex: 1,
             minWidth: 0,
@@ -120,7 +120,7 @@ function ShellContent() {
           }}
         >
           <ItemList />
-        </div>
+        </main>
 
         {/* Detail panel — inline on wide screens, drag-resizable */}
         {showDetailPanel && (
