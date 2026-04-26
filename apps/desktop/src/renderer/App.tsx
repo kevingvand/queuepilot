@@ -1,3 +1,5 @@
+import { Shell } from './features/shell/Shell'
+
 export function App() {
   console.log('[App] Rendering Shell component')
   return (

@@ -21,7 +21,12 @@ export default defineConfig({
   preload: {
     entry: 'src/preload/index.ts',
     build: {
-      outDir: path.resolve(__dirname, '.vite/build/preload'),
+      outDir: path.resolve(__dirname, '.vite/build'),
+      rollupOptions: {
+        output: {
+          entryFileNames: 'preload.js',
+        },
+      },
     },
     plugins: [externalizeDepsPlugin()],
   },
