@@ -1,9 +1,5 @@
-import { useEffect } from 'react';
+import { Shell } from './features/shell/Shell';
 
 export function App() {
-  useEffect(() => {
-    window.queuepilot.api.items.list().then(console.log);
-  }, []);
-
-  return <h1>QueuePilot</h1>;
+  return <Shell />;
 }
