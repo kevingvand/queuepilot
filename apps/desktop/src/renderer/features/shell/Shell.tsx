@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { AddItemDialog } from '../items/AddItemDialog';
 import { useUiStore } from '../../store/ui.store';
+import { CommandPalette } from './CommandPalette';
 import { ItemDetail } from './ItemDetail';
 import { ItemList } from './ItemList';
 import { Sidebar } from './Sidebar';
@@ -15,9 +16,16 @@ const queryClient = new QueryClient({
 
 function ShellContent() {
   const { addDialogOpen, setAddDialogOpen } = useUiStore();
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdPaletteOpen(true);
+        return;
+      }
+
       const target = e.target as HTMLElement;
       if (
         target instanceof HTMLInputElement ||
@@ -54,6 +62,7 @@ function ShellContent() {
         <StatusBar />
       </div>
       <AddItemDialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} />
+      <CommandPalette open={cmdPaletteOpen} onClose={() => setCmdPaletteOpen(false)} />
     </>
   );
 }
