@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "main": ".vite/build/main/index.js",
+  "main": ".vite/build/index.js",
   "scripts": {
     "dev": "electron-forge start",
     "build": "electron-forge package",
