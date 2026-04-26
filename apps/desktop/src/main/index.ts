@@ -25,10 +25,18 @@ function createWindow(): void {
     },
   })
 
+  console.log('[queuepilot] Loading URL:', MAIN_WINDOW_VITE_DEV_SERVER_URL || `file://${path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)}`)
+  
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     win.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
     win.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`))
+  }
+
+  // Open DevTools in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[queuepilot] Opening DevTools')
+    win.webContents.openDevTools()
   }
 }
 
