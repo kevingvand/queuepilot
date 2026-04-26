@@ -3,10 +3,10 @@ import { formatRelative } from '../../../lib/utils';
 
 const PRIORITY_LABELS: Record<number, string> = {
   0: 'none',
-  1: 'urgent',
-  2: 'high',
-  3: 'medium',
-  4: 'low',
+  1: 'low',
+  2: 'medium',
+  3: 'high',
+  4: 'urgent',
 };
 
 const FIELD_DISPLAY_NAMES: Record<string, string> = {
@@ -39,9 +39,14 @@ interface DetailAuditProps {
 }
 
 function describeEvent(event: ItemEvent): React.ReactNode {
-  const payload = event.payload
-    ? (JSON.parse(event.payload) as Record<string, unknown>)
-    : {};
+  let payload: Record<string, unknown> = {};
+  if (event.payload) {
+    try {
+      payload = JSON.parse(event.payload) as Record<string, unknown>;
+    } catch {
+      // malformed payload — treat as empty rather than crashing the audit log
+    }
+  }
 
   switch (event.kind) {
     case 'created':

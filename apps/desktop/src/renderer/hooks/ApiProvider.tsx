@@ -15,6 +15,8 @@ interface QueuePilotAPI {
     comments: {
       list: (id: string) => Promise<any>
       create: (id: string, data: any) => Promise<any>
+      update: (commentId: string, data: any) => Promise<any>
+      delete: (commentId: string) => Promise<any>
     }
     links: {
       list: (id: string) => Promise<any>
@@ -26,16 +28,18 @@ interface QueuePilotAPI {
   tags: {
     list: () => Promise<any>
     create: (data: any) => Promise<any>
-    update: (id: string, data: any) => Promise<any>
     delete: (id: string) => Promise<any>
   }
   cycles: {
     list: () => Promise<any>
     create: (data: any) => Promise<any>
     update: (id: string, data: any) => Promise<any>
+    delete: (id: string) => Promise<any>
   }
   filters: {
     list: () => Promise<any>
+    create: (data: any) => Promise<any>
+    delete: (id: string) => Promise<any>
   }
 }
 
@@ -99,8 +103,8 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
       comments: {
         list: (id: string) => rawApi.request('GET', `/items/${id}/comments`),
         create: (id: string, data: any) => rawApi.request('POST', `/items/${id}/comments`, data),
-        update: (id: string, commentId: string, data: any) => rawApi.request('PATCH', `/items/${id}/comments/${commentId}`, data),
-        delete: (id: string, commentId: string) => rawApi.request('DELETE', `/items/${id}/comments/${commentId}`),
+        update: (commentId: string, data: any) => rawApi.request('PATCH', `/comments/${commentId}`, data),
+        delete: (commentId: string) => rawApi.request('DELETE', `/comments/${commentId}`),
       },
       links: {
         list: (id: string) => rawApi.request('GET', `/items/${id}/links`),
@@ -112,16 +116,18 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
     tags: {
       list: () => rawApi.request('GET', '/tags'),
       create: (data: any) => rawApi.request('POST', '/tags', data),
-      update: (id: string, data: any) => rawApi.request('PUT', `/tags/${id}`, data),
       delete: (id: string) => rawApi.request('DELETE', `/tags/${id}`),
     },
     cycles: {
       list: () => rawApi.request('GET', '/cycles'),
       create: (data: any) => rawApi.request('POST', '/cycles', data),
       update: (id: string, data: any) => rawApi.request('PATCH', `/cycles/${id}`, data),
+      delete: (id: string) => rawApi.request('DELETE', `/cycles/${id}`),
     },
     filters: {
       list: () => rawApi.request('GET', '/filters'),
+      create: (data: any) => rawApi.request('POST', '/filters', data),
+      delete: (id: string) => rawApi.request('DELETE', `/filters/${id}`),
     },
   }
 }

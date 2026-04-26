@@ -10,7 +10,9 @@ export function registerIpcBridge(app: AppType) {
   }) => {
     const url = new URL(`http://queuepilot${path}`);
     if (query) {
-      Object.entries(query).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+      Object.entries(query).forEach(([k, v]) => {
+        if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+      });
     }
 
     const request = new Request(url.toString(), {
@@ -21,6 +23,9 @@ export function registerIpcBridge(app: AppType) {
 
     const response = await app.fetch(request);
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(`API error ${response.status}: ${(data as any)?.error ?? response.statusText}`);
+    }
     return { status: response.status, data };
   });
 }

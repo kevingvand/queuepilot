@@ -28,7 +28,7 @@ export async function listItems(c: Context<AppEnv>) {
       .select({ item_id: itemTags.item_id })
       .from(itemTags)
       .innerJoin(tags, eq(itemTags.tag_id, tags.id))
-      .where(eq(tags.name, tag))
+      .where(eq(tags.id, tag))
       .all()
       .map((r) => r.item_id);
 
@@ -177,6 +177,12 @@ export async function createItemLink(c: Context<AppEnv>) {
   const { id } = c.req.param();
   const body = c.req.valid('json' as never) as { target_item_id: string; kind: string };
 
+  const sourceExists = db.select({ id: items.id }).from(items).where(eq(items.id, id)).get();
+  if (!sourceExists) return c.json({ error: 'Source item not found' }, 404);
+
+  const targetExists = db.select({ id: items.id }).from(items).where(eq(items.id, body.target_item_id)).get();
+  if (!targetExists) return c.json({ error: 'Target item not found' }, 404);
+
   const linkId = ulid();
   db.insert(itemLinks)
     .values({ id: linkId, source_item_id: id, target_item_id: body.target_item_id, kind: body.kind } as NewItemLink)
@@ -221,6 +227,12 @@ export async function listItemTags(c: Context<AppEnv>) {
 export async function addTagToItem(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id, tagId } = c.req.param();
+
+  const itemExists = db.select({ id: items.id }).from(items).where(eq(items.id, id)).get();
+  if (!itemExists) return c.json({ error: 'Item not found' }, 404);
+
+  const tagExists = db.select({ id: tags.id }).from(tags).where(eq(tags.id, tagId)).get();
+  if (!tagExists) return c.json({ error: 'Tag not found' }, 404);
 
   db.insert(itemTags).values({ item_id: id, tag_id: tagId }).run();
 

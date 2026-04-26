@@ -72,15 +72,15 @@ describe('tags — CRUD and item association', () => {
 
     await app.request(`/items/${taggedItem.id}/tags/${tag.id}`, { method: 'POST' });
 
-    const res = await app.request('/items?tag=priority');
+    const res = await app.request(`/items?tag=${tag.id}`);
     expect(res.status).toBe(200);
     const body: { id: string }[] = await res.json();
     expect(body).toHaveLength(1);
     expect(body[0].id).toBe(taggedItem.id);
   });
 
-  it('returns empty array when filtering by a tag that has no items', async () => {
-    const res = await app.request('/items?tag=nonexistent');
+  it('returns empty array when filtering by a tag id that has no items', async () => {
+    const res = await app.request('/items?tag=nonexistent-id');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([]);
   });

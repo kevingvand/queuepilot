@@ -54,31 +54,44 @@ export function DetailHeader({ item }: { item: Item }) {
   async function saveTitle() {
     setEditing(false);
     if (title === item.title) return;
-    await api.items.update(item.id, { title });
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['items'] }),
-      queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
-      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
-    ]);
+    try {
+      await api.items.update(item.id, { title });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['items'] }),
+        queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
+      ]);
+    } catch {
+      setTitle(item.title);
+      toast({ message: 'Failed to save title', variant: 'destructive' });
+    }
   }
 
   async function advanceStatus() {
     const next = cycleStatus(item.status);
-    await api.items.update(item.id, { status: next });
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['items'] }),
-      queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
-      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
-    ]);
+    try {
+      await api.items.update(item.id, { status: next });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['items'] }),
+        queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
+      ]);
+    } catch {
+      toast({ message: 'Failed to update status', variant: 'destructive' });
+    }
   }
 
   async function setPriority(priority: number) {
-    await api.items.update(item.id, { priority });
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['items'] }),
-      queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
-      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
-    ]);
+    try {
+      await api.items.update(item.id, { priority });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['items'] }),
+        queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
+      ]);
+    } catch {
+      toast({ message: 'Failed to update priority', variant: 'destructive' });
+    }
   }
 
   function discard() {
@@ -100,8 +113,14 @@ export function DetailHeader({ item }: { item: Item }) {
     });
     setTimeout(async () => {
       if (cancelled) return;
-      await api.items.delete(item.id);
-      await queryClient.invalidateQueries({ queryKey: ['items'] });
+      try {
+        await api.items.delete(item.id);
+        await queryClient.invalidateQueries({ queryKey: ['items'] });
+      } catch {
+        // Deletion failed — restore the item in the UI
+        setSelectedItemId(item.id);
+        toast({ message: `Failed to delete "${item.title}"`, variant: 'destructive' });
+      }
     }, 5000);
   }
 

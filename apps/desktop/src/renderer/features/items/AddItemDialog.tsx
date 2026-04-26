@@ -40,7 +40,6 @@ const STATUS_OPTIONS = [
   { label: 'Todo', value: 'todo' },
   { label: 'In Progress', value: 'in_progress' },
   { label: 'Done', value: 'done' },
-  { label: 'Cancelled', value: 'cancelled' },
   { label: 'Discarded', value: 'discarded' },
 ];
 

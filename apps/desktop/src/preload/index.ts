@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 export interface QueuePilotBridge {
   api: {
@@ -14,7 +14,7 @@ const bridge: QueuePilotBridge = {
   },
 }
 
-window.queuepilot = bridge
+contextBridge.exposeInMainWorld('queuepilot', bridge)
 
 console.log('[preload] API bridge initialized')
 

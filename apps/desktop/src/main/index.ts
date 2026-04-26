@@ -1,9 +1,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import type { Db } from '@queuepilot/core/schema'
+import { createDb } from '@queuepilot/core/schema'
+import type { AppType } from './api/index'
 import { createApp } from './api/index'
 import { registerIpcBridge } from './ipc-bridge'
-import { createDb } from '@queuepilot/core/schema'
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined
 declare const MAIN_WINDOW_VITE_NAME: string | undefined
@@ -26,8 +28,8 @@ function logDebug(msg: string) {
   if (debugLogFile) fs.appendFileSync(debugLogFile, line + '\n', 'utf8')
 }
 
-let db: any
-let honoApp: any
+let db: Db | undefined
+let honoApp: AppType | undefined
 
 // Forward renderer logs to main process console (dev only)
 ipcMain.handle('renderer-log', (_event, level: string, args: any[]) => {
@@ -93,7 +95,7 @@ function createWindow(): void {
 function initializeApp() {
   db = createDb(dataDir)
   honoApp = createApp(db)
-  registerIpcBridge(honoApp)
+  registerIpcBridge(honoApp!)
 }
 
 app.whenReady().then(() => {

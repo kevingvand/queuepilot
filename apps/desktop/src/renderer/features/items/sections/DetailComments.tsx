@@ -38,7 +38,7 @@ function CommentRow({ comment, itemId, onDelete, onEdit }: {
         className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0 text-white"
         style={{ backgroundColor: stringToColor(comment.author) }}
       >
-        {comment.author[0].toUpperCase()}
+        {(comment.author?.[0] ?? '?').toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
@@ -104,12 +104,12 @@ export function DetailComments({
   }
 
   async function deleteComment(commentId: string) {
-    await api.items.comments.delete(itemId, commentId);
+    await api.items.comments.delete(commentId);
     queryClient.invalidateQueries({ queryKey: ['comments', itemId] });
   }
 
   async function editComment(commentId: string, body: string) {
-    await api.items.comments.update(itemId, commentId, { body });
+    await api.items.comments.update(commentId, { body });
     queryClient.invalidateQueries({ queryKey: ['comments', itemId] });
   }
 

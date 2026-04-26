@@ -33,6 +33,18 @@ export function DetailLinks({ itemId, links }: { itemId: string; links: ItemLink
     enabled: adding,
   });
 
+  // Separate query to resolve titles for existing linked items
+  const linkedItemIds = links.flatMap((l) => [l.source_item_id, l.target_item_id]).filter((id) => id !== itemId);
+  const { data: linkedItems = [] } = useQuery({
+    queryKey: ['items-linked', linkedItemIds],
+    queryFn: async () => {
+      if (linkedItemIds.length === 0) return [] as Item[];
+      const res = await api.items.list();
+      return (res.data as Item[]).filter((i) => linkedItemIds.includes(i.id));
+    },
+    enabled: linkedItemIds.length > 0,
+  });
+
   const grouped = KIND_OPTIONS.map(([kindValue, label]) => ({
     kind: kindValue,
     label,
@@ -47,7 +59,7 @@ export function DetailLinks({ itemId, links }: { itemId: string; links: ItemLink
 
   function otherItemTitle(link: ItemLink): string {
     const oid = otherItemId(link);
-    const found = searchResults?.find((i) => i.id === oid);
+    const found = linkedItems.find((i) => i.id === oid);
     return found?.title ?? oid;
   }
 
