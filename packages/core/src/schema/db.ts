@@ -4,7 +4,8 @@ import path from 'node:path';
 import * as schema from './index';
 
 export function createDb(dataDir: string) {
-  const sqlite = new Database(path.join(dataDir, 'queuepilot.db'));
+  const dbPath = dataDir === ':memory:' ? ':memory:' : path.join(dataDir, 'queuepilot.db');
+  const sqlite = new Database(dbPath);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   return drizzle(sqlite, { schema });
