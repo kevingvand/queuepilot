@@ -34,9 +34,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Rebuild native modules
-        run: pnpm --filter @queuepilot/desktop exec electron-rebuild -f -w better-sqlite3
-        continue-on-error: true
 
       - name: Lint
         run: pnpm run lint
