@@ -113,7 +113,10 @@ const TOOL_DEFINITIONS = [
     description: 'Create a new active cycle',
     inputSchema: {
       type: 'object' as const,
-      properties: { name: { type: 'string' } },
+      properties: {
+        name: { type: 'string' },
+        goal: { type: 'string', description: 'Optional goal or focus for this cycle' },
+      },
       required: ['name'],
     },
   },
@@ -165,7 +168,7 @@ function dispatch(db: Db, toolName: string, args: Record<string, unknown>): unkn
     case 'set_active_cycle':
       return setActiveCycle(db, requireString(args, 'id'));
     case 'create_cycle':
-      return createCycle(db, requireString(args, 'name'));
+      return createCycle(db, requireString(args, 'name'), optionalString(args, 'goal'));
     case 'add_item_to_cycle':
       return addItemToCycle(db, requireString(args, 'item_id'), requireString(args, 'cycle_id'));
     default:
@@ -258,7 +261,7 @@ function dispatchCli(
         requirePositional(positionals[1], 'status'),
       );
     case 'bump-mention-count':
-      return bumpMentionCount(requirePositional(positionals[0], 'id'));
+      return bumpMentionCount(db, requirePositional(positionals[0], 'id'));
     case 'list-cycles':
       return listCycles(db, flags['status']);
     case 'get-cycle':
@@ -268,8 +271,7 @@ function dispatchCli(
     case 'set-active-cycle':
       return setActiveCycle(db, requirePositional(positionals[0], 'id'));
     case 'create-cycle':
-      // --goal flag accepted for forward compatibility but not yet stored (no schema column)
-      return createCycle(db, requirePositional(positionals[0], 'name'));
+      return createCycle(db, requirePositional(positionals[0], 'name'), flags['goal']);
     case 'add-item-to-cycle':
       return addItemToCycle(
         db,

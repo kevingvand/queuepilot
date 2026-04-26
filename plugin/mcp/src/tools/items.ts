@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import type { Db } from '../db.js';
 import { cycleItems, items } from '../schema.js';
@@ -13,6 +13,8 @@ export interface ItemRow {
   due_at: number | null;
   scheduled_at: number | null;
   start_at: number | null;
+  mention_count: number;
+  last_touched_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -27,6 +29,8 @@ const ITEM_COLUMNS = {
   due_at: items.due_at,
   scheduled_at: items.scheduled_at,
   start_at: items.start_at,
+  mention_count: items.mention_count,
+  last_touched_at: items.last_touched_at,
   created_at: items.created_at,
   updated_at: items.updated_at,
 };
@@ -105,7 +109,7 @@ export function updateItemStatus(
   }
 
   db.update(items)
-    .set({ status, updated_at: Date.now() })
+    .set({ status, last_touched_at: Date.now(), updated_at: Date.now() })
     .where(eq(items.id, id))
     .run();
 
@@ -122,12 +126,23 @@ export function updateItemStatus(
   return { success: true, item: row };
 }
 
-// mention_count is not yet part of the schema — requires a migration to add the column.
 export function bumpMentionCount(
-  _id: string,
-): { success: false; message: string } {
-  return {
-    success: false,
-    message: 'mention_count not in schema — requires migration',
-  };
+  db: Db,
+  id: string,
+): { success: true } | { success: false; message: string } {
+  const existing = db.select({ id: items.id }).from(items).where(eq(items.id, id)).get();
+  if (!existing) {
+    return { success: false, message: `Item "${id}" not found` };
+  }
+
+  db.update(items)
+    .set({
+      mention_count: sql`${items.mention_count} + 1`,
+      last_touched_at: Date.now(),
+      updated_at: Date.now(),
+    })
+    .where(eq(items.id, id))
+    .run();
+
+  return { success: true };
 }

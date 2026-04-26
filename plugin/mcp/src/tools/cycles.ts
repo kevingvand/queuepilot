@@ -7,6 +7,7 @@ export interface CycleRow {
   id: string;
   name: string;
   status: string;
+  goal: string | null;
   starts_at: number | null;
   ends_at: number | null;
   created_at: number;
@@ -16,6 +17,7 @@ const CYCLE_COLUMNS = {
   id: cycles.id,
   name: cycles.name,
   status: cycles.status,
+  goal: cycles.goal,
   starts_at: cycles.starts_at,
   ends_at: cycles.ends_at,
   created_at: cycles.created_at,
@@ -64,6 +66,13 @@ export function setActiveCycle(
   db: Db,
   id: string,
 ): { success: true; cycle: CycleRow } | { success: false; message: string } {
+  // Deactivate all other active cycles before making this one active.
+  // Only one cycle may be active at a time.
+  db.update(cycles)
+    .set({ status: 'archived' })
+    .where(and(eq(cycles.status, 'active'), ne(cycles.id, id)))
+    .run();
+
   db.update(cycles).set({ status: 'active' }).where(eq(cycles.id, id)).run();
 
   const row = db.select(CYCLE_COLUMNS).from(cycles).where(eq(cycles.id, id)).get();
@@ -74,12 +83,15 @@ export function setActiveCycle(
   return { success: true, cycle: row };
 }
 
-export function createCycle(db: Db, name: string): { cycle: CycleRow } {
+export function createCycle(db: Db, name: string, goal?: string): { cycle: CycleRow } {
   const id = ulid();
   const now = Date.now();
 
+  // Archive any existing active cycles — only one cycle may be active at a time.
+  db.update(cycles).set({ status: 'archived' }).where(eq(cycles.status, 'active')).run();
+
   db.insert(cycles)
-    .values({ id, name, status: 'active', starts_at: null, ends_at: null, created_at: now })
+    .values({ id, name, goal: goal ?? null, status: 'active', starts_at: null, ends_at: null, created_at: now })
     .run();
 
   const row = db.select(CYCLE_COLUMNS).from(cycles).where(eq(cycles.id, id)).get();

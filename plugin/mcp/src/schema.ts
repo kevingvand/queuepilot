@@ -16,6 +16,8 @@ export const items = sqliteTable('items', {
   due_at: integer('due_at'),
   scheduled_at: integer('scheduled_at'),
   start_at: integer('start_at'),
+  mention_count: integer('mention_count').notNull().default(0),
+  last_touched_at: integer('last_touched_at'),
   // embedding (blob) intentionally omitted — binary data not needed by MCP tools
   created_at: integer('created_at').notNull(),
   updated_at: integer('updated_at').notNull(),
@@ -25,6 +27,7 @@ export const cycles = sqliteTable('cycles', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   status: text('status').notNull().default('active'),
+  goal: text('goal'),
   starts_at: integer('starts_at'),
   ends_at: integer('ends_at'),
   created_at: integer('created_at').notNull(),

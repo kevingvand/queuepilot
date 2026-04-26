@@ -6,6 +6,7 @@ export const cycles = sqliteTable('cycles', {
   id: text('id').primaryKey().$defaultFn(() => ulid()),
   name: text('name').notNull(),
   status: text('status').notNull().default('active'),
+  goal: text('goal'),
   starts_at: integer('starts_at'),
   ends_at: integer('ends_at'),
   created_at: integer('created_at').notNull().$defaultFn(() => Date.now()),
