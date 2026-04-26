@@ -1,4 +1,5 @@
 import { useTheme } from '../../contexts/ThemeContext';
+import logoUrl from '../../assets/logo.png';
 
 export function Header() {
   const { theme, toggleTheme } = useTheme();
@@ -6,12 +7,13 @@ export function Header() {
   return (
     <header className="flex items-center justify-between h-14 px-4 border-b" style={{ borderColor: 'var(--border)' }}>
       <div className="flex items-center gap-3">
-        <div
-          className="w-8 h-8 rounded flex items-center justify-center font-semibold text-sm"
-          style={{ backgroundColor: 'var(--accent)', color: 'white' }}
-        >
-          Q
-        </div>
+        <img
+          src={logoUrl}
+          alt="QueuePilot"
+          width={32}
+          height={32}
+          style={{ borderRadius: 6, display: 'block' }}
+        />
         <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
           QueuePilot
         </h1>
