@@ -3,6 +3,70 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Item } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
 
+function SubtaskRow({ subtask, onToggle, onDelete, onRename }: {
+  subtask: Item;
+  onToggle: () => void;
+  onDelete: () => void;
+  onRename: (title: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(subtask.title);
+
+  function commit() {
+    const trimmed = title.trim();
+    if (trimmed && trimmed !== subtask.title) onRename(trimmed);
+    else setTitle(subtask.title);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2">
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') { setTitle(subtask.title); setEditing(false); }
+          }}
+          className="flex-1 bg-transparent text-sm text-foreground border-b border-primary focus:outline-none"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 group">
+      <input
+        type="checkbox"
+        checked={subtask.status === 'done'}
+        onChange={onToggle}
+        className="rounded border-border focus:ring-1 focus:ring-primary shrink-0"
+      />
+      <span
+        className={`flex-1 text-sm cursor-pointer ${subtask.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}
+        onClick={() => setEditing(true)}
+        title="Click to rename"
+      >
+        {subtask.title}
+      </span>
+      <button
+        onClick={onDelete}
+        className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-muted-foreground hover:text-destructive focus:outline-none"
+        title="Delete subtask"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export function DetailSubtasks({ itemId }: { itemId: string }) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -20,6 +84,16 @@ export function DetailSubtasks({ itemId }: { itemId: string }) {
   async function toggleDone(subtask: Item) {
     const next = subtask.status === 'done' ? 'inbox' : 'done';
     await api.items.update(subtask.id, { status: next });
+    queryClient.invalidateQueries({ queryKey: ['subtasks', itemId] });
+  }
+
+  async function deleteSubtask(subtask: Item) {
+    await api.items.delete(subtask.id);
+    queryClient.invalidateQueries({ queryKey: ['subtasks', itemId] });
+  }
+
+  async function renameSubtask(subtask: Item, title: string) {
+    await api.items.update(subtask.id, { title });
     queryClient.invalidateQueries({ queryKey: ['subtasks', itemId] });
   }
 
@@ -46,19 +120,13 @@ export function DetailSubtasks({ itemId }: { itemId: string }) {
       )}
       <div className="space-y-1">
         {subtasks.map((subtask) => (
-          <label key={subtask.id} className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={subtask.status === 'done'}
-              onChange={() => toggleDone(subtask)}
-              className="rounded border-border focus:ring-1 focus:ring-primary"
-            />
-            <span
-              className={`text-sm ${subtask.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}
-            >
-              {subtask.title}
-            </span>
-          </label>
+          <SubtaskRow
+            key={subtask.id}
+            subtask={subtask}
+            onToggle={() => toggleDone(subtask)}
+            onDelete={() => deleteSubtask(subtask)}
+            onRename={(title) => renameSubtask(subtask, title)}
+          />
         ))}
       </div>
       <input

@@ -57,6 +57,13 @@ export function ItemList() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Cmd+K / Ctrl+K always focuses search regardless of active element
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        (document.getElementById('qp-search-input') as HTMLInputElement | null)?.focus();
+        return;
+      }
+
       const tag = (document.activeElement as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (shortcutsOpen || addDialogOpen) return;

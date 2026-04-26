@@ -138,6 +138,26 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   }
 
   // --- Item sub-resources (GET/POST /api/items/:id/:sub) ---
+  // --- Comment sub-resource (edit/delete) ---
+  const commentMatch = pathname.match(/^\/api\/items\/([^/]+)\/comments\/([^/]+)$/)
+  if (commentMatch) {
+    const [, itemId, commentId] = commentMatch
+    if (method === 'PATCH') {
+      const body = await readBody(req)
+      const parsed = JSON.parse(body || '{}')
+      const comments = mockData.comments[itemId] ?? []
+      const idx = comments.findIndex((c) => c.id === commentId)
+      if (idx !== -1) comments[idx] = { ...comments[idx], ...parsed }
+      res.writeHead(200); res.end(JSON.stringify({ data: comments[idx] ?? {} })); return
+    }
+    if (method === 'DELETE') {
+      if (mockData.comments[itemId]) {
+        mockData.comments[itemId] = mockData.comments[itemId].filter((c) => c.id !== commentId)
+      }
+      res.writeHead(200); res.end(JSON.stringify({ data: {} })); return
+    }
+  }
+
   const itemSubMatch = pathname.match(/^\/api\/items\/([^/]+)\/(tags|comments|links|events)$/)
   if (itemSubMatch) {
     const [, itemId, sub] = itemSubMatch

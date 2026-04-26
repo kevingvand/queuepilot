@@ -97,6 +97,8 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
       comments: {
         list: (id: string) => rawApi.request('GET', `/items/${id}/comments`),
         create: (id: string, data: any) => rawApi.request('POST', `/items/${id}/comments`, data),
+        update: (id: string, commentId: string, data: any) => rawApi.request('PATCH', `/items/${id}/comments/${commentId}`, data),
+        delete: (id: string, commentId: string) => rawApi.request('DELETE', `/items/${id}/comments/${commentId}`),
       },
       links: {
         list: (id: string) => rawApi.request('GET', `/items/${id}/links`),

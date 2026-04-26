@@ -27,6 +27,7 @@ export function DetailBody({ item }: { item: Item }) {
     if (body === item.body) return;
     await api.items.update(item.id, { body });
     queryClient.invalidateQueries({ queryKey: ['item', item.id] });
+    queryClient.invalidateQueries({ queryKey: ['events', item.id] });
   }
 
   if (!editing) {

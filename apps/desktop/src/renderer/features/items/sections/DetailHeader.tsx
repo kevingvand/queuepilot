@@ -56,6 +56,7 @@ export function DetailHeader({ item }: { item: Item }) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['items'] }),
       queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
     ]);
   }
 
@@ -65,6 +66,7 @@ export function DetailHeader({ item }: { item: Item }) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['items'] }),
       queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
     ]);
   }
 
@@ -73,6 +75,7 @@ export function DetailHeader({ item }: { item: Item }) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['items'] }),
       queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
     ]);
   }
 
@@ -89,6 +92,16 @@ export function DetailHeader({ item }: { item: Item }) {
 
   return (
     <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2 mb-0.5">
+        <Tooltip content="Copy item ID">
+          <button
+            onClick={() => navigator.clipboard.writeText(`QP-${item.id}`)}
+            className="text-[10px] font-mono text-muted-foreground/60 hover:text-muted-foreground transition-colors focus:outline-none"
+          >
+            QP-{item.id}
+          </button>
+        </Tooltip>
+      </div>
       <div className="flex items-start justify-between gap-2">
         {editing ? (
           <input

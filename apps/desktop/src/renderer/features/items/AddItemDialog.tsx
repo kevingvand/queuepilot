@@ -264,7 +264,7 @@ export function AddItemDialog({ open, onClose }: AddItemDialogProps) {
                           )}
                           style={
                             selected
-                              ? { backgroundColor: `${tag.color ?? '#888'}22`, color: tag.color ?? '#888', borderColor: `${tag.color ?? '#888'}66` }
+                              ? { backgroundColor: `${tag.color ?? '#888'}18`, color: 'var(--text-primary)', borderColor: `${tag.color ?? '#888'}44` }
                               : { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)', borderColor: 'var(--border)' }
                           }
                         >

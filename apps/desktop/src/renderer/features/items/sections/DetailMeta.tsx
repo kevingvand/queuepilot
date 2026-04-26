@@ -37,6 +37,7 @@ export function DetailMeta({ item }: { item: Item }) {
     setEditingField(null);
     await api.items.update(item.id, { [field]: value });
     queryClient.invalidateQueries({ queryKey: ['item', item.id] });
+    queryClient.invalidateQueries({ queryKey: ['events', item.id] });
   }
 
   function DateField({ field, label }: { field: 'due_at' | 'scheduled_at' | 'start_at'; label: string }) {
