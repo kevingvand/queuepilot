@@ -68,7 +68,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         role="region"
         aria-label="Notifications"
         aria-live="polite"
-        className="fixed bottom-10 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50 pointer-events-none"
+        className="fixed bottom-5 right-5 flex flex-col gap-2 z-50 pointer-events-none"
+        style={{ maxWidth: '360px', width: 'max-content' }}
       >
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onDismiss={dismiss} />
@@ -83,32 +84,45 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 // ---------------------------------------------------------------------------
 
 function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
-  const bgColor =
+  const accentColor =
     t.variant === 'destructive'
       ? 'var(--danger)'
       : t.variant === 'success'
         ? 'var(--success)'
-        : 'var(--bg-secondary)';
+        : 'transparent';
 
   return (
     <div
       role="alert"
-      className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm min-w-[240px] max-w-sm"
+      className="pointer-events-auto flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
       style={{
-        backgroundColor: bgColor,
+        backgroundColor: 'var(--bg-secondary)',
         border: '1px solid var(--border)',
-        color: t.variant ? '#ffffff' : 'var(--text-primary)',
+        borderLeft: accentColor !== 'transparent' ? `3px solid ${accentColor}` : '1px solid var(--border)',
+        color: 'var(--text-primary)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1)',
+        minWidth: '260px',
+        maxWidth: '340px',
       }}
     >
-      <span className="flex-1">{t.message}</span>
+      {t.variant === 'destructive' && (
+        <span style={{ color: 'var(--danger)', flexShrink: 0 }} aria-hidden>⚠</span>
+      )}
+      {t.variant === 'success' && (
+        <span style={{ color: 'var(--success)', flexShrink: 0 }} aria-hidden>✓</span>
+      )}
+      <span className="flex-1 text-xs leading-snug" style={{ color: 'var(--text-primary)' }}>{t.message}</span>
       {t.action && (
         <button
           onClick={() => {
             t.action!.onClick();
             onDismiss(t.id);
           }}
-          className="shrink-0 font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2"
-          style={{ color: t.variant ? '#ffffff' : 'var(--accent)' }}
+          className="shrink-0 text-xs font-semibold transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-2 rounded px-1.5 py-0.5"
+          style={{
+            color: '#ffffff',
+            backgroundColor: 'var(--accent)',
+          }}
         >
           {t.action.label}
         </button>
@@ -116,9 +130,10 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: stri
       <button
         onClick={() => onDismiss(t.id)}
         aria-label="Dismiss notification"
-        className="shrink-0 opacity-60 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 text-base leading-none"
+        className="shrink-0 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 leading-none rounded"
+        style={{ color: 'var(--text-muted)', opacity: 0.6 }}
       >
-        ×
+        ✕
       </button>
     </div>
   );

@@ -75,7 +75,9 @@ function createHttpApi(): RawAPI {
       if (!res.ok) {
         throw new Error(`API error: ${res.status} ${res.statusText}`)
       }
-      return res.json()
+      const result = await res.json()
+      // Normalise to { data: ... } to match the IPC bridge contract
+      return { data: result }
     },
   }
 }
@@ -87,7 +89,7 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
       list: (filters?: any) => rawApi.request('GET', '/items', undefined, filters),
       get: (id: string) => rawApi.request('GET', `/items/${id}`),
       create: (data: any) => rawApi.request('POST', '/items', data),
-      update: (id: string, data: any) => rawApi.request('PUT', `/items/${id}`, data),
+      update: (id: string, data: any) => rawApi.request('PATCH', `/items/${id}`, data),
       delete: (id: string) => rawApi.request('DELETE', `/items/${id}`),
       tags: {
         list: (id: string) => rawApi.request('GET', `/items/${id}/tags`),

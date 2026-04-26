@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useUiStore, type SortOrder } from '../../store/ui.store';
 
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+const searchShortcut = isMac ? '⌘K' : 'Ctrl+K';
+
 const STATUS_PILLS: Array<{ label: string; value: string | undefined }> = [
   { label: 'All', value: undefined },
   { label: 'Inbox', value: 'inbox' },
@@ -39,7 +42,7 @@ export function ItemListHeader({ count }: { count: number }) {
             placeholder="Search…"
             value={localQ}
             onChange={(e) => setLocalQ(e.target.value)}
-            className="w-full text-sm rounded px-2.5 py-1.5 outline-none transition-colors"
+            className="w-full text-sm rounded px-2.5 py-1.5 pr-14 outline-none transition-colors"
             style={{
               backgroundColor: 'var(--surface-hover)',
               color: 'var(--text-primary)',
@@ -55,6 +58,19 @@ export function ItemListHeader({ count }: { count: number }) {
               (e.target as HTMLInputElement).style.boxShadow = 'none';
             }}
           />
+          {!localQ && (
+            <kbd
+              className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-xs rounded px-1 py-0.5 leading-none"
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--border)',
+                fontFamily: 'inherit',
+              }}
+            >
+              {searchShortcut}
+            </kbd>
+          )}
         </div>
         <select
           value={sortOrder}

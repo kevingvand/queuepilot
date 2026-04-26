@@ -52,6 +52,9 @@ export function DetailMeta({ item }: { item: Item }) {
             <input
               type="date"
               autoFocus
+              autoComplete="off"
+              data-lpignore="true"
+              data-1p-ignore
               defaultValue={tsToDateInput(ts)}
               className="bg-transparent text-xs text-foreground border-b border-primary focus:outline-none w-full"
               onBlur={(e) => saveField(field, dateInputToTs(e.target.value))}
