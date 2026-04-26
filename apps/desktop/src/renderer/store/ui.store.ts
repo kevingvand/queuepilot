@@ -24,6 +24,7 @@ type UiStore = {
   filterState: FilterState;
   sortOrder: SortOrder;
   addDialogOpen: boolean;
+  editItemId: string | null;
   shortcutsOpen: boolean;
   sidebarCollapsed: boolean;
   detailPanelWidth: number;
@@ -31,6 +32,7 @@ type UiStore = {
   setFilterState: (filter: FilterState) => void;
   setSortOrder: (order: SortOrder) => void;
   setAddDialogOpen: (open: boolean) => void;
+  setEditItemId: (id: string | null) => void;
   setShortcutsOpen: (open: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setDetailPanelWidth: (width: number) => void;
@@ -41,6 +43,7 @@ export const useUiStore = create<UiStore>((set) => ({
   filterState: {},
   sortOrder: 'newest',
   addDialogOpen: false,
+  editItemId: null,
   shortcutsOpen: false,
   sidebarCollapsed: false,
   detailPanelWidth: getStoredDetailWidth(),
@@ -48,6 +51,7 @@ export const useUiStore = create<UiStore>((set) => ({
   setFilterState: (filter) => set({ filterState: filter }),
   setSortOrder: (order) => set({ sortOrder: order }),
   setAddDialogOpen: (open) => set({ addDialogOpen: open }),
+  setEditItemId: (id) => set({ editItemId: id }),
   setShortcutsOpen: (open) => set({ shortcutsOpen: open }),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
   setDetailPanelWidth: (width) => {

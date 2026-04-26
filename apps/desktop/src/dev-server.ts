@@ -128,12 +128,18 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
       else { res.writeHead(404); res.end(JSON.stringify({ error: 'Not found' })) }
       return
     }
-    if (method === 'PATCH') {
+    if (method === 'PATCH' || method === 'PUT') {
       const body = await readBody(req)
       const parsed = JSON.parse(body || '{}')
-      const item = mockData.items.find(i => i.id === id)
-      res.writeHead(200)
-      res.end(JSON.stringify({ data: { ...item, ...parsed } }))
+      const itemIdx = mockData.items.findIndex(i => i.id === id)
+      if (itemIdx !== -1) {
+        mockData.items[itemIdx] = { ...mockData.items[itemIdx], ...parsed }
+        res.writeHead(200)
+        res.end(JSON.stringify({ data: mockData.items[itemIdx] }))
+      } else {
+        res.writeHead(404)
+        res.end(JSON.stringify({ error: 'Not found' }))
+      }
       return
     }
     if (method === 'DELETE') {
