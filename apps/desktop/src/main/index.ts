@@ -40,9 +40,9 @@ ipcMain.handle('renderer-log', (_event, level: string, args: any[]) => {
 })
 
 function createWindow(): void {
-  const isDev = !!MAIN_WINDOW_VITE_DEV_SERVER_URL
+  const isDevServer = !!MAIN_WINDOW_VITE_DEV_SERVER_URL
   
-  logDebug(`Creating window, isDev=${isDev}`)
+  logDebug(`Creating window, isDevServer=${isDevServer}`)
   
   const preloadPath = path.join(__dirname, '../build/preload.js')
   logDebug(`Preload path: ${preloadPath}`)
@@ -72,7 +72,7 @@ function createWindow(): void {
   // Block unexpected navigation to external URLs
   win.webContents.on('will-navigate', (event, navigationUrl) => {
     const parsedUrl = new URL(navigationUrl)
-    const allowedOrigins = isDev
+    const allowedOrigins = isDevServer
       ? [new URL(MAIN_WINDOW_VITE_DEV_SERVER_URL!).origin]
       : ['null'] // file:// origin
     if (!allowedOrigins.includes(parsedUrl.origin)) {
@@ -84,7 +84,7 @@ function createWindow(): void {
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
   // Open DevTools in development
-  if (isDev) {
+  if (isDevServer) {
     logDebug('Opening DevTools')
     win.webContents.openDevTools()
   }
