@@ -17,7 +17,7 @@ export function ItemDetail() {
 
   if (!selectedItemId) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground bg-background">
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-center" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="32"
@@ -28,7 +28,7 @@ export function ItemDetail() {
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="opacity-30"
+          style={{ opacity: 0.3 }}
         >
           <rect width="18" height="18" x="3" y="3" rx="2" />
           <path d="M9 3v18" />
@@ -41,7 +41,7 @@ export function ItemDetail() {
 
   if (item.isLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-sm text-muted-foreground bg-background">
+      <div className="flex items-center justify-center h-full text-sm" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
         Loading…
       </div>
     );
@@ -49,43 +49,43 @@ export function ItemDetail() {
 
   if (!item.data) {
     return (
-      <div className="flex items-center justify-center h-full text-sm text-muted-foreground bg-background">
+      <div className="flex items-center justify-center h-full text-sm" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
         Item not found
       </div>
     );
   }
 
   return (
-    <ScrollArea className="h-full bg-background">
-      <div className="p-4">
+    <ScrollArea className="h-full" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <div style={{ padding: '16px' }}>
         <DetailHeader item={item.data} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailMeta item={item.data} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailBody item={item.data} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailTags itemId={item.data.id} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailSubtasks itemId={item.data.id} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailLinks itemId={item.data.id} links={links.data ?? []} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailComments itemId={item.data.id} comments={comments.data ?? []} />
       </div>
       <Separator />
-      <div className="p-4">
+      <div style={{ padding: '16px' }}>
         <DetailAudit itemId={item.data.id} events={events.data ?? []} isLoading={events.isLoading} />
       </div>
     </ScrollArea>

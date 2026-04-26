@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { cn } from '../../lib/utils';
 import { useUiStore, type SortOrder } from '../../store/ui.store';
 
 const STATUS_PILLS: Array<{ label: string; value: string | undefined }> = [
@@ -30,37 +29,56 @@ export function ItemListHeader({ count }: { count: number }) {
   }, [localQ, setFilterState]);
 
   return (
-    <div className="border-b border-border">
+    <div style={{ borderBottomColor: 'var(--border)', borderBottomWidth: '1px' }}>
       <div className="flex items-center gap-2 px-3 py-2">
         <input
           type="text"
           placeholder="Search…"
           value={localQ}
           onChange={(e) => setLocalQ(e.target.value)}
-          className="flex-1 min-w-0 bg-muted/50 text-sm text-foreground placeholder:text-muted-foreground rounded px-2.5 py-1 outline-none focus:ring-1 focus:ring-ring"
+          className="flex-1 min-w-0 text-sm rounded px-2.5 py-1.5 outline-none transition-colors"
+          style={{
+            backgroundColor: 'var(--surface-hover)',
+            color: 'var(--text-primary)',
+            borderColor: 'var(--border)',
+            borderWidth: '1px',
+          }}
+          onFocus={(e) => {
+            (e.target as HTMLInputElement).style.borderColor = 'var(--accent)';
+            (e.target as HTMLInputElement).style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.1)';
+          }}
+          onBlur={(e) => {
+            (e.target as HTMLInputElement).style.borderColor = 'var(--border)';
+            (e.target as HTMLInputElement).style.boxShadow = 'none';
+          }}
         />
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-          className="bg-muted/50 text-xs text-muted-foreground rounded px-1.5 py-1 outline-none cursor-pointer"
+          className="text-xs rounded px-2 py-1.5 outline-none cursor-pointer transition-colors"
+          style={{
+            backgroundColor: 'var(--surface-hover)',
+            color: 'var(--text-secondary)',
+            borderColor: 'var(--border)',
+            borderWidth: '1px',
+          }}
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        <span className="text-xs text-muted-foreground shrink-0">{count} items</span>
+        <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>{count} items</span>
       </div>
       <div className="flex gap-1 px-3 pb-2">
         {STATUS_PILLS.map((pill) => (
           <button
             key={pill.label}
             onClick={() => setFilterState({ ...filterState, status: pill.value })}
-            className={cn(
-              'px-2.5 py-0.5 rounded-full text-xs transition-colors',
-              filterState.status === pill.value
-                ? 'bg-accent text-accent-foreground font-medium'
-                : 'text-muted-foreground hover:bg-accent/50',
-            )}
+            className="px-2.5 py-0.5 rounded-full text-xs transition-colors font-medium"
+            style={{
+              backgroundColor: filterState.status === pill.value ? 'var(--accent)' : 'var(--surface-hover)',
+              color: filterState.status === pill.value ? '#ffffff' : 'var(--text-secondary)',
+            }}
           >
             {pill.label}
           </button>

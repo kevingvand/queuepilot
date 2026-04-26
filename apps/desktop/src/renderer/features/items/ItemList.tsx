@@ -21,9 +21,9 @@ function SkeletonRows() {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="px-4 py-2.5 border-b border-border animate-pulse">
-          <div className="h-3 bg-muted rounded w-3/4 mb-1.5" />
-          <div className="h-2.5 bg-muted rounded w-1/2" />
+        <div key={i} className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="h-3 rounded w-3/4 mb-2" style={{ backgroundColor: 'var(--surface-hover)' }} />
+          <div className="h-2.5 rounded w-1/2" style={{ backgroundColor: 'var(--surface-hover)' }} />
         </div>
       ))}
     </>
@@ -33,20 +33,20 @@ function SkeletonRows() {
 function EmptyState({ filter }: { filter: FilterState }) {
   if (filter.q) {
     return (
-      <div className="px-4 py-8 text-sm text-muted-foreground text-center">
+      <div className="px-4 py-8 text-sm text-center" style={{ color: 'var(--text-muted)' }}>
         No results for &ldquo;{filter.q}&rdquo;
       </div>
     );
   }
   if (filter.status) {
     return (
-      <div className="px-4 py-8 text-sm text-muted-foreground text-center">
+      <div className="px-4 py-8 text-sm text-center" style={{ color: 'var(--text-muted)' }}>
         No items in {filter.status.replace('_', ' ')}
       </div>
     );
   }
   return (
-    <div className="px-4 py-8 text-sm text-muted-foreground text-center">No items yet</div>
+    <div className="px-4 py-8 text-sm text-center" style={{ color: 'var(--text-muted)' }}>No items yet</div>
   );
 }
 
@@ -80,7 +80,7 @@ export function ItemList() {
   }, [items, selectedItemId, setSelectedItemId]);
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
       <ItemListHeader count={items.length} />
       <ScrollArea className="flex-1">
         {isLoading && <SkeletonRows />}

@@ -1,13 +1,13 @@
 import { Shell } from './features/shell/Shell'
+import { ApiProvider } from './hooks/ApiProvider'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 export function App() {
-  console.log('[App] Rendering Shell component')
   return (
-    <>
-      <div style={{ position: 'fixed', top: 0, left: 0, background: 'red', color: 'white', padding: '10px', zIndex: 9999 }}>
-        Debug: App loaded
-      </div>
-      <Shell />
-    </>
+    <ThemeProvider>
+      <ApiProvider>
+        <Shell />
+      </ApiProvider>
+    </ThemeProvider>
   )
 }

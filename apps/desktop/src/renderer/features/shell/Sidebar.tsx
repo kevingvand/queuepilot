@@ -43,21 +43,24 @@ export function Sidebar() {
     JSON.stringify(filterState) === JSON.stringify(filter);
 
   return (
-    <div className="flex flex-col h-full bg-background border-r border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <span className="text-sm font-semibold text-foreground">QueuePilot</span>
+    <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', borderRightColor: 'var(--border)', borderRightWidth: '1px' }}>
+      <div className="px-3 py-3 flex items-center justify-between" style={{ borderBottomColor: 'var(--border)', borderBottomWidth: '1px' }}>
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+          Filters
+        </span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setAddDialogOpen(true)}
           className="h-6 w-6 p-0"
           title="New item (C)"
+          style={{ color: 'var(--text-secondary)' }}
         >
           <Plus size={14} />
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-2">
+      <div className="flex-1 overflow-y-auto" style={{ padding: '8px 0' }}>
         <SidebarSection label="Inbox">
           {INBOX_ITEMS.map((item) => (
             <NavRow
@@ -105,13 +108,13 @@ function SidebarSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="mb-1">
-      <div className="flex items-center gap-1 px-4 py-1">
+    <div style={{ marginBottom: '24px' }}>
+      <div className="flex items-center gap-2 px-3 py-2">
         {icon}
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
           {label}
         </span>
-        <Plus size={12} className="ml-auto text-muted-foreground hover:text-foreground cursor-pointer" />
+        <Plus size={12} className="ml-auto cursor-pointer" style={{ color: 'var(--text-muted)' }} />
       </div>
       {children}
     </div>
@@ -132,12 +135,22 @@ function NavRow({
   return (
     <button
       onClick={onClick}
-      className={cn(
-        'w-full flex items-center gap-2 px-4 py-1.5 text-sm text-left transition-colors',
-        active
-          ? 'bg-accent text-accent-foreground'
-          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-      )}
+      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors"
+      style={{
+        backgroundColor: active ? 'var(--accent)' : 'transparent',
+        color: active ? '#ffffff' : 'var(--text-secondary)',
+        marginBottom: '4px',
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--surface-hover)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+        }
+      }}
     >
       {icon}
       <span className="truncate">{label}</span>

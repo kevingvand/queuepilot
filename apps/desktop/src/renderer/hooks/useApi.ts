@@ -1,3 +1,1 @@
-export function useApi() {
-  return window.queuepilot.api;
-}
+export { useApi } from './ApiProvider'

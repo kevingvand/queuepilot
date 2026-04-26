@@ -1,8 +1,12 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
+import fs from 'fs'
 import { createApp } from './api/index'
 import { registerIpcBridge } from './ipc-bridge'
 import { createDb } from '@queuepilot/core/schema'
+
+declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined
+declare const MAIN_WINDOW_VITE_NAME: string | undefined
 
 function resolveDataDir(): string {
   const flag = process.argv.find((arg) => arg.startsWith('--data-dir='))
@@ -11,21 +15,50 @@ function resolveDataDir(): string {
 
 export const dataDir = resolveDataDir()
 
+const debugLogFile = path.join(app.getPath('userData'), 'debug.log')
+
+function logDebug(msg: string) {
+  const timestamp = new Date().toISOString()
+  const line = `[${timestamp}] ${msg}`
+  console.log(line)
+  fs.appendFileSync(debugLogFile, line + '\n', 'utf8')
+}
+
 let db: any
 let honoApp: any
 
+// Listen for console logs from renderer
+ipcMain.handle('renderer-log', (_event, level: string, args: any[]) => {
+  const timestamp = new Date().toISOString()
+  const message = `[${timestamp}] [renderer/${level}] ${args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ')}`
+  console.log(message)
+  fs.appendFileSync(debugLogFile, message + '\n', 'utf8')
+  return null
+})
+
 function createWindow(): void {
+  const isDev = !!MAIN_WINDOW_VITE_DEV_SERVER_URL
+  
+  logDebug(`Creating window, isDev=${isDev}`)
+  
+  const preloadPath = path.join(__dirname, '../build/preload.js')
+  logDebug(`Preload path: ${preloadPath}`)
+  logDebug(`Preload exists: ${fs.existsSync(preloadPath)}`)
+  
+  const webPreferences: any = {
+    nodeIntegration: false,
+    contextIsolation: true,
+    preload: preloadPath,
+  }
+
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, '../preload.js'),
-    },
+    webPreferences,
   })
 
-  console.log('[queuepilot] Loading URL:', MAIN_WINDOW_VITE_DEV_SERVER_URL || `file://${path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)}`)
+  const url = MAIN_WINDOW_VITE_DEV_SERVER_URL || `file://${path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)}`
+  logDebug(`Loading URL: ${url}`)
   
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     win.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
@@ -34,8 +67,8 @@ function createWindow(): void {
   }
 
   // Open DevTools in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[queuepilot] Opening DevTools')
+  if (isDev) {
+    logDebug('Opening DevTools')
     win.webContents.openDevTools()
   }
 }
@@ -47,7 +80,9 @@ function initializeApp() {
 }
 
 app.whenReady().then(() => {
-  console.log(`[queuepilot] data-dir: ${dataDir}`)
+  logDebug(`=== QueuePilot Starting ===`)
+  logDebug(`data-dir: ${dataDir}`)
+  
   initializeApp()
   createWindow()
 
@@ -57,5 +92,6 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  logDebug('All windows closed, quitting')
   if (process.platform !== 'darwin') app.quit()
 })

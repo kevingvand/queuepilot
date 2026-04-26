@@ -1,37 +1,165 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-border: hsl(var(--border));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+  /* Colors */
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1a1f3a;
+  --color-surface-hover: #2c3a54;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-danger: #ef4444;
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-lg: 15px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+
+  --line-height-xs: 1.33;
+  --line-height-sm: 1.38;
+  --line-height-base: 1.43;
+  --line-height-lg: 1.5;
+  --line-height-xl: 1.5;
+  --line-height-2xl: 1.4;
+  --line-height-3xl: 1.33;
+
+  /* Spacing (4px base) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 213 31% 91%;
-    --muted: 223 47% 15%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 223 47% 18%;
-    --accent-foreground: 213 31% 91%;
-    --border: 216 34% 17%;
-    --primary: 252 76% 66%;
-    --primary-foreground: 0 0% 100%;
+    /* Dark mode (default) */
+    color-scheme: dark light;
+    --bg-primary: #0f172a;
+    --bg-secondary: #1a1f3a;
+    --surface-hover: #2c3a54;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --success: #22c55e;
+    --warning: #eab308;
+    --danger: #ef4444;
+  }
+
+  /* Light mode */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --surface-hover: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --accent: #4f46e5;
+      --accent-hover: #6366f1;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --danger: #dc2626;
+    }
+  }
+
+  /* Dark mode via data-theme attribute */
+  [data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1a1f3a;
+    --surface-hover: #2c3a54;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --success: #22c55e;
+    --warning: #eab308;
+    --danger: #ef4444;
+  }
+
+  /* Light mode via data-theme attribute */
+  [data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --surface-hover: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --accent: #4f46e5;
+    --accent-hover: #6366f1;
+    --success: #16a34a;
+    --warning: #ca8a04;
+    --danger: #dc2626;
   }
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Ensure 16px minimum font size on inputs to prevent iOS zoom */
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="password"],
+  textarea {
+    font-size: 16px;
+  }
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

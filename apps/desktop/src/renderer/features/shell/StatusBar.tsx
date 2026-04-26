@@ -18,7 +18,10 @@ export function StatusBar() {
   const count = items?.length ?? 0;
 
   return (
-    <div className="h-6 border-t border-border flex items-center px-4 text-xs text-muted-foreground gap-4 bg-background">
+    <div
+      className="h-6 border-t flex items-center px-4 text-xs gap-4"
+      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+    >
       <span>{count} items</span>
       <span className="ml-auto">⌘K</span>
     </div>

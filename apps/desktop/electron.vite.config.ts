@@ -6,7 +6,7 @@ export default defineConfig({
   main: {
     entry: 'src/main/index.ts',
     build: {
-      outDir: path.resolve(__dirname, '.vite/build/main'),
+      outDir: path.resolve(__dirname, '.vite/build'),
       rollupOptions: {
         external: ['better-sqlite3', '@queuepilot/core', '@queuepilot/ingestion'],
       },
@@ -22,10 +22,11 @@ export default defineConfig({
     entry: 'src/preload/index.ts',
     build: {
       outDir: path.resolve(__dirname, '.vite/build'),
-      rollupOptions: {
-        output: {
-          entryFileNames: 'preload.js',
-        },
+      lib: {
+        entry: path.resolve(__dirname, 'src/preload/index.ts'),
+        name: 'preload',
+        formats: ['cjs'],
+        fileName: () => 'preload.js',
       },
     },
     plugins: [externalizeDepsPlugin()],
