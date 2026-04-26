@@ -12,7 +12,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>('dark');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Load theme from localStorage or system preference

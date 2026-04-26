@@ -9,7 +9,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "test": "vitest run",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src",
     "dev:server": "tsx src/dev-server.ts",
     "dev:vite": "vite"
   },

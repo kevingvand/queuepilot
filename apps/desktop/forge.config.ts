@@ -1,6 +1,50 @@
 import type { ForgeConfig } from '@electron-forge/shared-types'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import path from 'path'
+import fs from 'fs'
+import { execFileSync } from 'child_process'
+
+function findNodeFiles(dir: string, found: string[] = [], visited = new Set<string>()): string[] {
+  let realDir: string
+  try { realDir = fs.realpathSync(dir) } catch { return found }
+  if (visited.has(realDir)) return found
+  visited.add(realDir)
+  let entries: fs.Dirent[]
+  try { entries = fs.readdirSync(realDir, { withFileTypes: true }) } catch { return found }
+  for (const entry of entries) {
+    const full = path.join(realDir, entry.name)
+    if (entry.isDirectory()) {
+      findNodeFiles(full, found, visited)
+    } else if (entry.isFile() && entry.name.endsWith('.node')) {
+      found.push(full)
+    } else if (entry.isSymbolicLink()) {
+      try {
+        const real = fs.realpathSync(full)
+        const stat = fs.statSync(real)
+        if (stat.isDirectory()) findNodeFiles(real, found, visited)
+        else if (real.endsWith('.node') && !found.includes(real)) found.push(real)
+      } catch { /* ignore broken symlinks */ }
+    }
+  }
+  return found
+}
+
+function codesignNativeModules(appDir: string) {
+  // macOS 15 Code Signing Monitor rejects native modules with the `linker-signed`
+  // flag when loaded via dlopen in Electron. Re-signing with codesign removes
+  // that flag and produces a standard adhoc signature that CSM accepts.
+  if (process.platform !== 'darwin') return
+  const nodeModulesDir = path.join(appDir, 'node_modules')
+  if (!fs.existsSync(nodeModulesDir)) return
+  const nodeFiles = findNodeFiles(nodeModulesDir)
+  for (const file of nodeFiles) {
+    try {
+      execFileSync('codesign', ['--force', '--sign', '-', file])
+    } catch {
+      console.warn(`[queuepilot] codesign failed for ${file}`)
+    }
+  }
+}
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -10,6 +54,10 @@ const config: ForgeConfig = {
     appCategoryType: 'public.app-category.productivity',
   },
   rebuildConfig: {},
+  hooks: {
+    postInstall: async () => codesignNativeModules(__dirname),
+    preStart: async () => codesignNativeModules(__dirname),
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',

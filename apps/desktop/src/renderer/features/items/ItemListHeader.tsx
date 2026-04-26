@@ -19,7 +19,7 @@ const SORT_OPTIONS: Array<{ label: string; value: SortOrder }> = [
   { label: 'Title', value: 'title' },
 ];
 
-export function ItemListHeader({ count }: { count: number }) {
+export function ItemListHeader({ count: _count }: { count: number }) {
   const { filterState, setFilterState, sortOrder, setSortOrder, setAddDialogOpen } = useUiStore();
   const [localQ, setLocalQ] = useState(filterState.q ?? '');
   const filterStateRef = useRef(filterState);

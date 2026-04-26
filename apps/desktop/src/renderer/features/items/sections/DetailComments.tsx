@@ -15,7 +15,7 @@ function stringToColor(str: string): string {
 
 const CURRENT_USER = 'You';
 
-function CommentRow({ comment, itemId, onDelete, onEdit }: {
+function CommentRow({ comment, itemId: _itemId, onDelete, onEdit }: {
   comment: Comment;
   itemId: string;
   onDelete: () => void;
