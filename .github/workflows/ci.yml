@@ -34,11 +34,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Rebuild native modules for Node.js
-        run: |
-          cd node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3
-          npm run install
-
       - name: Lint
         run: pnpm run lint
 
