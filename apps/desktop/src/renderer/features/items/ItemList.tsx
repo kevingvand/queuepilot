@@ -51,33 +51,69 @@ function EmptyState({ filter }: { filter: FilterState }) {
 }
 
 export function ItemList() {
-  const { filterState, selectedItemId, setSelectedItemId, sortOrder } = useUiStore();
+  const { filterState, selectedItemId, setSelectedItemId, sortOrder, setShortcutsOpen, shortcutsOpen, addDialogOpen, setAddDialogOpen, setFilterState } = useUiStore();
   const { data: rawItems = [], isLoading } = useItems(filterState);
   const items = useMemo(() => sortItems(rawItems, sortOrder), [rawItems, sortOrder]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === 'INPUT') return;
-      if (e.key !== 'j' && e.key !== 'k' && e.key !== 'Enter') return;
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (shortcutsOpen || addDialogOpen) return;
 
+      switch (e.key) {
+        case '?':
+          e.preventDefault();
+          setShortcutsOpen(true);
+          return;
+        case 'c':
+        case 'C':
+          e.preventDefault();
+          setAddDialogOpen(true);
+          return;
+        case 'Escape':
+          e.preventDefault();
+          setSelectedItemId(null);
+          return;
+        case '1':
+          e.preventDefault();
+          setFilterState({ status: 'inbox' });
+          return;
+        case '2':
+          e.preventDefault();
+          setFilterState({ status: 'in_progress' });
+          return;
+        case '3':
+          e.preventDefault();
+          setFilterState({ status: 'done' });
+          return;
+        case '0':
+          e.preventDefault();
+          setFilterState({});
+          return;
+      }
+
+      if (e.key !== 'j' && e.key !== 'k' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter') return;
       e.preventDefault();
-
-      if (e.key === 'Enter') return;
 
       const currentIndex = items.findIndex((item) => item.id === selectedItemId);
 
-      if (e.key === 'j') {
+      if (e.key === 'j' || e.key === 'ArrowDown') {
         const nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, items.length - 1);
         setSelectedItemId(items[nextIndex]?.id ?? null);
-      } else {
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
         const nextIndex = currentIndex <= 0 ? 0 : currentIndex - 1;
         setSelectedItemId(items[nextIndex]?.id ?? null);
+      } else if (e.key === 'Enter') {
+        if (currentIndex === -1 && items.length > 0) {
+          setSelectedItemId(items[0].id);
+        }
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [items, selectedItemId, setSelectedItemId]);
+  }, [items, selectedItemId, shortcutsOpen, addDialogOpen, setSelectedItemId, setShortcutsOpen, setAddDialogOpen, setFilterState]);
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>

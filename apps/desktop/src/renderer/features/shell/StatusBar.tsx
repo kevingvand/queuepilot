@@ -4,7 +4,7 @@ import { useApi } from '../../hooks/useApi';
 import { useUiStore } from '../../store/ui.store';
 
 export function StatusBar() {
-  const { filterState } = useUiStore();
+  const { filterState, setShortcutsOpen } = useUiStore();
   const api = useApi();
 
   const { data: items } = useQuery({
@@ -19,11 +19,39 @@ export function StatusBar() {
 
   return (
     <div
-      className="h-6 border-t flex items-center px-4 text-xs gap-4"
-      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+      className="border-t flex items-center px-4 gap-4"
+      style={{
+        height: '28px',
+        backgroundColor: 'var(--bg-secondary)',
+        borderColor: 'var(--border)',
+        color: 'var(--text-muted)',
+        fontSize: '11px',
+      }}
     >
+      <button
+        onClick={() => setShortcutsOpen(true)}
+        title="Keyboard shortcuts (?)"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '16px',
+          height: '16px',
+          borderRadius: '50%',
+          border: '1px solid var(--border)',
+          color: 'var(--text-muted)',
+          fontSize: '10px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          backgroundColor: 'transparent',
+          lineHeight: 1,
+          flexShrink: 0,
+        }}
+      >
+        ?
+      </button>
+      <span style={{ flex: 1 }} />
       <span>{count} items</span>
-      <span className="ml-auto">⌘K</span>
     </div>
   );
 }

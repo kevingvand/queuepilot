@@ -16,6 +16,14 @@ export function Dialog({ open, onClose, children, className }: DialogProps) {
     if (!dialog) return;
     if (open && !dialog.open) {
       dialog.showModal();
+      // Focus first focusable element instead of the dialog itself,
+      // so keyboard-open and mouse-open behave the same (no dialog outline).
+      requestAnimationFrame(() => {
+        const focusable = dialog.querySelector<HTMLElement>(
+          'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        );
+        focusable?.focus();
+      });
     } else if (!open && dialog.open) {
       dialog.close();
     }
@@ -39,11 +47,21 @@ export function Dialog({ open, onClose, children, className }: DialogProps) {
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
-      className={cn(
-        'bg-background text-foreground border border-border rounded-lg shadow-2xl',
-        'p-0 max-w-lg w-full backdrop:bg-black/60',
-        className,
-      )}
+      className={cn('rounded-lg shadow-2xl p-0 backdrop:bg-black/60', className)}
+      style={{
+        backgroundColor: 'var(--bg-primary)',
+        border: '1px solid var(--border)',
+        color: 'var(--text-primary)',
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        margin: 0,
+        width: '100%',
+        maxWidth: '640px',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+      }}
     >
       {children}
     </dialog>
@@ -61,15 +79,15 @@ export function DialogContent({
 }
 
 export function DialogHeader({ children }: { children: React.ReactNode }) {
-  return <div className="px-6 pt-5 pb-4 border-b border-border">{children}</div>;
+  return <div className="px-6 pt-5 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>{children}</div>;
 }
 
 export function DialogTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-base font-semibold text-foreground">{children}</h2>;
+  return <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{children}</h2>;
 }
 
 export function DialogFooter({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-6 py-4 border-t border-border flex justify-end gap-2">{children}</div>
+    <div className="px-6 py-4 flex justify-end gap-2" style={{ borderTop: '1px solid var(--border)' }}>{children}</div>
   );
 }

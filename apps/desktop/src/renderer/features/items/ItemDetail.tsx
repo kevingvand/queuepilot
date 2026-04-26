@@ -1,5 +1,4 @@
 import { ScrollArea } from '../../components/ui/scroll-area';
-import { Separator } from '../../components/ui/separator';
 import { useUiStore } from '../../store/ui.store';
 import { useItemDetail } from './hooks/useItemDetail';
 import { DetailAudit } from './sections/DetailAudit';
@@ -10,6 +9,10 @@ import { DetailLinks } from './sections/DetailLinks';
 import { DetailMeta } from './sections/DetailMeta';
 import { DetailSubtasks } from './sections/DetailSubtasks';
 import { DetailTags } from './sections/DetailTags';
+
+function SectionDivider() {
+  return <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '0 16px' }} />;
+}
 
 export function ItemDetail() {
   const { selectedItemId } = useUiStore();
@@ -60,31 +63,31 @@ export function ItemDetail() {
       <div style={{ padding: '16px' }}>
         <DetailHeader item={item.data} />
       </div>
-      <Separator />
-      <div style={{ padding: '16px' }}>
-        <DetailMeta item={item.data} />
-      </div>
-      <Separator />
+      <SectionDivider />
       <div style={{ padding: '16px' }}>
         <DetailBody item={item.data} />
       </div>
-      <Separator />
+      <SectionDivider />
       <div style={{ padding: '16px' }}>
         <DetailTags itemId={item.data.id} />
       </div>
-      <Separator />
+      <SectionDivider />
+      <div style={{ padding: '16px' }}>
+        <DetailMeta item={item.data} />
+      </div>
+      <SectionDivider />
       <div style={{ padding: '16px' }}>
         <DetailSubtasks itemId={item.data.id} />
       </div>
-      <Separator />
+      <SectionDivider />
       <div style={{ padding: '16px' }}>
         <DetailLinks itemId={item.data.id} links={links.data ?? []} />
       </div>
-      <Separator />
+      <SectionDivider />
       <div style={{ padding: '16px' }}>
         <DetailComments itemId={item.data.id} comments={comments.data ?? []} />
       </div>
-      <Separator />
+      <SectionDivider />
       <div style={{ padding: '16px' }}>
         <DetailAudit itemId={item.data.id} events={events.data ?? []} isLoading={events.isLoading} />
       </div>

@@ -1,14 +1,24 @@
-import { useState } from 'react';
 import type { Item } from '@queuepilot/core/types';
 import { cn } from '../../../lib/utils';
+import { useState } from 'react';
 
-function formatDate(ts: number | null | undefined): string {
-  if (!ts) return '—';
+function formatDate(ts: number | null | undefined): string | null {
+  if (!ts) return null;
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function DetailMeta({ item }: { item: Item }) {
   const [open, setOpen] = useState(true);
+
+  const rows = [
+    { label: 'Due', value: formatDate(item.due_at) },
+    { label: 'Scheduled', value: formatDate(item.scheduled_at) },
+    { label: 'Start', value: formatDate(item.start_at) },
+    { label: 'Created', value: formatDate(item.created_at) },
+    item.source_id ? { label: 'Source', value: `Via ${item.source_id}` } : null,
+  ].filter((row): row is { label: string; value: string } => row !== null && row.value !== null);
+
+  if (rows.length === 0) return null;
 
   return (
     <div className="space-y-1">
@@ -34,20 +44,12 @@ export function DetailMeta({ item }: { item: Item }) {
       </button>
       {open && (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs mt-2">
-          <dt className="text-muted-foreground">Due</dt>
-          <dd className="text-foreground">{formatDate(item.due_at)}</dd>
-          <dt className="text-muted-foreground">Scheduled</dt>
-          <dd className="text-foreground">{formatDate(item.scheduled_at)}</dd>
-          <dt className="text-muted-foreground">Start</dt>
-          <dd className="text-foreground">{formatDate(item.start_at)}</dd>
-          <dt className="text-muted-foreground">Created</dt>
-          <dd className="text-foreground">{formatDate(item.created_at)}</dd>
-          {item.source_id && (
-            <>
-              <dt className="text-muted-foreground">Source</dt>
-              <dd className="text-foreground">Via {item.source_id}</dd>
-            </>
-          )}
+          {rows.map(({ label, value }) => (
+            <div key={label} className="contents">
+              <dt className="text-muted-foreground">{label}</dt>
+              <dd className="text-foreground">{value}</dd>
+            </div>
+          ))}
         </dl>
       )}
     </div>

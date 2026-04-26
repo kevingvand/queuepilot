@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+/* Map shadcn/Tailwind v3 class names to our design token CSS variables.
+   This makes classes like `text-muted-foreground`, `bg-muted`, `border-border`
+   work correctly across all components without editing each file individually. */
+@theme inline {
+  --color-foreground: var(--text-primary);
+  --color-background: var(--bg-primary);
+  --color-muted: var(--bg-secondary);
+  --color-muted-foreground: var(--text-muted);
+  --color-border: var(--border);
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--text-primary);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
+  --color-card: var(--bg-secondary);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-secondary);
+  --color-popover-foreground: var(--text-primary);
+  --color-input: var(--surface-hover);
+  --color-ring: var(--accent);
+}
+
 @theme {
   /* Colors */
   --color-bg-primary: #0f172a;
@@ -128,11 +149,17 @@
     padding: 0;
   }
 
+  /* Smooth theme transitions on all elements */
+  *, *::before, *::after {
+    transition-property: background-color, color, border-color, fill, stroke;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   input,

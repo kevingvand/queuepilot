@@ -1,6 +1,7 @@
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { Cycle, Tag } from '@queuepilot/core/types';
+import { ChevronDown } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import {
   Dialog,
@@ -64,6 +65,7 @@ export function AddItemDialog({ open, onClose }: AddItemDialogProps) {
   const { setSelectedItemId } = useUiStore();
 
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+  const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -85,6 +87,7 @@ export function AddItemDialog({ open, onClose }: AddItemDialogProps) {
 
   function handleClose() {
     setForm(DEFAULT_FORM);
+    setExpanded(false);
     setError(null);
     onClose();
   }
@@ -146,106 +149,131 @@ export function AddItemDialog({ open, onClose }: AddItemDialogProps) {
 
         <DialogContent>
           <div className="space-y-3">
+            {/* Quick capture: title only */}
             <Input
               autoFocus
-              placeholder="Title"
+              placeholder="What's on your mind? (Enter to save)"
               value={form.title}
               onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
               required
             />
 
-            <Textarea
-              placeholder="Description (optional)"
-              rows={3}
-              value={form.body}
-              onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
-            />
+            {/* Expand for details */}
+            {!expanded && (
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="flex items-center gap-1 text-xs transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                }}
+              >
+                <ChevronDown size={12} />
+                Add details
+              </button>
+            )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Priority</label>
-                <Select
-                  value={form.priority}
-                  onChange={(value) => setForm((prev) => ({ ...prev, priority: value }))}
-                >
-                  {PRIORITY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Status</label>
-                <Select
-                  value={form.status}
-                  onChange={(value) => setForm((prev) => ({ ...prev, status: value }))}
-                >
-                  {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Due date</label>
-                <Input
-                  type="date"
-                  value={form.dueDate}
-                  onChange={(e) => setForm((prev) => ({ ...prev, dueDate: e.target.value }))}
+            {/* Expanded details form */}
+            {expanded && (
+              <>
+                <Textarea
+                  placeholder="Description (optional)"
+                  rows={3}
+                  value={form.body}
+                  onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
                 />
-              </div>
 
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Cycle</label>
-                <Select
-                  value={form.cycleId}
-                  onChange={(value) => setForm((prev) => ({ ...prev, cycleId: value }))}
-                >
-                  <option value="">No cycle</option>
-                  {cyclesData?.map((cycle) => (
-                    <option key={cycle.id} value={cycle.id}>
-                      {cycle.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Priority</label>
+                    <Select
+                      value={form.priority}
+                      onChange={(value) => setForm((prev) => ({ ...prev, priority: value }))}
+                    >
+                      {PRIORITY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
 
-            {tagsData && tagsData.length > 0 && (
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1.5">Tags</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {tagsData.map((tag) => {
-                    const selected = form.selectedTagIds.includes(tag.id);
-                    return (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => toggleTag(tag.id)}
-                        className={cn(
-                          'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-colors',
-                          selected
-                            ? 'bg-primary/20 text-primary border border-primary/40'
-                            : 'bg-muted text-muted-foreground border border-border hover:border-primary/40',
-                        )}
-                      >
-                        <span
-                          className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: tag.color ?? '#888' }}
-                        />
-                        {tag.name}
-                        {selected && <span>×</span>}
-                      </button>
-                    );
-                  })}
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Status</label>
+                    <Select
+                      value={form.status}
+                      onChange={(value) => setForm((prev) => ({ ...prev, status: value }))}
+                    >
+                      {STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
                 </div>
-              </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Due date</label>
+                    <Input
+                      type="date"
+                      value={form.dueDate}
+                      onChange={(e) => setForm((prev) => ({ ...prev, dueDate: e.target.value }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Cycle</label>
+                    <Select
+                      value={form.cycleId}
+                      onChange={(value) => setForm((prev) => ({ ...prev, cycleId: value }))}
+                    >
+                      <option value="">No cycle</option>
+                      {cyclesData?.map((cycle) => (
+                        <option key={cycle.id} value={cycle.id}>
+                          {cycle.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+
+                {tagsData && tagsData.length > 0 && (
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1.5">Tags</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tagsData.map((tag) => {
+                        const selected = form.selectedTagIds.includes(tag.id);
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => toggleTag(tag.id)}
+                            className={cn(
+                              'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-colors',
+                              selected
+                                ? 'bg-primary/20 text-primary border border-primary/40'
+                                : 'bg-muted text-muted-foreground border border-border hover:border-primary/40',
+                            )}
+                          >
+                            <span
+                              className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: tag.color ?? '#888' }}
+                            />
+                            {tag.name}
+                            {selected && <span>×</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {error && <p className="text-sm text-red-400">{error}</p>}
@@ -257,7 +285,7 @@ export function AddItemDialog({ open, onClose }: AddItemDialogProps) {
             Cancel
           </Button>
           <Button type="submit" disabled={submitting || !form.title.trim()}>
-            {submitting ? 'Creating…' : 'Create'}
+            {submitting ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>
       </form>

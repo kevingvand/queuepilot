@@ -53,7 +53,9 @@ function createHttpApi(): RawAPI {
       const url = new URL(`${API_BASE_URL}${path}`)
       if (query) {
         Object.entries(query).forEach(([key, value]) => {
-          url.searchParams.set(key, String(value))
+          if (value !== undefined && value !== null) {
+            url.searchParams.set(key, String(value))
+          }
         })
       }
 
