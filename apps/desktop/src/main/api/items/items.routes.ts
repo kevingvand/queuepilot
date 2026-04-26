@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { insertCommentSchema, insertItemSchema } from '@queuepilot/core/types';
+import { insertItemSchema } from '@queuepilot/core/types';
 import type { AppEnv } from '../index';
 import {
   addTagToItem,
@@ -20,6 +20,11 @@ import { createComment, listItemComments } from '../comments/comments.handlers';
 
 export const itemsRoutes = new Hono<AppEnv>();
 
+const createCommentBodySchema = z.object({
+  body: z.string().min(1),
+  author: z.string().optional(),
+});
+
 const linkBodySchema = z.object({
   target_item_id: z.string(),
   kind: z.enum(['blocks', 'blocked_by', 'relates_to', 'duplicate']),
@@ -37,4 +42,4 @@ itemsRoutes.delete('/:id/links/:linkId', deleteItemLink);
 itemsRoutes.post('/:id/tags/:tagId', addTagToItem);
 itemsRoutes.delete('/:id/tags/:tagId', removeTagFromItem);
 itemsRoutes.get('/:id/comments', listItemComments);
-itemsRoutes.post('/:id/comments', zValidator('json', insertCommentSchema as never), createComment);
+itemsRoutes.post('/:id/comments', zValidator('json', createCommentBodySchema), createComment);
