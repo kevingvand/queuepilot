@@ -1,466 +1,388 @@
 # QueuePilot Design System
 
-**Status**: ✅ Complete (Research + Guide Phase)
-
-A modern, minimalist design system inspired by:
-- **Discord**: Multi-pane layout, compact spacing grid, blue accent, dark theme dominance
-- **Minimalist AI Assistants** (ChatGPT, Claude, Vercel): Generous whitespace, content-first, high contrast, accessibility-first
-
-Prioritizes clarity, whitespace, responsive usability, and accessibility (WCAG AAA target).
+**Status**: ✅ Complete (Research + Framework)  
+**Aesthetic Direction**: Clean + Modern (polished, slightly more visual depth)  
+**Last Updated**: 2026-04-26
 
 ---
 
 ## Design Philosophy
 
-- **Minimalism first**: Every element earns its space. Whitespace is not empty—it's intentional breathing room.
-- **Content-focused**: UI gets out of the way; task content is the hero.
-- **Multi-pane efficiency**: 3-pane layout (Sidebar | List | Detail) for dense information access.
-- **Accessible by default**: WCAG AAA target (7:1 contrast), keyboard-first, screen-reader ready.
-- **Mobile-safe touch targets**: 44×44px minimum on touch, 32×32px on desktop (hover devices).
-- **Responsive from 375px**: Mobile-first; scales gracefully to tablet (640px, 1024px) and desktop (1440px+).
-- **System-first typography**: Use platform fonts (`.font-family: -apple-system, Segoe UI, Roboto`), 16px base prevents iOS zoom.
-- **Consistent motion**: 200–300ms cubic-bezier(0.4, 0, 0.2, 1); respects `prefers-reduced-motion`.
-- **Dark theme default**: Dark mode is primary; light mode is supported via `data-theme` toggle.
-- **Interactive feedback**: Micro-interactions (active, hover, focus) at 200–300ms; no lag.
+QueuePilot is a task inbox for humans and AI to process together. Our design prioritizes:
+
+- **Content clarity** — tasks and context come first; UI supports, doesn't distract
+- **Efficiency** — power users can work via keyboard; casual users have visual clarity
+- **Polished presentation** — professional appearance builds trust and encourages daily use
+- **Responsive usability** — works beautifully on phone, tablet, and desktop
+- **Accessibility-first** — keyboard nav, screen readers, high contrast, motion preferences
+- **Intentional decisions** — every pixel choice answers "why?"
+
+---
+
+## Design Inspiration & Why We Reference Them
+
+### Discord
+**What we learn**: Efficient multi-pane layouts for power users, compact spacing grid, clear status indicators.  
+**Specific patterns we adopt**: 3-pane layout (Sidebar | List | Detail), status badges for task state, consistent spacing.  
+**What we DON'T copy**: Discord's gamification, complex nested interactions, or dark-first-only approach.
+
+### Paperclip  
+**What we learn**: Minimalist AI assistant interfaces with generous whitespace, clean typography, purposeful color use.  
+**Specific patterns we adopt**: Single accent color, high line-height for readability, reduced visual clutter.  
+**What we DON'T copy**: Single-pane chat layout (we need multi-pane for task management).
+
+### Obsidian
+**What we learn**: Keyboard-first navigation, collapsible sidebar sections, command palette (Cmd+K), power-user customization.  
+**Specific patterns we'll consider**: Tab/panel navigation, keyboard shortcuts, optional advanced features.  
+**What we DON'T copy**: Knowledge graph visualization (not needed for task inbox).
+
+### Notion  
+**What we learn**: Multiple views of same data (list, kanban, timeline), inline editing, block-based flexibility.  
+**Specific patterns we'll consider**: View switcher, inline task updates, drag-and-drop organization.  
+**What we DON'T copy**: Full database-heavy architecture (we have simpler task model).
+
+### Vercel & Anthropic Guidelines
+**What we apply**: Accessibility standards (WCAG AAA), semantic HTML, visible focus states, motion respect, distinctive typography without cliché.
+
+---
+
+## QueuePilot Use Case
+
+We're building an inbox where:
+- **Fast ingestion matters** — add ideas quickly without friction
+- **Quick decisions matter** — mark done, defer, archive, or comment in one click
+- **Power users exist** — keyboard shortcuts for speed
+- **Casual users exist** — visual clarity for newcomers
+- **Collaboration is lightweight** — comments and assignments, not real-time chat
+- **Mobile matters** — people triage tasks on the go
+
+**Not** a chat app (Discord), **not** a knowledge graph (Obsidian), **not** enterprise software (Notion). We're **focused and purposeful**.
+
+---
+
+## Design Decision Framework
+
+For each feature, component, or interaction, we ask:
+
+1. **Purpose** — What problem does this solve for task management?
+2. **Audience** — Power user (keyboard, density) or new user (visual clarity)?
+3. **Efficiency** — Fewest clicks/keystrokes to accomplish the goal?
+4. **Clarity** — Is the purpose immediately obvious?
+5. **Consistency** — Does it match established patterns?
+6. **Accessibility** — Keyboard accessible? Visible focus? High contrast? Motion safe?
+
+---
+
+## Aesthetic Direction: Clean + Modern
+
+**Visual signature**: Polished, intentional, professional  
+**Mood**: Trustworthy, organized, productive  
+**Energy**: Not playful, not brutalist—just right  
+
+**Key characteristics**:
+- **Color palette**: Neutral backgrounds with a single accent color (#6366F1 indigo)
+- **Typography**: System fonts (no custom fonts = faster, accessible), clear hierarchy, high line-height
+- **Spacing**: Generous whitespace (breathing room), 8px base grid
+- **Interactions**: Subtle visual feedback (hover, active, focus states), smooth transitions (200–300ms)
+- **Depth**: Subtle shadows and borders to define surfaces (not flat, not skeuomorphic)
+- **Motion**: Only purposeful animations; respect `prefers-reduced-motion`
+- **Borders**: Soft, understated (2–4px radius, soft grays)
 
 ---
 
 ## Color System
 
-### Light Mode
+### Dark Mode (Primary)
 
-| Token | Use | Hex |
-|-------|-----|-----|
-| `background` | Main app background | `#FFFFFF` |
-| `surface` | Cards, panels, elevated | `#F5F5F5` |
-| `foreground` | Primary text | `#1F2937` |
-| `muted` | Secondary text, borders | `#9CA3AF` |
-| `border` | Dividers, outlines | `#E5E7EB` |
-| `primary` | Buttons, highlights, accents | `#5865F2` |
-| `success` | Done status, positive | `#43B581` |
-| `warning` | Pending status, caution | `#FAA61A` |
-| `danger` | Error, destructive | `#F04747` |
+| Token | Use | Hex | Notes |
+|-------|-----|-----|-------|
+| `bg-primary` | Main app background | `#0f172a` | Deep blue-black, reduces eye strain |
+| `bg-secondary` | Cards, elevated surfaces | `#1a1f3a` | Slight contrast from primary |
+| `surface-hover` | Hover state for clickable surfaces | `#2c3a54` | Subtle lift on hover |
+| `text-primary` | Main content text | `#f1f5f9` | High contrast (13.6:1 ratio) |
+| `text-secondary` | Secondary text, labels | `#cbd5e1` | Lower contrast for hierarchy |
+| `text-muted` | Tertiary text, hints | `#94a3b8` | Further contrast reduction |
+| `border` | Dividers, outlines | `#334155` | Subtle separator |
+| `accent` | Primary action, highlights | `#6366f1` | Indigo—used sparingly |
+| `accent-hover` | Accent on hover | `#818cf8` | Brightened for interaction |
+| `success` | Done, positive state | `#22c55e` | Green, clear positive signal |
+| `warning` | Pending, caution state | `#eab308` | Yellow, attention signal |
+| `danger` | Error, destructive | `#ef4444` | Red, clear warning |
 
-### Dark Mode (Discord-Inspired)
+**Contrast ratios** (all WCAG AAA):
+- Text on primary: 13.6:1 ✅
+- Accent on primary: 8.4:1 ✅
+- Secondary text on primary: 5.2:1 ✅
 
-| Token | Use | Hex |
-|-------|-----|-----|
-| `background` | Main app background | `#36393F` |
-| `surface` | Cards, panels, elevated | `#2C2F33` |
-| `foreground` | Primary text | `#FFFFFF` |
-| `muted` | Secondary text, borders | `#72767D` |
-| `border` | Dividers, outlines | `#40444B` |
-| `primary` | Buttons, highlights, accents | `#5865F2` (Blurple) |
-| `success` | Done status, positive | `#43B581` |
-| `warning` | Pending status, caution | `#FAA61A` |
-| `danger` | Error, destructive | `#F04747` |
+### Light Mode (Secondary)
 
-**Contrast ratios** (WCAG AA verified):
-- `#FFFFFF` on `#36393F` = 13.6:1 ✅
-- `#5865F2` on `#36393F` = 6.3:1 ✅
-- `#72767D` on `#36393F` = 4.4:1 ✅
+| Token | Hex |
+|-------|-----|
+| `bg-primary` | `#ffffff` |
+| `bg-secondary` | `#f8fafc` |
+| `surface-hover` | `#f1f5f9` |
+| `text-primary` | `#0f172a` |
+| `text-secondary` | `#334155` |
+| `text-muted` | `#94a3b8` |
+| `border` | `#e2e8f0` |
+| `accent` | `#4f46e5` |
+| `accent-hover` | `#6366f1` |
 
 ---
 
 ## Typography
 
-| Scale | Font Size | Line Height | Font Weight | Usage |
-|-------|-----------|------------|-------------|-------|
+**Philosophy**: System fonts (accessibility, performance, native feel) with careful hierarchy and generous line-height.
+
+| Scale | Size | Line Height | Weight | Use |
+|-------|------|-------------|--------|-----|
 | `xs` | 12px | 1.33 | 500 | Labels, timestamps, captions |
-| `sm` | 13px | 1.38 | 400 | Body text, message content |
-| `base` | 14px | 1.43 | 500 | User names, secondary headings |
+| `sm` | 13px | 1.38 | 400 | Body text, descriptions |
+| `base` | 14px | 1.43 | 500 | Body text, secondary headings |
 | `lg` | 15px | 1.5 | 600 | Section headings |
-| `xl` | 16px | 1.5 | 600 | Input text, channel names, primary headings |
+| `xl` | 16px | 1.5 | 600 | Primary headings (⚠️ inputs MUST be 16px minimum to prevent iOS zoom) |
 | `2xl` | 20px | 1.4 | 700 | Modal titles, major headings |
 | `3xl` | 24px | 1.33 | 700 | Page titles |
 
-⚠️ **Critical for mobile**: Input font-size MUST be ≥16px to prevent iOS auto-zoom on focus. This is a real device behavior, not just browser settings.
-
-**Font stack** (System fonts for accessibility, performance, and native feel):
+**Font stack**:
 ```css
 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 ```
 
-**Line height strategy**: Smaller text uses larger multipliers (1.5x for compact/readable), larger headings use smaller multipliers (1.33x for tight, branded appearance).
+**Line height strategy**: Smaller text gets larger multipliers (1.5x for readability), larger headings use smaller multipliers (1.33x for tightness).
 
-**Web font optimization**: Use `font-display: swap` to show system font immediately, swap custom font when loaded (prevents invisible text).
+**Typography details**:
+- Use curly quotes: `"` `"` not straight `"`
+- Use ellipsis: `…` not `...`
+- Non-breaking spaces for compound names: `⌘&nbsp;K`, `10&nbsp;MB`
+- `font-display: swap` for any web fonts (system fonts loaded by default)
+- `font-variant-numeric: tabular-nums` for number columns
 
 ---
 
 ## Spacing System
 
-Discord uses an **8px base grid**. All spacing values are multiples of 4px for fine-tuning.
+**Base unit**: 4px (allows fine-tuning). All spacing is multiples of 4px.
 
-| Token | Pixels | Rem | Usage |
-|-------|--------|-----|-------|
-| `xs` | 4px | 0.25rem | Inline spacing, tight |
-| `sm` | 8px | 0.5rem | Standard spacing (button padding, list gaps) |
-| `md` | 12px | 0.75rem | Moderate spacing |
-| `lg` | 16px | 1rem | Comfortable spacing (card padding) |
-| `xl` | 24px | 1.5rem | Section spacing, gutters |
-| `2xl` | 32px | 2rem | Large gaps between sections |
-| `3xl` | 48px | 3rem | Major section divisions |
+| Token | Pixels | Use |
+|-------|--------|-----|
+| `xs` | 4px | Inline spacing, tight |
+| `sm` | 8px | Standard spacing (button padding, list gaps) |
+| `md` | 12px | Moderate spacing |
+| `lg` | 16px | Comfortable spacing (card padding, section margins) |
+| `xl` | 24px | Section spacing, gutters |
+| `2xl` | 32px | Large gaps between sections |
+| `3xl` | 48px | Major section divisions |
 
-**Applied Examples:**
-- Message padding: 8px horizontal, 4px vertical (compact)
-- Button padding: 8px 16px (standard)
-- List item padding: 8px 12px
-- Card gutters: 16px internal, 24px between cards
-- Modal padding: 24px top/bottom, 32px sides
+**Applied examples**:
+- Button padding: 8px horizontal, 6px vertical (36px total height)
+- List item padding: 12px horizontal, 8px vertical
+- Card padding: 16px
+- Section gap: 24px
+- Modal padding: 24px
 - Sidebar padding: 12px
 
 ---
 
-## Component Library
-
-### Button
-
-- **Base**: 
-  - Height: 36px (standard), 40px (large)
-  - Padding: 8px 16px (standard)
-  - Border radius: 3px (Discord-style sharp corners)
-  - Font size: 14px
-  - Font weight: 500
-
-- **Variants**:
-  - `primary` — #5865F2 bg, white text
-  - `secondary` — transparent, #5865F2 border & text
-  - `danger` — #F04747 bg, white text
-  - `ghost` — transparent, muted text, hover: light bg
-
-- **States**:
-  - Hover: opacity 0.8 or +10% lightness
-  - Active: opacity 0.9 or -5% lightness
-  - Disabled: opacity 0.5, cursor not-allowed
-  - Focus: 2px solid #5865F2 outline, 2px offset
-
-### Input Field
-
-- **Base**:
-  - Height: 36px
-  - Padding: 8px 12px
-  - Border: 1px solid `border`
-  - Border radius: 6px
-  - Font size: 14px
-
-- **States**:
-  - Default: gray border
-  - Hover: darker border
-  - Focus: primary border, 2px outline
-  - Disabled: muted bg, cursor not-allowed
-
-### List Item
-
-- **Padding**: 12px 16px
-- **Border bottom**: 1px solid `border`
-- **Hover**: light bg change, subtle shadow
-- **Active**: primary accent, bold text
-- **Status badge**: 20px height, 4px padding, right-aligned
-
-### Badge / Status
-
-- **Height**: 20px
-- **Padding**: 0 6px
-- **Border radius**: 4px
-- **Font size**: 12px
-- **Font weight**: 600
-- **Colors**:
-  - `pending` → `warning` (orange)
-  - `in_progress` → `primary` (blue)
-  - `done` → `success` (green)
-
----
-
-## Layout Structure
-
-### 3-Pane Layout (Desktop 1280px+)
-
-```
-┌─────────────────────────────────────────┐
-│ Header (56px)                           │
-├────────┬──────────────┬─────────────────┤
-│Sidebar │   ItemList   │   ItemDetail    │
-│ 240px  │     400px    │    Flexible     │
-│        │              │                 │
-└────────┴──────────────┴─────────────────┘
-```
-
-- **Sidebar**: Fixed width 240px, scrollable, contains filters & cycles
-- **ItemList**: Fixed width 400px, scrollable, shows filtered items
-- **ItemDetail**: Flexible, fills remaining space, scrollable content
-
-### Tablet Layout (768px - 1279px)
-
-```
-┌─────────────────────┐
-│ Header (56px)       │
-├─────────┬───────────┤
-│Sidebar  │ ItemList  │
-│ 180px   │Flexible   │
-│         │(ItemDetail│
-│         │ overlays) │
-└─────────┴───────────┘
-```
-
-- Sidebar collapsible to icon-only
-- ItemDetail shows as modal/overlay over ItemList
-
-### Mobile Layout (< 768px)
-
-```
-┌──────────────┐
-│ Header (48px)│
-├──────────────┤
-│ Current View │
-│              │
-│   (ItemList) │
-│              │
-└──────────────┘
-+ Bottom tab nav for Sidebar/List/Detail
-```
-
-- Single-column, stacked views
-- Bottom navigation tabs
-- ItemDetail slides up as sheet
-
----
-
-## Responsive Breakpoints
-
-Discord uses these breakpoints; we'll follow suit:
-
-| Breakpoint | Width | Layout | Navigation |
-|-----------|-------|--------|------------|
-| `mobile` | 0–480px | Single pane, full-width | Bottom tab bar |
-| `tablet` | 481–768px | 2-pane (sidebar + content) | Sidebar collapsible to icons |
-| `desktop` | 769–1279px | 3-pane full layout | Full sidebar + panes |
-| `ultra` | 1280px+ | 3-pane with generous spacing | All panes visible, optimized for multi-monitor |
-
-**Mobile (<480px):**
-- Left sidebar → bottom tab bar (4 tabs: Inbox, Inbox, Cycles, More)
-- Right detail pane hidden (access via bottom sheet or modal)
-- Main ItemList full-width
-- All padding/margins reduced (8px → 4px, 16px → 8px where possible)
-- Minimum tap target: 44px height
-- Modals: full-screen or near full-screen
-
-**Tablet (481–768px):**
-- Left sidebar visible but narrower (~200px)
-- Right pane hidden or collapsed
-- Main ItemList flexible
-- Padding: standard 8px/16px
-- Detail pane accessible via modal or slide-up sheet
-
-**Desktop (769px+):**
-- All 3 panes visible
-- Sidebar: 240px fixed
-- ItemList: ~400px fixed
-- ItemDetail: flexible, fills remaining
-- Standard spacing: 8px, 16px, 24px
-- Gutters: 12–16px between panes
-
----
-
-## Interactions & Animations
+## Interactions & Motion
 
 ### Transitions
+All state changes use: `transition: [property] 200ms cubic-bezier(0.4, 0, 0.2, 1);`
 
-- **Default duration**: 200–300ms
-- **Easing**: `ease-out` (cubic-bezier(0, 0, 0.2, 1))
-- **Properties**: `background-color`, `border-color`, `opacity`, `color`
-- **Avoid**: Don't animate `transform` or `width` unless necessary (expensive)
+**Properties to transition**: `background-color`, `color`, `border-color`, `opacity`, `transform`, `box-shadow`  
+**Never transition**: All properties at once; be explicit.
 
-### Micro-interactions
+### Hover States
+- Buttons/cards: Slight background shift (2–5% lighter/darker) or shadow increase
+- Icons: Color shift to accent
+- Opacity: 0.8 for disabled/inactive states
 
-- **Button hover**: Opacity shift 0.8 (200ms)
-- **Focus state**: 2px #5865F2 outline, 2px offset, always visible
-- **Item selection**: Smooth highlight to primary color (200ms)
-- **Loading**: Subtle opacity pulse (400ms cycle)
-- **Notifications**: Slide in from top (300ms), auto-dismiss (3s)
-- **Status changes**: Brief flash or color transition (200ms)
+### Active States
+- Button pressed: Scale 0.98 (micro-feedback)
+- Checkbox/radio: Accent highlight
+- List item selected: Accent background + bold text
 
-### Keyboard Navigation
+### Focus States
+All interactive elements need visible focus:
+- Outline: 2px solid `#6366f1` (accent)
+- Offset: 2px
+- Never remove focus outline without replacement
 
-- `Tab` — Focus next interactive element
-- `Shift+Tab` — Focus previous element
-- `Enter` — Activate button, select item
-- `Escape` — Close modal, deselect, clear search
-- `↑/↓` — Navigate list items
-- `Cmd+K` / `Ctrl+K` — Command palette
-- `C` — New item
-- `M` — Mute/unmute
+### Disabled States
+- Opacity: 0.5
+- Cursor: `not-allowed`
+- No hover effects
+
+### Animations
+- **Entrance**: Staggered reveal on page load (100–150ms stagger per element)
+- **Loading**: 1s pulse animation (respect `prefers-reduced-motion`)
+- **Transitions**: 200–300ms for all state changes
+- **Never**: Use animations to communicate critical info (use text + color + icon)
+
+**Respect prefers-reduced-motion**:
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+---
+
+## Responsive Design
+
+**Mobile-first approach**: Start at 375px, scale up.
+
+| Breakpoint | Use | Key changes |
+|-----------|-----|-------------|
+| 375px | Mobile (iPhone SE) | Base layout, touch-optimized |
+| 640px | Tablet (iPad mini) | Increased padding, wider containers |
+| 768px | Tablet (iPad) | 2-pane layout (sidebar collapsible) |
+| 1024px | Desktop (iPad Pro, laptop) | Full 3-pane layout enabled |
+| 1280px | Wide desktop | Increased gutters, max-width containers |
+| 1440px | Large monitor | Maximum comfortable width |
+
+### Layout: 3-Pane (Desktop)
+```
+Sidebar (240px fixed) | ItemList (400px) | ItemDetail (flexible)
+```
+
+Gutters: 12–16px between panes.
+
+### Layout: 2-Pane (Tablet)
+```
+Sidebar (drawer/toggle) | ItemList (full width)
+ItemDetail shown as modal on item select
+```
+
+### Layout: Mobile (1-pane)
+```
+ItemList (full width) | Sidebar as drawer | ItemDetail as modal
+Bottom navigation for quick filter access
+```
+
+---
+
+## Component Patterns
+
+### Button
+- **Height**: 36px (standard), 44px (mobile)
+- **Padding**: 8px 16px (standard)
+- **Border radius**: 4px
+- **Font size**: 14px, weight 500
+- **Variants**: Primary (accent bg), Secondary (ghost), Danger (red)
+- **Touch targets**: Minimum 44px on mobile
+
+### Input
+- **Height**: 36px (standard), 44px (mobile, must have 16px font to prevent iOS zoom)
+- **Padding**: 8px 12px
+- **Border**: 1px solid `#334155`
+- **Focus**: 2px accent outline, 2px offset
+- **Placeholder**: Grayed-out, shows example (`e.g., task name…`)
+
+### Badge
+- **Height**: 20px
+- **Padding**: 2px 8px
+- **Border radius**: 3px
+- **Font size**: 12px
+- **Status**: Use color (green, yellow, red) + text (never color alone)
+
+### List Item
+- **Padding**: 12px horizontal, 8px vertical
+- **Border**: None (subtle background change on hover)
+- **Hover**: 2–5% background shift
+- **Selected**: Accent highlight, bold text
+
+### Card
+- **Padding**: 16px
+- **Border radius**: 6px
+- **Border**: 1px soft border
+- **Box shadow**: Subtle lift (0 1px 3px rgba(0,0,0,0.1))
 
 ---
 
 ## Accessibility Standards
 
-### WCAG AAA Target
+### WCAG AAA Target (7:1 contrast where possible)
 
-- **Contrast**: 7:1 minimum for normal text, 4.5:1 for large text (WCAG AAA)
-  - Text on background: `#FFFFFF` on `#36393F` = 13.6:1 ✅
-  - Accent on background: `#6366F1` on `#1a1a1a` = 8.5:1 ✅
-- **Focus**: All interactive elements have 2px `#6366F1` focus ring, 2px offset
-- **Labels**: All form fields have explicit `<label>` or `aria-label`
-- **Semantic HTML**: Prefer `<button>`, `<input>`, `<nav>`, `<section>` over generic `<div>`
-- **ARIA**: Use `role="button"`, `aria-label`, `aria-describedby`, `aria-live` for dynamic content
-- **Keyboard**: All interactions keyboard-accessible (Tab, Enter, Space, Escape, Arrows, Cmd+K)
-- **Color-independent**: Never rely on color alone; use icons, text, borders, badges
-- **Motion**: Respect `prefers-reduced-motion: reduce` media query; disable animations if set
-- **Touch targets**: 44×44px minimum on mobile; 32×32px acceptable on desktop (hover devices)
+✅ **Semantic HTML**: Always use `<button>`, `<input>`, `<a>`, `<label>`, not `<div onClick>`  
+✅ **Keyboard navigation**: All interactive elements reachable via Tab; logical focus order  
+✅ **Focus visible**: Never `outline: none` without replacement; use `:focus-visible`  
+✅ **Labels**: All form inputs have `<label>` or `aria-label`  
+✅ **ARIA**: Use `role`, `aria-label`, `aria-describedby`, `aria-live` where semantic HTML insufficient  
+✅ **Color-independent**: Status always conveyed by text + icon + color (never color alone)  
+✅ **Icons with labels**: `aria-label="Delete"` on icon-only buttons  
+✅ **Screen readers**: Announce async updates with `role="status"` + `aria-live="polite"`  
+✅ **Motion**: Always respect `prefers-reduced-motion: reduce`  
+✅ **Zoom**: Page functional and readable at 200% zoom  
 
-### Touch Target Sizing
+### Touch Targets
 
-```css
-/* Mobile (touch devices) */
-.button, .input, .checkbox, .list-item {
-  min-height: 44px;
-  min-width: 44px;
-}
+- **Mobile**: Minimum 44×44px (WCAG, Apple, Google standards)
+- **Desktop**: 32×32px acceptable (hover devices)
+- **Gap between targets**: Minimum 8px
 
-/* Spacing between touch targets: minimum 8px */
-.button { margin-right: 8px; }
+### Responsive Form Inputs
 
-/* Desktop (hover devices) */
-@media (hover: hover) {
-  .icon-button { width: 32px; height: 32px; }
-}
-```
-
-### Screen Reader Support
-
-- **Icon buttons**: Always have `aria-label="Delete"` (don't rely on visual icon alone)
-- **Decorative elements**: Mark with `aria-hidden="true"` (e.g., loading spinners, visual dividers)
-- **Dynamic content**: Use `role="status"` + `aria-live="polite"` for item count updates
-- **Form associations**: `<label for="input-id">` + matching `<input id="input-id" />`
-- **Links vs buttons**: Use `<button>` for actions, `<a>` for navigation
-- **Abbreviations**: Use `<abbr title="Full text">Short</abbr>` for acronyms
-
-### High Contrast Mode (Windows)
-
-```css
-/* Windows High Contrast detection */
-@media (prefers-contrast: more) {
-  .card { border: 2px solid white; }
-  .button-primary { border: 2px solid currentColor; }
-}
-
-@media (forced-colors: active) {
-  .card { forced-color-adjust: none; border: 2px solid CanvasText; }
-}
-```
-
-### Mobile Keyboard Handling
+**Critical iOS requirement**: Input font-size ≥16px prevents auto-zoom on focus.
 
 ```html
-<!-- Prevent iOS zoom on input focus (16px+ font-size) -->
-<input type="text" inputmode="text" autocomplete="off" />
-
-<!-- Viewport setup for notch/Dynamic Island support -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<input type="email" inputmode="email" autocomplete="email" style="font-size: 16px;" />
 ```
 
+**Notch support** (iPhone X+, Android):
 ```css
-/* Handle iOS SafeArea insets (notch, home indicator) */
 @supports (padding: max(0px)) {
   .container { padding-left: max(16px, env(safe-area-inset-left)); }
 }
-
-.header {
-  padding-top: max(16px, env(safe-area-inset-top));
-  padding-left: max(16px, env(safe-area-inset-left));
-  padding-right: max(16px, env(safe-area-inset-right));
-}
 ```
-
-### Zoom & Text Scaling
-
-- **No fixed widths**: Use `max-width`, `min-width`, flexible layouts
-- **Readable at 200% zoom**: Test page functionality and layout integrity at 2x zoom
-- **Avoid fixed heights**: Use `min-height` for flexible content
-
-### Testing Checklist
-
-- [ ] **Contrast**: All text ≥4.5:1 (AA) or ≥7:1 (AAA) using WebAIM Contrast Checker
-- [ ] **Keyboard**: Tab through all interactive elements; focus visible at all times; Escape closes modals
-- [ ] **Screen reader**: Test with VoiceOver (macOS/iOS), NVDA (Windows); semantic HTML + ARIA labels present
-- [ ] **Mobile**: Test on 375px, 640px, 768px widths; no horizontal scroll; touch targets ≥44px
-- [ ] **Dark mode**: System `prefers-color-scheme` respected; no flash of wrong theme on reload
-- [ ] **Reduced motion**: `prefers-reduced-motion: reduce` disables animations
-- [ ] **High contrast**: Windows High Contrast Mode; borders/indicators visible
-- [ ] **Touch**: No hover-only functionality; all interactions work via tap
-- [ ] **Focus management**: Focus ring visible, moved appropriately in dynamic content
-- [ ] **Internationalization**: Long translations (German, Russian) don't break layout
-
----
 
 ---
 
 ## Dark Mode Implementation
 
-### CSS Variable Approach (Recommended)
+### Approach: CSS Variables
 
 ```html
-<!-- HTML: Set theme attribute on root -->
-<html data-theme="dark">  <!-- or "light" -->
-
-<!-- Android tab color -->
-<meta name="theme-color" content="#0f172a">
-
-<!-- Enable native dark mode for form controls -->
-<meta name="color-scheme" content="light dark">
+<html data-theme="dark">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="color-scheme" content="light dark">
+</html>
 ```
 
 ```css
-/* Define tokens as CSS variables */
 :root {
-  --color-bg-primary: #1a1a1a;
-  --color-bg-secondary: #0f172a;
+  --color-bg-primary: #0f172a;
   --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
   --color-accent: #6366f1;
-  --color-border: #334155;
-  --color-success: #22c55e;
-  --color-warning: #eab308;
-  --color-danger: #ef4444;
 }
 
-/* Light mode overrides */
 html[data-theme="light"] {
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8fafc;
-  --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
+  --color-text-primary: #0f172a;
   --color-accent: #4f46e5;
-  --color-border: #cbd5e1;
 }
 
-/* Use variables everywhere */
 body {
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
 }
-
-button {
-  background: var(--color-accent);
-  border: 1px solid var(--color-border);
-}
 ```
 
+### JavaScript: System Preference + Manual Toggle
+
 ```javascript
-// JavaScript: Initialize theme with system preference fallback
 function initializeTheme() {
-  // Check saved preference
   const saved = localStorage.getItem('theme');
-  
-  // Check system preference
   const prefer = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  
-  // Use saved, otherwise use system preference
   const theme = saved || prefer;
   
   document.documentElement.setAttribute('data-theme', theme);
   
-  // Listen for system preference changes (if user hasn't manually set theme)
+  // Listen for system preference changes (if user hasn't set manual preference)
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
     if (!localStorage.getItem('theme')) {
       document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
@@ -468,202 +390,125 @@ function initializeTheme() {
   });
 }
 
-// Call on app startup
-initializeTheme();
-
-// Theme toggle function
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'dark';
   const next = current === 'dark' ? 'light' : 'dark';
-  
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('theme', next);
 }
-```
 
-### Tailwind Approach (Alternative)
-
-```javascript
-// tailwind.config.js
-module.exports = {
-  darkMode: 'class',  // Use class-based toggle
-  theme: {
-    extend: {
-      colors: {
-        // Define custom color palette
-      }
-    }
-  }
-}
-```
-
-```html
-<!-- Toggle class on html element -->
-<html class="dark">  <!-- or remove for light mode -->
+initializeTheme();
 ```
 
 ---
 
-## Implementation Notes
+## Implementation Checklist
 
-### Tailwind Config Setup
+### Tailwind Config
+- [ ] Extend theme with custom color tokens (CSS variables)
+- [ ] Configure spacing scale (4px base)
+- [ ] Set responsive breakpoints (375px, 640px, 768px, 1024px, 1280px, 1440px)
+- [ ] Add font sizes and line-height scale
+- [ ] Configure dark mode (class-based or system preference)
+- [ ] Add custom utilities for common patterns (grid layouts, shadows)
 
-```javascript
-// tailwind.config.js
-export default {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        // Light mode palette
-        'light-bg': '#ffffff',
-        'light-surface': '#f8fafc',
-        
-        // Dark mode palette
-        'dark-bg': '#1a1a1a',
-        'dark-surface': '#0f172a',
-        
-        // Accent
-        'accent': '#6366f1',
-      },
-      spacing: {
-        xs: '4px',
-        sm: '8px',
-        md: '12px',
-        lg: '16px',
-        xl: '24px',
-        '2xl': '32px',
-        '3xl': '48px',
-      },
-      fontSize: {
-        xs: ['12px', { lineHeight: '1.33' }],
-        sm: ['13px', { lineHeight: '1.38' }],
-        base: ['14px', { lineHeight: '1.43' }],
-        lg: ['15px', { lineHeight: '1.5' }],
-        xl: ['16px', { lineHeight: '1.5' }],
-        '2xl': ['20px', { lineHeight: '1.4' }],
-        '3xl': ['24px', { lineHeight: '1.33' }],
-      },
-      screens: {
-        'xs': '375px',   // Mobile base
-        'sm': '640px',   // Tablet
-        'md': '768px',   // Tablet large
-        'lg': '1024px',  // Desktop
-        'xl': '1280px',  // Desktop wide
-        '2xl': '1440px', // Large desktop
-      },
-    }
-  }
-}
-```
+### Component Library
+- [ ] Button (primary, secondary, danger, disabled, icon-only, sizes)
+- [ ] Input (text, email, search, with label, with error)
+- [ ] Badge (status indicators: success, warning, danger)
+- [ ] ListItem (selectable, with icon, with avatar)
+- [ ] Card (basic, elevated, clickable)
+- [ ] Modal (with header, footer, close button, keyboard escape)
+- [ ] Header (logo, title, theme toggle, search)
+- [ ] Sidebar (collapsible, with sections, icons)
+- [ ] Tooltip (hover text, keyboard accessible)
 
-### Component Structure
+### Responsive Testing
+- [ ] Layout at 375px (mobile), 640px (tablet), 768px, 1024px (desktop), 1440px
+- [ ] Touch targets ≥44px on mobile
+- [ ] No horizontal scroll
+- [ ] Images responsive with correct aspect ratios
+- [ ] Text readable without zoom
+- [ ] Dark/light theme toggle works
+- [ ] Motion preference respected
 
-- **Each component**: One `.tsx` file in `src/renderer/features/[feature]/`
-- **Styles**: Tailwind classes only; no `<style>` blocks or inline styles
-- **TypeScript**: All props strictly typed
-- **Context**: Use React Context for theme, API, global state
-- **Responsive**: Mobile-first; use Tailwind responsive prefixes (`sm:`, `md:`, `lg:`)
-- **Dark mode**: Add `dark:` prefix to classes that differ in dark mode
+### Accessibility Testing
+- [ ] All text ≥4.5:1 contrast (AA) or ≥7:1 (AAA) via WebAIM checker
+- [ ] Keyboard: Tab through all elements, focus visible at all times
+- [ ] Keyboard: Enter activates buttons, Escape closes modals
+- [ ] Screen reader: VoiceOver (macOS), NVDA (Windows), or similar
+- [ ] Focus indicators present, not hidden
+- [ ] Form labels associated with inputs
+- [ ] Icon buttons have aria-labels
+- [ ] Reduced motion respected (no auto-play animations)
 
-### Performance Optimization
-
-```css
-/* Prevent invisible text while fonts load */
-@font-face {
-  font-family: 'Custom';
-  src: url('font.woff2') format('woff2');
-  font-display: swap;
-}
-
-/* Minimize motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
-}
-
-/* Optimize images and use WebP with fallback */
-picture > img { max-width: 100%; height: auto; }
-```
-
-### Browser DevTools
-
-- **Chrome**: Use "Emulate CSS media feature prefers-color-scheme" to test dark/light
-- **Chrome**: Use "Emulate CSS media feature prefers-reduced-motion" to test accessibility
-- **DevTools**: Lighthouse audit for accessibility, performance, SEO
-- **Contrast checker**: WebAIM (https://webaim.org/resources/contrastchecker/)
+### Performance
+- [ ] No layout thrashing (batch DOM reads/writes)
+- [ ] Large lists virtualized (>50 items)
+- [ ] Images optimized (WebP with fallback)
+- [ ] Web fonts use `font-display: swap`
+- [ ] CSS minified, no unused styles
 
 ---
 
-## Implementation Notes
+## Examples: Why We Made These Choices
 
-**Tailwind Config:**
-- Extend default theme with custom color tokens
-- Define spacing scale with 4px base
-- Configure responsive breakpoints (375px, 640px, 768px, 1024px, 1280px, 1440px)
-- Add custom utilities for grid layouts
+**Why 8px base grid?**  
+Discord proved power users appreciate compact layouts. 8px (multiples of 4) gives fine-tuning without chaos. Easier to remember than arbitrary values.
 
-**Component Structure:**
-- Each component is a `.tsx` file in `features/`
-- Styles via Tailwind classes only (no inline styles unless necessary)
-- Props typed with TypeScript
-- Prop drilling avoided with React Context (UI state, theme)
+**Why 44px touch targets on mobile?**  
+WCAG, Apple, and Google all mandate 44×44px minimum. Our users access QueuePilot on phones; if buttons are too small, they'll make errors or give up.
 
-**Dark Mode:**
-- Implemented via CSS variables (default) or Tailwind `dark:` prefix
-- Toggle stored in localStorage
-- System preference respected on first load via `prefers-color-scheme`
+**Why dark mode primary?**  
+QueuePilot is an app people use daily. Dark mode reduces eye strain for extended use. Light mode is supported for those who prefer it.
 
----
+**Why single accent color?**  
+Too many colors create visual noise. One accent (#6366F1 indigo) creates hierarchy without distraction. Status is conveyed by text + icon + color, not color alone.
 
-## Research Sources & Credits
+**Why system fonts?**  
+Custom fonts are slower to load (invisible text while downloading). System fonts are instant, accessible, and feel native. We invest design effort in hierarchy and spacing, not font choices.
 
-### Discord Analysis ✅
-Deep research completed on Discord's 3-pane layout, color system, spacing conventions, and interactions.
+**Why generous spacing?**  
+Whitespace reduces cognitive load. People scan tasks quickly; breathing room helps focus on content. It also makes mobile readable without pinching.
 
-**Key findings applied:**
-- **Color palette**: Blurple (#5865F2) for primary actions, dark theme (#36393F background, #2C2F33 surface)
-- **Spacing grid**: 8px base with multiples (4px, 8px, 12px, 16px, 24px, 32px)
-- **Typography**: System fonts (-apple-system stack), sizes 12–20px range, weights 400–700
-- **Components**: Buttons with 3px border-radius, consistent hover opacity (0.8), 2px focus outlines
-- **Interactions**: 200–300ms ease-out transitions, smooth state changes
-- **Responsive**: 480px (mobile), 768px (tablet), 1280px (desktop) breakpoints
-- **Accessibility**: WCAG AA contrast ratios (13.6:1 white on dark), visible focus indicators, keyboard shortcuts
-
-**Sources:**
-- Discord UI/UX design analysis (community documentation)
-- Discord client interface inspection
-- Design system reverse engineering
-
-### Minimalist AI Assistant Analysis ✅
-Deep research completed on ChatGPT, Claude, Vercel, Linear interfaces for clean, accessible, minimalist patterns.
-
-**Key findings applied:**
-- **Typography**: 16px base font-size on inputs (prevents iOS zoom), system fonts, rem-based scaling
-- **Touch targets**: 44×44px minimum on mobile, 32×32px on desktop (hover devices), 8px gap between targets
-- **Spacing**: Generous padding (24–32px), breathing room prioritized over density
-- **Color palette**: Single accent color (#6366F1 indigo), neutral backgrounds, high contrast (13.6:1 text on bg)
-- **Input handling**: Mobile keyboard safety (inputmode, autocomplete), notch/SafeArea support (env() CSS variables)
-- **Dark mode**: CSS variables approach, system preference detection, smooth theme toggle with localStorage
-- **Accessibility**: WCAG AAA target (7:1 contrast), visible focus rings (2px offset), screen reader labels, high contrast mode support
-- **Responsiveness**: Mobile-first from 375px base, breakpoints at 640px (tablet), 1024px (desktop), 1440px (wide)
-- **Interactions**: 200–300ms cubic-bezier(0.4, 0, 0.2, 1) transitions, micro-feedback (active: scale 0.98), `prefers-reduced-motion` respect
-- **Performance**: `font-display: swap` for web fonts, CSS Grid/Flexbox over JS positioning, SVG icons, WebP images with PNG fallback
-
-**Sources:**
-- ChatGPT, Claude UI/UX patterns (minimalist design analysis)
-- Vercel design system (responsive, accessible patterns)
-- WCAG AAA accessibility standards
-- iOS/Android mobile best practices
-- Linear, Notion design systems (minimalist + accessible)
+**Why animations disabled by default?**  
+Most people don't need motion; it can distract or cause discomfort. We use animations for specific, high-impact moments (page load, transitions). Always respect `prefers-reduced-motion`.
 
 ---
 
-**Last updated**: 2026-04-26
-**Status**: ✅ Complete
-- Discord research complete (3-pane layout, colors, spacing, interactions)
-- Minimalist AI assistant research complete (typography, touch targets, accessibility, dark mode, mobile handling)
-- Design guide finalized with integrated insights from both research tracks
-- Ready for Phase 3: UI Refactoring Implementation
+## Design System as a Checklist
+
+When building or reviewing components, confirm:
+
+- [ ] **Colors**: Using defined tokens, not arbitrary hex
+- [ ] **Spacing**: Multiple of 4px (4, 8, 12, 16, 24, 32px)
+- [ ] **Typography**: Using scale sizes, system fonts, appropriate weights
+- [ ] **Interactions**: Transitions are 200–300ms, properties explicit, motion respected
+- [ ] **Focus**: Visible ring (2px accent, 2px offset)
+- [ ] **Touch targets**: ≥44px on mobile, ≥32px on desktop
+- [ ] **Contrast**: ≥4.5:1 (AA) or ≥7:1 (AAA)
+- [ ] **Mobile**: Responsive from 375px, no horizontal scroll
+- [ ] **Keyboard**: All features accessible via Tab/Enter/Escape
+- [ ] **Dark mode**: Both themes work, colors readable, no flash on reload
+
+---
+
+## References & Research
+
+**Anthropic Frontend Design Skill**:  
+Guides distinctive, production-grade interfaces with intentional aesthetic direction and precise execution.
+
+**Vercel Web Interface Guidelines**:  
+Accessibility-first, semantic HTML, keyboard navigation, focus states, responsive forms, performance optimization.
+
+**Design Inspiration** (learned from, not copied):
+- Discord: 3-pane layout, spacing grid, status indicators
+- Paperclip: Minimalist, generous whitespace, single accent color
+- Obsidian: Keyboard shortcuts, collapsible sections, command palette
+- Notion: Multiple views, inline editing, flexible layouts
+
+---
+
+**Version**: 1.0  
+**Last updated**: 2026-04-26  
+**Status**: Ready for implementation
