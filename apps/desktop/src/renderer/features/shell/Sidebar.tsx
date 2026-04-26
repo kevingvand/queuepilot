@@ -9,6 +9,7 @@ import {
   Tag,
 } from 'lucide-react';
 import type { Cycle, SavedFilter, Tag as TagType } from '@queuepilot/core/types';
+import { Button } from '../../components/ui/button';
 import { useApi } from '../../hooks/useApi';
 import { cn } from '../../lib/utils';
 import { type FilterState, useUiStore } from '../../store/ui.store';
@@ -27,7 +28,7 @@ const INBOX_ITEMS: NavItem[] = [
 ];
 
 export function Sidebar() {
-  const { filterState, setFilterState } = useUiStore();
+  const { filterState, setFilterState, setAddDialogOpen } = useUiStore();
   const api = useApi();
 
   const { data: filtersData } = useQuery({
@@ -59,8 +60,17 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full bg-background border-r border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <span className="text-sm font-semibold text-foreground">QueuePilot</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setAddDialogOpen(true)}
+          className="h-6 w-6 p-0"
+          title="New item (C)"
+        >
+          <Plus size={14} />
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
