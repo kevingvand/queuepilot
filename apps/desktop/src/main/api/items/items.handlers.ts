@@ -166,6 +166,18 @@ export async function deleteItemLink(c: Context<AppEnv>) {
   return c.json({ ok: true });
 }
 
+export async function listItemTags(c: Context<AppEnv>) {
+  const db = c.get('db');
+  const { id } = c.req.param();
+  const result = db
+    .select({ id: tags.id, name: tags.name, color: tags.color, created_at: tags.created_at })
+    .from(itemTags)
+    .innerJoin(tags, eq(itemTags.tag_id, tags.id))
+    .where(eq(itemTags.item_id, id))
+    .all();
+  return c.json(result);
+}
+
 export async function addTagToItem(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id, tagId } = c.req.param();

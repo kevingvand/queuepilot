@@ -8,6 +8,7 @@ const badgeVariants = cva(
     variants: {
       status: {
         inbox: 'bg-blue-500/20 text-blue-300',
+        todo: 'bg-purple-500/20 text-purple-300',
         in_progress: 'bg-yellow-500/20 text-yellow-300',
         done: 'bg-green-500/20 text-green-300',
         discarded: 'bg-gray-500/20 text-gray-400',

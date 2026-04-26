@@ -12,6 +12,7 @@ import {
   getItem,
   listItemEvents,
   listItemLinks,
+  listItemTags,
   listItems,
   removeTagFromItem,
   updateItem,
@@ -36,6 +37,7 @@ itemsRoutes.get('/:id', getItem);
 itemsRoutes.patch('/:id', zValidator('json', insertItemSchema.partial() as never), updateItem);
 itemsRoutes.delete('/:id', discardItem);
 itemsRoutes.get('/:id/events', listItemEvents);
+itemsRoutes.get('/:id/tags', listItemTags);
 itemsRoutes.get('/:id/links', listItemLinks);
 itemsRoutes.post('/:id/links', zValidator('json', linkBodySchema), createItemLink);
 itemsRoutes.delete('/:id/links/:linkId', deleteItemLink);

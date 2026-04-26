@@ -33,6 +33,7 @@ const api = {
       delete: (id: string, linkId: string) => request('DELETE', `/items/${id}/links/${linkId}`),
     },
     tags: {
+      list: (itemId: string) => request('GET', `/items/${itemId}/tags`),
       add: (itemId: string, tagId: string) => request('POST', `/items/${itemId}/tags/${tagId}`),
       remove: (itemId: string, tagId: string) => request('DELETE', `/items/${itemId}/tags/${tagId}`),
     },
