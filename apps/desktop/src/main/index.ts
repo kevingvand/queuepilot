@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import type { Db } from '@queuepilot/core/schema'
 import { createDb } from '@queuepilot/core/schema'
 import type { AppType } from './api/index'
@@ -43,10 +44,11 @@ ipcMain.handle('renderer-log', (_event, level: string, args: any[]) => {
 
 function createWindow(): void {
   const isDevServer = !!MAIN_WINDOW_VITE_DEV_SERVER_URL
-  
+
   logDebug(`Creating window, isDevServer=${isDevServer}`)
-  
-  const preloadPath = path.join(__dirname, '../build/preload.js')
+
+  // main.js and preload.js are siblings in .vite/build/ (both targets share outDir)
+  const preloadPath = path.join(__dirname, 'preload.js')
   logDebug(`Preload path: ${preloadPath}`)
   logDebug(`Preload exists: ${fs.existsSync(preloadPath)}`)
   
@@ -94,6 +96,17 @@ function createWindow(): void {
 
 function initializeApp() {
   db = createDb(dataDir)
+
+  // Run migrations to ensure schema is up to date.
+  // Dev: __dirname = .vite/build/ → 4 levels up = workspace root → packages/core/migrations
+  // Packaged: migrations are copied to extraResources by forge
+  const migrationsFolder = app.isPackaged
+    ? path.join(process.resourcesPath, 'migrations')
+    : path.resolve(__dirname, '../../../../packages/core/migrations')
+  logDebug(`Running migrations from: ${migrationsFolder}`)
+  migrate(db, { migrationsFolder })
+  logDebug('Migrations complete')
+
   honoApp = createApp(db)
   registerIpcBridge(honoApp!)
 }

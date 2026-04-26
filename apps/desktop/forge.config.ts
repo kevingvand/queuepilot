@@ -47,22 +47,20 @@ function codesignNativeModules(appDir: string) {
 }
 
 async function rebuildNativeModulesForElectron(appDir: string) {
-  // pnpm uses symlinks: apps/desktop/node_modules/better-sqlite3 → .pnpm store.
-  // forge's rebuildConfig only rebuilds the hoisted root copy, not the symlink target.
-  // We resolve the real path and call @electron/rebuild explicitly on that directory.
+  // pnpm hoists better-sqlite3 to workspace root but apps/desktop/node_modules/better-sqlite3
+  // is a symlink to the .pnpm virtual store — that is the path Electron actually dlopen()s.
+  //
+  // @electron/rebuild walks the deps of buildPath/package.json; using workspaceRoot misses
+  // better-sqlite3 since it's a dep of apps/desktop, not the workspace root.
+  // Using appDir (apps/desktop) correctly identifies it, follows the symlink into .pnpm,
+  // and runs prebuild-install --runtime=electron there.
   const { rebuild } = await import('@electron/rebuild')
   const electronPkg = JSON.parse(
     fs.readFileSync(path.join(appDir, '../../node_modules/electron/package.json'), 'utf8')
   )
-  // apps/desktop/node_modules/better-sqlite3 is a symlink → .pnpm store — resolve it
-  // to find where Electron actually loads the .node binary from.
-  const localLink = path.join(appDir, 'node_modules/better-sqlite3')
-  const realPkgPath = fs.realpathSync(localLink)
-  // buildPath must be the directory containing a node_modules/better-sqlite3 folder
-  const buildPath = path.join(realPkgPath, '..', '..')
   console.log(`[queuepilot] Rebuilding better-sqlite3 for Electron ${electronPkg.version}...`)
   await rebuild({
-    buildPath,
+    buildPath: appDir,
     electronVersion: electronPkg.version,
     onlyModules: ['better-sqlite3'],
     force: true,
@@ -76,6 +74,9 @@ const config: ForgeConfig = {
     icon: path.resolve(__dirname, 'resources/icon'),
     appBundleId: 'com.queuepilot.app',
     appCategoryType: 'public.app-category.productivity',
+    extraResource: [
+      path.resolve(__dirname, '../../packages/core/migrations'),
+    ],
   },
   rebuildConfig: {},
   hooks: {
@@ -100,12 +101,12 @@ const config: ForgeConfig = {
       build: [
         {
           entry: 'src/main/index.ts',
-          config: 'electron.vite.config.ts',
+          config: 'vite.main.config.ts',
           target: 'main',
         },
         {
-          entry: 'src/preload/index.ts',
-          config: 'electron.vite.config.ts',
+          entry: 'src/preload/preload.ts',
+          config: 'vite.preload.config.ts',
           target: 'preload',
         },
       ],
