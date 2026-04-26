@@ -96,7 +96,9 @@ const config: ForgeConfig = {
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        name: 'QueuePilot',
+      },
     },
     {
       name: '@electron-forge/maker-dmg',
