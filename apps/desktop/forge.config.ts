@@ -94,14 +94,26 @@ const config: ForgeConfig = {
     },
     postPackage: async (_forgeConfig, packageResult) => {
       if (process.platform !== 'darwin') return
-      const identity = process.env.APPLE_IDENTITY ?? '-'
       for (const outputPath of packageResult.outputPaths) {
         const appPath = path.join(outputPath, 'QueuePilot.app')
         if (!fs.existsSync(appPath)) continue
+
+        // electron-packager ignores packagerConfig.icon when __dirname resolves
+        // incorrectly inside Forge's TS build pipeline — set the icon explicitly.
+        const resourcesDir = path.join(appPath, 'Contents', 'Resources')
+        const srcIcon = path.join(__dirname, 'resources', 'icon.icns')
+        const destIcon = path.join(resourcesDir, 'icon.icns')
+        if (fs.existsSync(srcIcon)) {
+          fs.copyFileSync(srcIcon, destIcon)
+          const electronIcon = path.join(resourcesDir, 'electron.icns')
+          if (fs.existsSync(electronIcon)) fs.unlinkSync(electronIcon)
+          const plist = path.join(appPath, 'Contents', 'Info.plist')
+          execFileSync('/usr/libexec/PlistBuddy', ['-c', 'Set :CFBundleIconFile icon.icns', plist])
+          console.log('[queuepilot] Icon set: icon.icns')
+        }
+
         // codesign --deep handles Electron framework + nested .dylibs in one pass.
-        // No --options runtime → no entitlements needed (ad-hoc or Developer ID).
-        // This produces a valid structural signature that macOS shows as
-        // "unidentified developer" (right-click > Open) rather than "damaged".
+        const identity = process.env.APPLE_IDENTITY ?? '-'
         execFileSync('codesign', ['--force', '--deep', '--sign', identity, appPath], {
           stdio: 'pipe',
         })
