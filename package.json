@@ -7,13 +7,17 @@
     "build": "pnpm --filter @queuepilot/desktop build",
     "test": "pnpm --filter @queuepilot/desktop test",
     "lint": "pnpm --filter @queuepilot/desktop lint",
-    "db:migrate": "pnpm --filter @queuepilot/core db:migrate"
+    "db:migrate": "pnpm --filter @queuepilot/core db:migrate",
+    "migrate:inbox": "tsx apps/desktop/src/main/migrations/migrate-inbox.ts"
   },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.30.0"
+    "@types/minimist": "^1.2.5",
+    "drizzle-kit": "^0.30.0",
+    "minimist": "^1.2.8",
+    "tsx": "^4.21.0"
   }
 }
