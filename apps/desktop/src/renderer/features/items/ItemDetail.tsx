@@ -2,6 +2,7 @@ import { ScrollArea } from '../../components/ui/scroll-area';
 import { Separator } from '../../components/ui/separator';
 import { useUiStore } from '../../store/ui.store';
 import { useItemDetail } from './hooks/useItemDetail';
+import { DetailAudit } from './sections/DetailAudit';
 import { DetailBody } from './sections/DetailBody';
 import { DetailComments } from './sections/DetailComments';
 import { DetailHeader } from './sections/DetailHeader';
@@ -12,7 +13,7 @@ import { DetailTags } from './sections/DetailTags';
 
 export function ItemDetail() {
   const { selectedItemId } = useUiStore();
-  const { item, comments, links } = useItemDetail(selectedItemId);
+  const { item, comments, events, links } = useItemDetail(selectedItemId);
 
   if (!selectedItemId) {
     return (
@@ -82,6 +83,10 @@ export function ItemDetail() {
       <Separator />
       <div className="p-4">
         <DetailComments itemId={item.data.id} comments={comments.data ?? []} />
+      </div>
+      <Separator />
+      <div className="p-4">
+        <DetailAudit itemId={item.data.id} events={events.data ?? []} isLoading={events.isLoading} />
       </div>
     </ScrollArea>
   );

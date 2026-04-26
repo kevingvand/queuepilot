@@ -25,7 +25,7 @@ export async function createComment(c: Context<AppEnv>) {
     .run();
 
   db.insert(itemEvents)
-    .values({ id: ulid(), item_id: id, kind: 'commented', payload: JSON.stringify({ comment_id: commentId }) } as NewItemEvent)
+    .values({ id: ulid(), item_id: id, kind: 'comment_added', payload: JSON.stringify({ comment_id: commentId }) } as NewItemEvent)
     .run();
 
   const created = db.select().from(comments).where(eq(comments.id, commentId)).get();

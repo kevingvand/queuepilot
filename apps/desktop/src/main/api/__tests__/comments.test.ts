@@ -38,7 +38,7 @@ describe('comments — CRUD and event side-effect', () => {
     expect(comment.author).toBe('local');
   });
 
-  it('creating a comment also creates an item_event with kind=commented', async () => {
+  it('creating a comment also creates an item_event with kind=comment_added', async () => {
     await app.request(`/items/${itemId}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,7 +47,7 @@ describe('comments — CRUD and event side-effect', () => {
 
     const eventsRes = await app.request(`/items/${itemId}/events`);
     const events: { kind: string }[] = await eventsRes.json();
-    expect(events.some((e) => e.kind === 'commented')).toBe(true);
+    expect(events.some((e) => e.kind === 'comment_added')).toBe(true);
   });
 
   it('updates the comment body via PATCH /comments/:id', async () => {

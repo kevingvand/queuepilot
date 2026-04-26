@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { and, eq, inArray, like, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, like, or } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import {
   itemEvents,
@@ -96,6 +96,32 @@ export async function updateItem(c: Context<AppEnv>) {
       .run();
   }
 
+  const prevPriority = existing.priority;
+  const nextPriority = body.priority;
+  if (nextPriority !== undefined && nextPriority !== prevPriority) {
+    db.insert(itemEvents)
+      .values({
+        id: ulid(),
+        item_id: id,
+        kind: 'priority_changed',
+        payload: JSON.stringify({ from: prevPriority, to: nextPriority }),
+      } as NewItemEvent)
+      .run();
+  }
+
+  const prevTitle = existing.title;
+  const nextTitle = body.title;
+  if (nextTitle && nextTitle !== prevTitle) {
+    db.insert(itemEvents)
+      .values({
+        id: ulid(),
+        item_id: id,
+        kind: 'title_changed',
+        payload: JSON.stringify({ from: prevTitle, to: nextTitle }),
+      } as NewItemEvent)
+      .run();
+  }
+
   const updated = db.select().from(items).where(eq(items.id, id)).get();
   return c.json(updated);
 }
@@ -126,7 +152,12 @@ export async function discardItem(c: Context<AppEnv>) {
 export async function listItemEvents(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id } = c.req.param();
-  const events = db.select().from(itemEvents).where(eq(itemEvents.item_id, id)).all();
+  const events = db
+    .select()
+    .from(itemEvents)
+    .where(eq(itemEvents.item_id, id))
+    .orderBy(desc(itemEvents.created_at))
+    .all();
   return c.json(events);
 }
 
@@ -149,6 +180,15 @@ export async function createItemLink(c: Context<AppEnv>) {
   const linkId = ulid();
   db.insert(itemLinks)
     .values({ id: linkId, source_item_id: id, target_item_id: body.target_item_id, kind: body.kind } as NewItemLink)
+    .run();
+
+  db.insert(itemEvents)
+    .values({
+      id: ulid(),
+      item_id: id,
+      kind: 'link_added',
+      payload: JSON.stringify({ target_id: body.target_item_id, kind: body.kind }),
+    } as NewItemEvent)
     .run();
 
   const link = db.select().from(itemLinks).where(eq(itemLinks.id, linkId)).get();
@@ -183,6 +223,19 @@ export async function addTagToItem(c: Context<AppEnv>) {
   const { id, tagId } = c.req.param();
 
   db.insert(itemTags).values({ item_id: id, tag_id: tagId }).run();
+
+  const tag = db.select().from(tags).where(eq(tags.id, tagId)).get();
+  if (tag) {
+    db.insert(itemEvents)
+      .values({
+        id: ulid(),
+        item_id: id,
+        kind: 'tag_added',
+        payload: JSON.stringify({ tag_id: tagId, tag_name: tag.name }),
+      } as NewItemEvent)
+      .run();
+  }
+
   return c.json({ ok: true }, 201);
 }
 
@@ -190,6 +243,20 @@ export async function removeTagFromItem(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id, tagId } = c.req.param();
 
+  const tag = db.select().from(tags).where(eq(tags.id, tagId)).get();
+
   db.delete(itemTags).where(and(eq(itemTags.item_id, id), eq(itemTags.tag_id, tagId))).run();
+
+  if (tag) {
+    db.insert(itemEvents)
+      .values({
+        id: ulid(),
+        item_id: id,
+        kind: 'tag_removed',
+        payload: JSON.stringify({ tag_id: tagId, tag_name: tag.name }),
+      } as NewItemEvent)
+      .run();
+  }
+
   return c.json({ ok: true });
 }

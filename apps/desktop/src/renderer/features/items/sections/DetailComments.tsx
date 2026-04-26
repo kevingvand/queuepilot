@@ -3,16 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { Comment } from '@queuepilot/core/types';
 import { Button } from '../../../components/ui/button';
 import { useApi } from '../../../hooks/useApi';
-
-function relativeTime(ts: number): string {
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+import { formatRelative } from '../../../lib/utils';
 
 function stringToColor(str: string): string {
   let hash = 0;
@@ -56,7 +47,7 @@ export function DetailComments({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-xs font-medium text-foreground">{comment.author}</span>
-                <span className="text-xs text-muted-foreground">{relativeTime(comment.created_at)}</span>
+                <span className="text-xs text-muted-foreground">{formatRelative(comment.created_at)}</span>
               </div>
               <p className="text-sm text-foreground/80 whitespace-pre-wrap">{comment.body}</p>
             </div>
