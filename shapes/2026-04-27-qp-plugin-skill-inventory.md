@@ -4,7 +4,7 @@ id: 2026-04-27-qp-plugin-skill-inventory
 title: "QP Plugin — Skill Inventory"
 date: 2026-04-27
 appetite: M
-status: shaped
+status: implemented
 implementation_ready: true
 project_slug: queuepilot
 repo_path: /Users/kevin/Copilot/projects/queuepilot
