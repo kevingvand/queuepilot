@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import type { Item } from '@queuepilot/core/types'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '../../components/ui/tooltip'
 import { AddItemDialog } from '../items/AddItemDialog'
 import { ItemDetail } from './ItemDetail'
@@ -9,7 +8,6 @@ import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
 import { Header } from './Header'
 import { ShortcutsOverlay } from './ShortcutsOverlay'
-import { useApi } from '../../hooks/useApi'
 import { useUiStore } from '../../store/ui.store'
 
 const queryClient = new QueryClient({
@@ -29,16 +27,6 @@ function useWindowWidth() {
   return width;
 }
 
-function EditItemDialogWrapper({ editItemId, onClose }: { editItemId: string | null; onClose: () => void }) {
-  const api = useApi();
-  const { data: item } = useQuery<Item>({
-    queryKey: ['item', editItemId],
-    queryFn: async () => (await api.items.get(editItemId!)).data as Item,
-    enabled: !!editItemId,
-  });
-  return <AddItemDialog open={!!editItemId} onClose={onClose} initialItem={item} />;
-}
-
 function ShellContent() {
   const {
     selectedItemId,
@@ -51,8 +39,6 @@ function ShellContent() {
     setDetailPanelWidth,
     addDialogOpen,
     setAddDialogOpen,
-    editItemId,
-    setEditItemId,
   } = useUiStore();
 
   const windowWidth = useWindowWidth();
@@ -213,7 +199,6 @@ function ShellContent() {
       </div>
       <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <AddItemDialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} />
-      <EditItemDialogWrapper editItemId={editItemId} onClose={() => setEditItemId(null)} />
     </>
   );
 }

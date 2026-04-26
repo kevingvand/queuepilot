@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import type { Cycle, Item, Tag } from '@queuepilot/core/types';
+import type { Cycle, Tag } from '@queuepilot/core/types';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import {
@@ -44,32 +44,21 @@ const STATUS_OPTIONS = [
   { label: 'Discarded', value: 'discarded' },
 ];
 
-function tsToDateInput(ts: number | null | undefined): string {
-  if (!ts) return '';
-  const d = new Date(ts);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
 function dateInputToTs(val: string): number | null {
   if (!val) return null;
   return new Date(val + 'T00:00:00').getTime();
 }
 
-type ItemFormDialogProps = {
+type AddItemDialogProps = {
   open: boolean;
   onClose: () => void;
-  initialItem?: Item;
 };
 
-export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProps) {
+export function AddItemDialog({ open, onClose }: AddItemDialogProps) {
   const api = useApi();
   const queryClient = useQueryClient();
   const { setSelectedItemId } = useUiStore();
 
-  const isEdit = !!initialItem;
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   const [form, setForm] = useState<FormState>({
@@ -95,45 +84,13 @@ export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProp
     queryFn: async () => (await api.cycles.list()).data as Cycle[],
   });
 
-  const { data: itemTagsData } = useQuery({
-    queryKey: ['itemTags', initialItem?.id],
-    queryFn: async () => (await api.items.tags.list(initialItem!.id)).data as Tag[],
-    enabled: isEdit && !!initialItem?.id,
-  });
-
-  // Reset form when item changes — single source of truth
+  // Reset form on open
   useEffect(() => {
     if (!open) return;
-    if (isEdit && initialItem) {
-      setForm({
-        title: initialItem.title,
-        body: initialItem.body ?? '',
-        priority: String(initialItem.priority ?? 0),
-        status: initialItem.status ?? 'inbox',
-        dueDate: tsToDateInput(initialItem.due_at),
-        cycleId: initialItem.cycle_id ?? '',
-        selectedTagIds: [],
-      });
-      setExpanded(true);
-    } else {
-      setForm({ title: '', body: '', priority: '0', status: 'inbox', dueDate: '', cycleId: '', selectedTagIds: [] });
-      setExpanded(false);
-    }
+    setForm({ title: '', body: '', priority: '0', status: 'inbox', dueDate: '', cycleId: '', selectedTagIds: [] });
+    setExpanded(false);
     setError(null);
-  }, [open, initialItem?.id]);
-
-  // Populate tag selection once tag data is available (edit mode only)
-  const tagsInitializedRef = useRef(false);
-  useEffect(() => {
-    if (!isEdit || !itemTagsData || tagsInitializedRef.current) return;
-    tagsInitializedRef.current = true;
-    setForm((prev) => ({ ...prev, selectedTagIds: itemTagsData.map((t) => t.id) }));
-  }, [isEdit, itemTagsData]);
-
-  // Reset tag init flag when dialog closes or item changes
-  useEffect(() => {
-    if (!open) tagsInitializedRef.current = false;
-  }, [open, initialItem?.id]);
+  }, [open]);
 
   // Focus body textarea when expanding
   useEffect(() => {
@@ -151,7 +108,6 @@ export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProp
     if (e.key === 'Tab' && !e.shiftKey && !expanded) {
       e.preventDefault();
       setExpanded(true);
-      // focus happens via the expanded useEffect
     }
   }
 
@@ -163,7 +119,7 @@ export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProp
     setError(null);
 
     try {
-      const body: Record<string, unknown> = {
+      const payload: Record<string, unknown> = {
         title: form.title.trim(),
         body: form.body,
         priority: Number(form.priority),
@@ -171,37 +127,18 @@ export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProp
       };
 
       const dueTs = dateInputToTs(form.dueDate);
-      if (dueTs !== null) body.due_at = dueTs;
-      if (form.cycleId) body.cycle_id = form.cycleId;
+      if (dueTs !== null) payload.due_at = dueTs;
+      if (form.cycleId) payload.cycle_id = form.cycleId;
 
-      if (isEdit && initialItem) {
-        await api.items.update(initialItem.id, body);
-
-        // Sync tags: add new, remove deleted
-        const prevIds = (itemTagsData ?? []).map((t) => t.id);
-        const toAdd = form.selectedTagIds.filter((id) => !prevIds.includes(id));
-        const toRemove = prevIds.filter((id) => !form.selectedTagIds.includes(id));
-        await Promise.all([
-          ...toAdd.map((id) => api.items.tags.add(initialItem.id, id)),
-          ...toRemove.map((id) => api.items.tags.remove(initialItem.id, id)),
-        ]);
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['items'] }),
-          queryClient.invalidateQueries({ queryKey: ['item', initialItem.id] }),
-          queryClient.invalidateQueries({ queryKey: ['itemTags', initialItem.id] }),
-        ]);
-      } else {
-        const createRes = await api.items.create(body);
-        const created = createRes.data as { id: string };
-        await Promise.all(form.selectedTagIds.map((id) => api.items.tags.add(created.id, id)));
-        await queryClient.invalidateQueries({ queryKey: ['items'] });
-        setSelectedItemId(created.id);
-      }
+      const createRes = await api.items.create(payload);
+      const created = createRes.data as { id: string };
+      await Promise.all(form.selectedTagIds.map((id) => api.items.tags.add(created.id, id)));
+      await queryClient.invalidateQueries({ queryKey: ['items'] });
+      setSelectedItemId(created.id);
 
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save item');
+      setError(err instanceof Error ? err.message : 'Failed to create item');
     } finally {
       setSubmitting(false);
     }
@@ -222,22 +159,22 @@ export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProp
     <Dialog open={open} onClose={handleClose}>
       <form onSubmit={handleSubmit}>
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit item' : 'New item'}</DialogTitle>
+          <DialogTitle>New item</DialogTitle>
         </DialogHeader>
 
         <DialogContent>
           <div className="space-y-3">
             <Input
               autoFocus
-              placeholder={isEdit ? 'Title' : "What's on your mind? (Enter to save)"}
+              placeholder="What's on your mind? (Enter to save)"
               value={form.title}
               onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
               onKeyDown={handleTitleKeyDown}
               required
             />
 
-            {/* Expand trigger — visible only in create mode when collapsed */}
-            {!isEdit && !expanded && (
+            {/* Expand trigger — visible when collapsed */}
+            {!expanded && (
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
@@ -351,7 +288,7 @@ export function AddItemDialog({ open, onClose, initialItem }: ItemFormDialogProp
             Cancel
           </Button>
           <Button type="submit" disabled={submitting || !form.title.trim()}>
-            {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Save'}
+            {submitting ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>
       </form>

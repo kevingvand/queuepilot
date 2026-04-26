@@ -51,7 +51,7 @@ function EmptyState({ filter }: { filter: FilterState }) {
 }
 
 export function ItemList() {
-  const { filterState, selectedItemId, setSelectedItemId, sortOrder, setShortcutsOpen, shortcutsOpen, addDialogOpen, setAddDialogOpen, editItemId, setEditItemId, setFilterState } = useUiStore();
+  const { filterState, selectedItemId, setSelectedItemId, sortOrder, setShortcutsOpen, shortcutsOpen, addDialogOpen, setAddDialogOpen, triggerFocusDetailTitle, setFilterState } = useUiStore();
   const { data: rawItems = [], isLoading } = useItems(filterState);
   const items = useMemo(() => sortItems(rawItems, sortOrder), [rawItems, sortOrder]);
 
@@ -59,7 +59,7 @@ export function ItemList() {
     const handler = (e: KeyboardEvent) => {
       const tag = (document.activeElement as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      if (shortcutsOpen || addDialogOpen || !!editItemId) return;
+      if (shortcutsOpen || addDialogOpen) return;
 
       switch (e.key) {
         case '?':
@@ -74,7 +74,7 @@ export function ItemList() {
         case 'e':
         case 'E':
           e.preventDefault();
-          if (selectedItemId) setEditItemId(selectedItemId);
+          if (selectedItemId) triggerFocusDetailTitle();
           return;
         case 'Escape':
           e.preventDefault();
@@ -118,7 +118,7 @@ export function ItemList() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [items, selectedItemId, shortcutsOpen, addDialogOpen, editItemId, setSelectedItemId, setShortcutsOpen, setAddDialogOpen, setEditItemId, setFilterState]);
+  }, [items, selectedItemId, shortcutsOpen, addDialogOpen, setSelectedItemId, setShortcutsOpen, setAddDialogOpen, triggerFocusDetailTitle, setFilterState]);
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>

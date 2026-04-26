@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Item } from '@queuepilot/core/types';
 import type { BadgeProps } from '../../../components/ui/badge';
@@ -27,14 +27,27 @@ function cycleStatus(current: string): ItemStatus {
 export function DetailHeader({ item }: { item: Item }) {
   const api = useApi();
   const queryClient = useQueryClient();
-  const { setSelectedItemId, setEditItemId } = useUiStore();
+  const { setSelectedItemId, focusDetailTitle, clearFocusDetailTitle } = useUiStore();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(item.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setEditing(false);
     setTitle(item.title);
   }, [item.id]);
+
+  // `e` shortcut focuses the title inline editor
+  useEffect(() => {
+    if (!focusDetailTitle) return;
+    clearFocusDetailTitle();
+    setEditing(true);
+    // focus happens in the next effect via the editing flag
+  }, [focusDetailTitle, clearFocusDetailTitle]);
+
+  useEffect(() => {
+    if (editing) titleInputRef.current?.focus();
+  }, [editing]);
 
   async function saveTitle() {
     setEditing(false);
@@ -79,30 +92,23 @@ export function DetailHeader({ item }: { item: Item }) {
       <div className="flex items-start justify-between gap-2">
         {editing ? (
           <input
+            ref={titleInputRef}
             className="flex-1 bg-transparent text-base font-semibold text-foreground focus:outline-none border-b border-primary"
             value={title}
-            autoFocus
             onChange={(e) => setTitle(e.target.value)}
             onBlur={saveTitle}
-            onKeyDown={(e) => e.key === 'Enter' && saveTitle()}
+            onKeyDown={(e) => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') { setEditing(false); setTitle(item.title); } }}
           />
         ) : (
           <h2
-            className="flex-1 text-base font-semibold text-foreground leading-snug cursor-text"
+            className="flex-1 text-base font-semibold text-foreground leading-snug cursor-text rounded px-0.5 -mx-0.5 hover:bg-muted/50 transition-colors"
             onClick={() => setEditing(true)}
+            title="Click to edit title"
           >
             {item.title}
           </h2>
         )}
         <div className="flex items-center gap-1 shrink-0">
-          <Tooltip content="Edit item (E)">
-            <Button variant="ghost" size="icon" onClick={() => setEditItemId(item.id)} className="h-7 w-7">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </Button>
-          </Tooltip>
           <Tooltip content="Copy branch name">
             <Button variant="ghost" size="icon" onClick={copyBranch} className="h-7 w-7">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
