@@ -5,6 +5,7 @@ import type { BadgeProps } from '../../../components/ui/badge';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Tooltip } from '../../../components/ui/tooltip';
+import { useToast } from '../../../components/ui/toast';
 import { useApi } from '../../../hooks/useApi';
 import { useUiStore } from '../../../store/ui.store';
 
@@ -27,6 +28,7 @@ function cycleStatus(current: string): ItemStatus {
 export function DetailHeader({ item }: { item: Item }) {
   const api = useApi();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { setSelectedItemId, focusDetailTitle, clearFocusDetailTitle } = useUiStore();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(item.title);
@@ -79,10 +81,28 @@ export function DetailHeader({ item }: { item: Item }) {
     ]);
   }
 
-  async function discard() {
-    await api.items.delete(item.id);
-    await queryClient.invalidateQueries({ queryKey: ['items'] });
+  function discard() {
+    // Close detail panel immediately for snappy UX; undo restores it
     setSelectedItemId(null);
+    let cancelled = false;
+    toast({
+      message: `"${item.title}" deleted`,
+      variant: 'destructive',
+      duration: 5000,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          cancelled = true;
+          // Re-select the item — it hasn't been deleted yet
+          setSelectedItemId(item.id);
+        },
+      },
+    });
+    setTimeout(async () => {
+      if (cancelled) return;
+      await api.items.delete(item.id);
+      await queryClient.invalidateQueries({ queryKey: ['items'] });
+    }, 5000);
   }
 
   function copyBranch() {
@@ -96,7 +116,7 @@ export function DetailHeader({ item }: { item: Item }) {
         <Tooltip content="Copy item ID">
           <button
             onClick={() => navigator.clipboard.writeText(`QP-${item.id}`)}
-            className="text-[10px] font-mono text-muted-foreground/60 hover:text-muted-foreground transition-colors focus:outline-none"
+            className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
           >
             QP-{item.id}
           </button>
@@ -160,6 +180,7 @@ export function DetailHeader({ item }: { item: Item }) {
             <Tooltip key={i} content={PRIORITY_LABELS[i]}>
               <button
                 onClick={() => setPriority(i)}
+                aria-label={`Set priority: ${PRIORITY_LABELS[i]}`}
                 className={`w-3 h-3 rounded-full transition-opacity focus:outline-none ${color} ${
                   (item.priority ?? 0) === i
                     ? 'opacity-100 ring-1 ring-offset-1 ring-border'

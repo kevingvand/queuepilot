@@ -48,7 +48,7 @@ export function ItemRow({
         </Badge>
       </div>
       {item.body && (
-        <p className="text-xs truncate mt-1" style={{ color: selected ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>
+        <p className="text-xs truncate mt-1" style={{ color: selected ? 'rgba(255,255,255,0.85)' : 'var(--text-secondary)' }}>
           {item.body}
         </p>
       )}

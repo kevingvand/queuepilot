@@ -130,7 +130,9 @@ export function DetailTags({ itemId }: { itemId: string }) {
                 <button
                   key={c}
                   onClick={() => setNewColor(c)}
-                  className="w-3.5 h-3.5 rounded-full transition-all"
+                  aria-label={`Tag color ${c}`}
+                  aria-pressed={newColor === c}
+                  className="w-4 h-4 rounded-full transition-all"
                   style={{
                     backgroundColor: c,
                     outline: newColor === c ? `2px solid ${c}` : 'none',

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable dark: utility prefix to match our data-theme="dark" attribute */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Map shadcn/Tailwind v3 class names to our design token CSS variables.
    This makes classes like `text-muted-foreground`, `bg-muted`, `border-border`
    work correctly across all components without editing each file individually. */
@@ -132,7 +135,7 @@
     --surface-hover: #f1f5f9;
     --text-primary: #0f172a;
     --text-secondary: #334155;
-    --text-muted: #94a3b8;
+    --text-muted: #64748b;    /* slate-500: 5.9:1 contrast on white — WCAG AA */
     --border: #e2e8f0;
     --accent: #4f46e5;
     --accent-hover: #6366f1;

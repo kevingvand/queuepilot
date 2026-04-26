@@ -59,6 +59,7 @@ export function ItemListHeader({ count }: { count: number }) {
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+          aria-label="Sort items"
           className="text-xs rounded px-2 py-1.5 outline-none cursor-pointer transition-colors"
           style={{
             backgroundColor: 'var(--surface-hover)',
