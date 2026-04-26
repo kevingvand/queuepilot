@@ -70,6 +70,8 @@ async function rebuildNativeModulesForElectron(appDir: string) {
 
 const config: ForgeConfig = {
   packagerConfig: {
+    name: 'QueuePilot',
+    executableName: 'queuepilot',
     asar: true,
     icon: path.resolve(__dirname, 'resources/icon'),
     appBundleId: 'com.queuepilot.app',

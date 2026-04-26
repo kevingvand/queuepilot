@@ -1,5 +1,6 @@
 {
   "name": "@queuepilot/desktop",
+  "productName": "QueuePilot",
   "version": "0.1.0",
   "private": true,
   "main": ".vite/build/index.js",
