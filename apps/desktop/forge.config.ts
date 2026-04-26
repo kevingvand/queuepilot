@@ -92,6 +92,22 @@ const config: ForgeConfig = {
       await rebuildNativeModulesForElectron(__dirname)
       codesignNativeModules(__dirname)
     },
+    postPackage: async (_forgeConfig, packageResult) => {
+      if (process.platform !== 'darwin') return
+      const identity = process.env.APPLE_IDENTITY ?? '-'
+      for (const outputPath of packageResult.outputPaths) {
+        const appPath = path.join(outputPath, 'QueuePilot.app')
+        if (!fs.existsSync(appPath)) continue
+        // codesign --deep handles Electron framework + nested .dylibs in one pass.
+        // No --options runtime → no entitlements needed (ad-hoc or Developer ID).
+        // This produces a valid structural signature that macOS shows as
+        // "unidentified developer" (right-click > Open) rather than "damaged".
+        execFileSync('codesign', ['--force', '--deep', '--sign', identity, appPath], {
+          stdio: 'pipe',
+        })
+        console.log(`[queuepilot] Signed: ${appPath}`)
+      }
+    },
   },
   makers: [
     {
