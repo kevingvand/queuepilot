@@ -1,0 +1,54 @@
+name: Feature Request
+description: Propose a new feature or improvement.
+title: "[feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a feature request, check the [ROADMAP](../../ROADMAP.md) — your idea may already be planned. If it is, a +1 comment on an existing issue is more useful than a duplicate.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear, one-paragraph summary of what you are proposing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Problem statement
+      description: What problem does this solve? Describe the situation where you needed this and didn't have it.
+      placeholder: "When I ... I can't ... which means I have to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Describe your preferred solution. Be as specific as you can — UI behavior, API shape, keyboard shortcut, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives_considered
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider, and why did you prefer the one above?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: roadmap
+    attributes:
+      label: Is this on the roadmap?
+      description: Check [ROADMAP.md](../../ROADMAP.md) before answering.
+      options:
+        - "Yes — it's listed in a future version"
+        - "No — this is a new suggestion"
+        - "Not sure"
+    validations:
+      required: true

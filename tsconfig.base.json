@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@queuepilot/core": ["./packages/core/src/index.ts"],
+      "@queuepilot/ingestion": ["./packages/ingestion/src/index.ts"]
+    }
+  }
+}
