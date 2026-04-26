@@ -8,7 +8,9 @@
     "test": "pnpm --filter @queuepilot/desktop test",
     "lint": "pnpm --filter @queuepilot/desktop lint",
     "db:migrate": "pnpm --filter @queuepilot/core db:migrate",
-    "migrate:inbox": "tsx apps/desktop/src/main/migrations/migrate-inbox.ts"
+    "migrate:inbox": "tsx apps/desktop/src/main/migrations/migrate-inbox.ts",
+    "make": "pnpm --filter @queuepilot/desktop make",
+    "dev:web": "concurrently \"pnpm --filter @queuepilot/desktop run dev:server\" \"pnpm --filter @queuepilot/desktop run dev:vite\""
   },
   "engines": {
     "node": ">=20.0.0",
@@ -16,6 +18,7 @@
   },
   "devDependencies": {
     "@types/minimist": "^1.2.5",
+    "concurrently": "^9.2.1",
     "drizzle-kit": "^0.30.0",
     "minimist": "^1.2.8",
     "tsx": "^4.21.0"

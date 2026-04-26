@@ -9,7 +9,9 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "test": "vitest run",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "dev:server": "tsx src/dev-server.ts",
+    "dev:vite": "vite"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",

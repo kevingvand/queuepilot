@@ -7,6 +7,9 @@ import { buildSync } from 'esbuild'
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: path.resolve(__dirname, 'resources/icon'),
+    appBundleId: 'com.queuepilot.app',
+    appCategoryType: 'public.app-category.productivity',
   },
   rebuildConfig: {},
   hooks: {
