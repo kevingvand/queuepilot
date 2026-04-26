@@ -1,92 +1,114 @@
 # QueuePilot Roadmap
 
-> This roadmap is intentionally coarse-grained. Items within each version may ship in any order. The goal is transparency about scope, not a promise of dates.
+Items within a version may ship in any order. This roadmap communicates scope and priority, not delivery dates.
 
 ---
 
-## v1 — Foundation
+## v0.1 — Foundation ✅ current
 
-**Phase 0 — OSS Foundation**
-- README, ROADMAP, CONTRIBUTING, CHANGELOG
-- GitHub issue templates, PR template
-- CI pipeline (lint, test, build)
-- `.env.example` with all configurable values documented
+The goal of v0.1 is a solid, shippable base that future work can build on without rework.
 
-**Phase 1 — DB + API**
-- Monorepo scaffold: pnpm workspaces + electron-forge + electron-vite + TypeScript strict
-- Drizzle schema in `packages/core`: items, tags, sources, cycles, saved filters, audit trail, sync tables
-- Hono API routes by feature slice: items (CRUD, filter, bulk ops), tags, sources, cycles, saved filters, events (audit), export (JSON/CSV/Markdown)
-- Typed IPC bridge: Electron preload + Hono RPC client in renderer
-- `--data-dir` flag from first commit
-- Migration script: `inbox.json` → SQLite (idempotent, read-only source)
-- Vitest unit tests for all API routes
+**Infrastructure**
+- pnpm monorepo with `apps/desktop`, `packages/core`, `packages/ingestion`
+- Electron + electron-forge + electron-vite, TypeScript strict throughout
+- CI pipeline: lint → test → electron-forge build on macOS and Windows
+- Release workflow: tag-triggered cross-platform builds → GitHub draft release
+- OSS foundation: MIT license, README, ROADMAP, CONTRIBUTING, CHANGELOG
+- GitHub issue templates and PR template
+- `.github/copilot-instructions.md` for AI-assisted development
 
----
+**Data model** (`packages/core`)
+- Drizzle schema: `items`, `tags`, `item_tags`, `item_links`, `item_events`, `sources`, `cycles`, `cycle_items`, `comments`, `saved_filters`, `sync_log`
+- ULID primary keys throughout — sortable, URL-safe, collision-free
+- Audit trail: every state change written to `item_events` with actor and JSON payload
+- Embedding blob column reserved on `items` (populated in v1.0)
 
-## v2 — UI + Ingestion + Semantic
-
-**Phase 2 — UI: Shell + Full Item Management**
-- 3-pane shell: sidebar (sources, saved filters, cycles, tags) → item list → detail
-- Item list: sortable, filterable, keyboard-navigable (`J/K`)
-- Item detail: body, tags, dates, priority, sub-tasks, linked items, comments, audit trail
-- Issue relationships: `blocks`, `blocked-by`, `relates-to`, `duplicate`
-- Sub-tasks with progress rollup to parent
-- Add/edit item dialog
+**Shell and core UI**
+- 3-pane layout: collapsible sidebar → item list → drag-resizable detail panel
+- Item list with status filtering and keyboard navigation (`J/K`)
+- Item detail with title, body, status, priority, dates, tags, sub-tasks, relationships, and audit trail
+- Add item dialog (`C` or command palette)
+- Cycles: create, edit, assign items, view contents
 - Saved filters as smart lists in sidebar
-- Git branch auto-generation (`feature/QP-{id}-{slug}`)
-- Status workflow: `pending → triaged → in_progress → done | discarded | archived`
-- Command palette (`Cmd+K`): create, navigate, filter, search, change status
-- Mnemonic keyboard shortcuts (`C`, `E`, `D`, `S`, `T`, `J/K`, `Enter`, `Esc`, `?`)
-
-**Phase 3 — Ingestion + Cycles**
-- `IngestionContract` Zod schema: canonical shape all adapters produce
-- Telegram ingestor port: `~/.copilot/ingestors/telegram/` → `packages/ingestion/telegram`
-- Generic webhook receiver: `POST /ingest/webhook/:sourceId` with per-source secret validation
-- Re-mention deduplication: `source_native_id` + body hash → increment `mention_count`
-- Recurring items: recurrence rule field + engine to generate next instance on completion
-- Cycles UI: create cycle, drag items in, view velocity, auto-carry-forward on close
-- Optional `.copilot` CLI bridge: thin wrapper POSTing to QueuePilot API from `park` skill
-
-**Phase 4 — Semantic Features**
-- Background embedding pipeline: `all-MiniLM-L6-v2` via Transformers.js in Node.js worker thread
-- Duplicate detection on add: BM25 pre-filter + cosine similarity (threshold 0.82)
-- Hybrid semantic search in command palette
-- Optional HDBSCAN clustering via Python sidecar ("Themes" panel, graceful degradation)
-- Kanban board view (column per status) and table/spreadsheet view
+- Command palette (`Cmd+K`)
+- Keyboard shortcuts with `?` overlay
+- Dark and light themes (indigo accent `#6366F1`, `prefers-reduced-motion` respected)
+- App icons for macOS, Windows, and Linux
 
 ---
 
-## v3 — Sync + AI
+## v0.2 — Keyboard-first completion + inline editing
 
-**Phase 5 — External Sync**
+Everything needed to make QueuePilot the fastest task manager for keyboard users.
+
+- Inline editing for all item fields in the detail panel — no modal required
+- Full shortcut coverage: `E` edit, `D` discard, `S` cycle status, `T` tag, `Enter` open, `Esc` back
+- Bulk operations: multi-select with `Shift+click` / `Shift+J/K`, bulk status change, bulk tag, bulk delete
+- Sub-task creation, reordering, and progress rollup to parent
+- Git branch copy: `feature/QP-{id}-{slug}` to clipboard (`G`)
+- Vitest unit test coverage for all API routes
+
+---
+
+## v0.3 — Integrations
+
+QueuePilot as a capture layer for the rest of your workflow.
+
+- `IngestionContract` Zod schema: the canonical shape all source adapters must produce
+- **Telegram ingestor**: `packages/ingestion/telegram` — text, voice (transcribed upstream), forwarded messages
+- **Generic webhook receiver**: `POST /ingest/webhook/:sourceId` with HMAC secret validation and configurable field mapping
+- Re-mention deduplication: `source_native_id` + body hash → increment `mention_count`, not a new item
+- Source management UI: connect sources, view ingestion history, pause/resume
+- Optional CLI bridge: `park` wrapper that POSTs to the QueuePilot API from any terminal
+
+---
+
+## v1.0 — Semantic features + public release
+
+The release that makes QueuePilot worth recommending to others.
+
+- **Background embedding pipeline**: `all-MiniLM-L6-v2` via `@xenova/transformers` in a worker thread — no Python, ~23 MB model bundled
+- **Duplicate detection on add**: BM25 pre-filter + cosine similarity (threshold 0.82)
+- **Hybrid semantic search** in command palette: keyword + vector similarity
+- **Themes panel** (optional): HDBSCAN clustering groups items into themes; graceful degradation without Python
+- Kanban board view (column per status, drag to transition)
+- Table/spreadsheet view with sortable, resizable columns
+- Export: JSON, CSV, Markdown
+- Packaged installers: `.dmg` (macOS), NSIS installer (Windows), `.AppImage` (Linux)
+- Auto-update opt-in (manual check by default — no silent background updates)
+
+---
+
+## Post-v1.0 — External sync + local AI
+
+Planned but not yet scoped to a version. Depend on v1.0 being stable.
+
+**External sync**
 - `sync_log` outbound queue with exponential backoff retry
-- Sync status per item: `synced | pending | conflict | error`
-- **GitHub Issues**: webhook ingest + REST push, status field mapping
+- Per-item sync status: `synced | pending | conflict | error`
+- **GitHub Issues**: webhook ingest + REST push, status field mapping, label ↔ tag sync
 - **GitLab Issues**: same pattern as GitHub
-- **Jira Cloud**: OAuth 2.0 PKCE, bidirectional sync, status field mapping
-- Conflict resolution: last-write-wins default; three-way merge (`diff3`) for text fields; configurable per-field authority
+- **Jira Cloud**: OAuth 2.0 PKCE, bidirectional sync, configurable status mapping
+- Conflict resolution: last-write-wins default; `diff3` three-way merge for text fields
 
-**Phase 6 — Optional Local AI**
-- Ollama integration (OpenAI-compatible REST at `localhost:11434`)
-- All AI disabled by default — zero behavior change without Ollama running
+**Optional local AI** (all disabled by default — zero behavior change without Ollama running)
+- Ollama integration via OpenAI-compatible REST
 - Auto-tag: zero-shot classify into existing tags on add
 - Priority scoring: suggest 1–5 from title + body
 - Sub-task generation from vague titles
-- Comment thread summarization (3-bullet digest)
-- Related item suggestions: hybrid embedding + LLM relevance explanation
-- `OllamaProvider` and `OpenAIProvider` behind a shared interface (OpenAI opt-in for quality)
+- Comment summarization — 3-bullet digest
+- Related item suggestions
 
 ---
 
-## Future / not on roadmap
+## Explicitly out of scope
 
-These items are explicitly **out of scope** for v1–v3. Listing them prevents scope creep and answers the question before it's asked.
+These items are not on the roadmap.
 
 - Multi-user auth and team mode
-- Cloud-hosted version
+- Cloud-hosted version or cloud sync
 - Mobile client (iOS, Android)
-- Linear sync (cloud-only API)
-- Jira Server / Data Center (Jira Cloud only in v3)
-- SSO / LDAP
+- Linear sync (cloud-only API, no self-host option)
+- Jira Server / Data Center (Jira Cloud only)
+- SSO or LDAP
 - Plugin marketplace
-- Voice transcription in UI (Telegram ingestor handles voice upstream)

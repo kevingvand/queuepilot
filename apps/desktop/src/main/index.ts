@@ -15,24 +15,27 @@ function resolveDataDir(): string {
 
 export const dataDir = resolveDataDir()
 
-const debugLogFile = path.join(app.getPath('userData'), 'debug.log')
+const isDev = process.env.NODE_ENV !== 'production'
+const debugLogFile = isDev ? path.join(app.getPath('userData'), 'debug.log') : null
 
 function logDebug(msg: string) {
+  if (!isDev) return
   const timestamp = new Date().toISOString()
   const line = `[${timestamp}] ${msg}`
   console.log(line)
-  fs.appendFileSync(debugLogFile, line + '\n', 'utf8')
+  if (debugLogFile) fs.appendFileSync(debugLogFile, line + '\n', 'utf8')
 }
 
 let db: any
 let honoApp: any
 
-// Listen for console logs from renderer
+// Forward renderer logs to main process console (dev only)
 ipcMain.handle('renderer-log', (_event, level: string, args: any[]) => {
+  if (!isDev) return null
   const timestamp = new Date().toISOString()
   const message = `[${timestamp}] [renderer/${level}] ${args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ')}`
   console.log(message)
-  fs.appendFileSync(debugLogFile, message + '\n', 'utf8')
+  if (debugLogFile) fs.appendFileSync(debugLogFile, message + '\n', 'utf8')
   return null
 })
 
@@ -65,6 +68,20 @@ function createWindow(): void {
   } else {
     win.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`))
   }
+
+  // Block unexpected navigation to external URLs
+  win.webContents.on('will-navigate', (event, navigationUrl) => {
+    const parsedUrl = new URL(navigationUrl)
+    const allowedOrigins = isDev
+      ? [new URL(MAIN_WINDOW_VITE_DEV_SERVER_URL!).origin]
+      : ['null'] // file:// origin
+    if (!allowedOrigins.includes(parsedUrl.origin)) {
+      event.preventDefault()
+    }
+  })
+
+  // Block new windows
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
   // Open DevTools in development
   if (isDev) {

@@ -1,125 +1,115 @@
-# QueuePilot — Local-first task & idea management for developers
+<p align="center">
+  <img src="docs/queue-pilot-logo.png" alt="QueuePilot" width="96" />
+</p>
 
-> **Your inbox. Your data. Your machine.**
+<h1 align="center">QueuePilot</h1>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md) [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)](https://www.typescriptlang.org/)
+<p align="center">
+  Local-first task and idea manager for developers and teams.<br/>
+  <strong>Your inbox. Your data. Your machine.</strong>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" /></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-strict-blue.svg" alt="TypeScript strict" /></a>
+  <img src="https://img.shields.io/badge/status-early%20alpha-orange.svg" alt="Early alpha" />
+</p>
 
 ---
 
 ## Why this exists
 
-Every task manager either requires a cloud account, leaks data through telemetry, or falls apart offline. QueuePilot fixes that: every operation completes under 50ms because SQLite reads are sub-millisecond with no network round-trip. Your data is a portable SQLite file you can put in Dropbox, a git repo, or an encrypted volume. No account required. No telemetry. Works offline by definition.
+Every mainstream task manager requires a cloud account, leaks data through telemetry, or becomes a read-only brick offline. QueuePilot fixes that. Every operation completes against a local SQLite file — sub-millisecond reads, no network round-trip. Your data lives wherever you put it: a git repo, an encrypted volume, a Dropbox folder. No account required. No telemetry. Fully air-gap capable.
+
+---
+
+## Status
+
+**v0.1 — early alpha.** The core data model, API layer, and 3-pane shell are working. This is not production-ready. There are rough edges. See [ROADMAP.md](ROADMAP.md) for what ships next.
 
 ---
 
 ## Screenshot
 
-![QueuePilot UI](docs/screenshot-placeholder.png)
+![QueuePilot — 3-pane shell](docs/screenshot-v0.1.png)
 
-> Screenshot coming in v1
+*3-pane layout: sidebar (sources, cycles, tags, saved filters) → item list → drag-resizable detail panel.*
 
 ---
 
 ## Features
 
-**Local-first, always**
-- SQLite database on your machine — queryable directly with any SQLite client
-- Zero outbound network calls in the default code path
-- Configurable data path: `--data-dir=/path/to/encrypted-volume` (Dropbox, git repo, air-gapped NAS)
-- Air-gap capable: all assets bundled, no runtime CDN fetches
+**What works today (v0.1)**
+- 3-pane shell — sidebar, item list, and drag-resizable detail panel; collapses gracefully to icon strip on narrower windows
+- Full item model — title, body, status workflow (`inbox → triaged → in_progress → done | discarded | archived`), priority, due/scheduled/start dates, estimate
+- Tags, cycles, sub-tasks, item relationships (`blocks`, `blocked-by`, `relates-to`, `duplicate`)
+- Audit trail — every state change written to `item_events`
+- Saved filters as smart lists in the sidebar
+- Command palette (`Cmd+K`) — create, navigate, filter, change status
+- Keyboard shortcuts — `C` create, `E` edit, `D` discard, `S` status, `T` tag, `J/K` navigate, `?` overlay
+- Dark and light themes (indigo accent, system font stack)
+- SQLite database you can query directly — portable, no migration lock-in
+- `--data-dir` flag to point at any path from first boot
 
-**Keyboard-first UI** *(v1)*
-- 3-pane shell: sidebar → item list → detail
-- Command palette (`Cmd+K`) for every action
-- Mnemonic shortcuts: `C` create, `E` edit, `D` discard, `S` status, `T` tag, `J/K` navigate, `?` overlay
-
-**Full item model** *(v1)*
-- Status workflow: `pending → triaged → in_progress → done | discarded | archived`
-- 3-date model: due, scheduled, start
-- Priority, tags, sub-tasks with progress rollup, issue relationships (`blocks`, `blocked-by`, `relates-to`, `duplicate`)
-- Audit trail: every state change logged to `item_events`
-
-**Multi-source ingestion** *(v1)*
-- Telegram bot ingestor (ported from `~/.copilot`)
-- Generic webhook receiver (`POST /ingest/webhook/:sourceId`)
-- Re-mention deduplication by `source_native_id` + body hash
-
-**Semantic features** *(v2)*
-- Background embedding pipeline — `all-MiniLM-L6-v2` via Transformers.js, no Python required
-- Duplicate detection on add: BM25 pre-filter + cosine similarity
-- Hybrid semantic search in command palette
-- Optional HDBSCAN theme clustering via Python sidecar (graceful degradation)
-
-**External sync** *(v2)*
-- Bidirectional sync: GitHub Issues, GitLab Issues, Jira Cloud
-- Conflict resolution: last-write-wins by default, three-way merge for text fields
-
-**Optional local AI** *(v3)*
-- Ollama integration: auto-tag, priority scoring, sub-task generation, comment summarization
-- Zero behavior change when Ollama is not running
-- Configurable per-feature toggle
-
-**Enterprise-ready without IT approval**
-- No mandatory account — ever — for local mode
-- Export to JSON (documented schema), CSV, Markdown
-- Manual update check only — no auto-update without opt-in
-- Audit trail satisfies change-log requirements
+**Planned (see [ROADMAP.md](ROADMAP.md))**
+- Telegram bot ingestor and generic webhook receiver (v0.3)
+- Semantic search and duplicate detection via `all-MiniLM-L6-v2` (v1.0)
+- GitHub Issues, GitLab Issues, and Jira Cloud bidirectional sync (post-v1.0)
+- Optional local AI via Ollama — auto-tag, priority scoring, sub-task generation (post-v1.0)
 
 ---
 
-## Install
+## Quick start
 
-> Coming in v1 — clone and run instructions will live here.
->
-> In the meantime: see [ROADMAP.md](ROADMAP.md) for scope and timelines.
+```bash
+git clone https://github.com/kevingvand/queuepilot.git
+cd queuepilot
+pnpm install
+pnpm run db:migrate
+pnpm dev
+```
 
----
-
-## Tech stack
-
-| Layer | Choice | Reason |
-|---|---|---|
-| Runtime | Node.js 20+ (Electron main) | In-process with Electron; no native binding complexity |
-| Database | SQLite via `better-sqlite3` | Local-first, zero config, synchronous, sub-millisecond reads |
-| ORM / migrations | Drizzle ORM + `drizzle-kit` | TypeScript-first, close to SQL, strong migration tooling |
-| API server | Hono + Hono RPC | Type-safe client in renderer, minimal overhead |
-| UI framework | React 19 + Vite | Best ecosystem for this UI pattern |
-| UI components | shadcn/ui + Radix UI + cmdk | Fully owned, no runtime dep |
-| Server state | TanStack Query | Caching, optimistic updates, mutation state |
-| Client state | Zustand | Sidebar selection, filters, modals |
-| Text embedding | `@xenova/transformers` (`all-MiniLM-L6-v2`, ~23MB) | No Python, runs in Node.js worker thread |
-| Desktop | Electron + electron-forge | Node.js in-process, mature toolchain |
-| Optional AI | Ollama REST API | OpenAI-compatible, zero cloud dependency, off by default |
+Node.js ≥ 20 and pnpm ≥ 9 are required.
 
 ---
 
 ## Architecture
 
-QueuePilot is a monorepo with a single Electron app and shared packages:
+QueuePilot is a pnpm monorepo with a single Electron desktop app and two shared packages. The Node.js main process owns the SQLite database (via `better-sqlite3` + Drizzle ORM), a Hono HTTP server, and all background workers. The React renderer communicates with the main process exclusively through typed Hono RPC — no raw `fetch` calls, no untyped IPC channels. `packages/core` holds the Drizzle schema and Zod domain types; `packages/ingestion` holds the source adapter contracts and implementations.
 
 ```
 queuepilot/
-├── apps/desktop/          ← Electron app (electron-forge + electron-vite)
+├── apps/desktop/           ← Electron app (electron-forge + electron-vite)
 │   └── src/
-│       ├── main/          ← Node.js: DB, Hono API, ingestion workers, background jobs
-│       ├── preload/       ← contextBridge, typed IPC channels
-│       └── renderer/      ← React 19 + Vite, feature slices
+│       ├── main/           ← Node.js: SQLite, Hono API, background workers
+│       ├── preload/        ← contextBridge and typed IPC channel definitions
+│       └── renderer/       ← React 19 + Vite, organised by feature slice
+│           └── features/
+│               ├── shell/  ← 3-pane layout, command palette, keyboard shortcuts
+│               └── items/  ← item list, detail, dialogs, cycles, saved filters
 ├── packages/
-│   ├── core/              ← Drizzle schema, Zod types, domain logic
-│   └── ingestion/         ← Source adapters (Telegram, webhook, ...)
-└── .github/               ← CI workflows, issue templates, shaped briefs
+│   ├── core/               ← Drizzle schema, Zod types, shared domain logic
+│   └── ingestion/          ← Source adapters (Telegram, webhook, ...)
+└── .github/                ← CI pipeline, issue templates, PR template
 ```
 
-The Node.js main process owns the SQLite database, the Hono API server, and all background workers. The React renderer communicates exclusively via typed Hono RPC — no raw `fetch` calls, no untyped IPC. See [ROADMAP.md](ROADMAP.md) for what ships in each version.
+The renderer is structured as Vertical Slices — each feature folder owns its full stack from API query hooks to UI components.
 
 ---
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for step-by-step setup, test commands, and code conventions.
 
 ---
 
 ## Contributing
 
-PRs are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, commit conventions, and code standards. The [ROADMAP.md](ROADMAP.md) shows what's planned — pick something from an upcoming phase and open an issue to discuss before starting.
+PRs are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, commit format, and code standards. Check [ROADMAP.md](ROADMAP.md) for what's planned — open an issue to discuss scope before starting anything non-trivial.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
