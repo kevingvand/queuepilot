@@ -46,6 +46,28 @@ function codesignNativeModules(appDir: string) {
   }
 }
 
+async function rebuildNativeModulesForElectron(appDir: string) {
+  // pnpm uses symlinks: apps/desktop/node_modules/better-sqlite3 → .pnpm store.
+  // forge's rebuildConfig only rebuilds the hoisted root copy, not the symlink target.
+  // We resolve the real path and call @electron/rebuild explicitly on that directory.
+  const { rebuild } = await import('@electron/rebuild')
+  const electronPkg = JSON.parse(
+    fs.readFileSync(path.join(appDir, '../../node_modules/electron/package.json'), 'utf8')
+  )
+  const linkPath = path.join(appDir, '../../node_modules/better-sqlite3')
+  const realPkgPath = fs.realpathSync(fs.existsSync(linkPath) ? linkPath : path.join(appDir, 'node_modules/better-sqlite3'))
+  // buildPath must be the directory that *contains* a node_modules/better-sqlite3 folder
+  const buildPath = path.join(realPkgPath, '..', '..')
+  console.log(`[queuepilot] Rebuilding better-sqlite3 for Electron ${electronPkg.version}...`)
+  await rebuild({
+    buildPath,
+    electronVersion: electronPkg.version,
+    onlyModules: ['better-sqlite3'],
+    force: true,
+  })
+  console.log('[queuepilot] Rebuild complete')
+}
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
@@ -56,7 +78,10 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   hooks: {
     postInstall: async () => codesignNativeModules(__dirname),
-    preStart: async () => codesignNativeModules(__dirname),
+    preStart: async () => {
+      await rebuildNativeModulesForElectron(__dirname)
+      codesignNativeModules(__dirname)
+    },
   },
   makers: [
     {
