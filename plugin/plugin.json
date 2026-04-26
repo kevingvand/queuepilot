@@ -1,0 +1,6 @@
+{
+  "name": "qp",
+  "version": "0.1.0",
+  "description": "QueuePilot companion plugin for Copilot CLI",
+  "skills": ["brief", "triage", "rally", "park", "pick"]
+}

@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq, ne, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import type { Db } from '../db.js';
 import { cycleItems, cycles, items } from '../schema.js';
@@ -98,13 +98,15 @@ export function addItemToCycle(
   const item = db.select({ id: items.id }).from(items).where(eq(items.id, itemId)).get();
   if (!item) return { success: false, message: `Item "${itemId}" not found` };
 
-  try {
-    db.insert(cycleItems)
-      .values({ cycle_id: cycleId, item_id: itemId, added_at: Date.now() })
-      .run();
-  } catch {
-    // Silently ignore primary-key conflict — item is already in this cycle
-  }
+  // Remove item from any previous cycle before assigning to the new one.
+  // An item belongs to at most one cycle — the most recent assignment wins.
+  db.delete(cycleItems)
+    .where(eq(cycleItems.item_id, itemId))
+    .run();
+
+  db.insert(cycleItems)
+    .values({ cycle_id: cycleId, item_id: itemId, added_at: Date.now() })
+    .run();
 
   db.update(items)
     .set({ cycle_id: cycleId, updated_at: Date.now() })
