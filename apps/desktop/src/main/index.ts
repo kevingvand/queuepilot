@@ -1,8 +1,8 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
-import { createDb } from '@queuepilot/core/schema'
 import { createApp } from './api/index'
 import { registerIpcBridge } from './ipc-bridge'
+import { createDb } from '@queuepilot/core/schema'
 
 function resolveDataDir(): string {
   const flag = process.argv.find((arg) => arg.startsWith('--data-dir='))
@@ -11,9 +11,8 @@ function resolveDataDir(): string {
 
 export const dataDir = resolveDataDir()
 
-const db = createDb(dataDir)
-const honoApp = createApp(db)
-registerIpcBridge(honoApp)
+let db: any
+let honoApp: any
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -33,8 +32,15 @@ function createWindow(): void {
   }
 }
 
+function initializeApp() {
+  db = createDb(dataDir)
+  honoApp = createApp(db)
+  registerIpcBridge(honoApp)
+}
+
 app.whenReady().then(() => {
   console.log(`[queuepilot] data-dir: ${dataDir}`)
+  initializeApp()
   createWindow()
 
   app.on('activate', () => {

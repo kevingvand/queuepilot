@@ -1,7 +1,6 @@
 {
   "name": "@queuepilot/desktop",
   "version": "0.1.0",
-  "type": "module",
   "private": true,
   "main": ".vite/build/index.js",
   "scripts": {
@@ -45,6 +44,7 @@
     "@electron-forge/maker-squirrel": "^7.0.0",
     "@electron-forge/maker-zip": "^7.0.0",
     "@electron-forge/plugin-vite": "^7.0.0",
+    "@electron/rebuild": "^4.0.4",
     "@tailwindcss/postcss": "^4.2.4",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",

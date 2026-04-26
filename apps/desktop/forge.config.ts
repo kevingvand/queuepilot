@@ -6,6 +6,20 @@ const config: ForgeConfig = {
     asar: true,
   },
   rebuildConfig: {},
+  hooks: {
+    preStart: async () => {
+      const { execSync } = await import('child_process')
+      try {
+        console.log('[queuepilot] Rebuilding native modules for Electron...')
+        execSync('pnpm exec electron-rebuild -f -w better-sqlite3', {
+          cwd: __dirname,
+          stdio: 'inherit',
+        })
+      } catch (e) {
+        console.warn('[queuepilot] Warning: failed to rebuild native modules')
+      }
+    },
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',

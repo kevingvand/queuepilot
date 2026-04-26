@@ -7,21 +7,21 @@ export default defineConfig({
     entry: 'src/main/index.ts',
     build: {
       outDir: path.resolve(__dirname, '.vite/build/main'),
-      lib: {
-        entry: 'src/main/index.ts',
-        formats: ['cjs'],
+      rollupOptions: {
+        external: ['better-sqlite3', '@queuepilot/core', '@queuepilot/ingestion'],
       },
     },
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        '@queuepilot/core': path.resolve(__dirname, '../../packages/core'),
+      },
+    },
   },
   preload: {
     entry: 'src/preload/index.ts',
     build: {
       outDir: path.resolve(__dirname, '.vite/build/preload'),
-      lib: {
-        entry: 'src/preload/index.ts',
-        formats: ['cjs'],
-      },
     },
     plugins: [externalizeDepsPlugin()],
   },
