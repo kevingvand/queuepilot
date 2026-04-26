@@ -135,11 +135,13 @@ export function DetailHeader({ item }: { item: Item }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <button onClick={advanceStatus} className="focus:outline-none">
-          <Badge status={item.status as BadgeProps['status']}>
-            {item.status.replace(/_/g, ' ')}
-          </Badge>
-        </button>
+        <Tooltip content="Click to advance status">
+          <button onClick={advanceStatus} className="focus:outline-none">
+            <Badge status={item.status as BadgeProps['status']}>
+              {item.status.replace(/_/g, ' ')}
+            </Badge>
+          </button>
+        </Tooltip>
         <div className="flex items-center gap-1">
           {PRIORITY_COLORS.map((color, i) => (
             <Tooltip key={i} content={PRIORITY_LABELS[i]}>
