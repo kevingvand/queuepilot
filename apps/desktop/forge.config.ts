@@ -78,7 +78,12 @@ const config: ForgeConfig = {
       path.resolve(__dirname, '../../packages/core/migrations'),
     ],
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    // Point forge's native-module rebuild at apps/desktop so it finds
+    // better-sqlite3 (a dep of desktop, not the workspace root).
+    // This matters on CI where pnpm runs forge from a filter command.
+    buildPath: __dirname,
+  },
   hooks: {
     postInstall: async () => codesignNativeModules(__dirname),
     preStart: async () => {
@@ -92,8 +97,15 @@ const config: ForgeConfig = {
       config: {},
     },
     {
+      name: '@electron-forge/maker-dmg',
+      platforms: ['darwin'],
+      config: {
+        format: 'ULFO',
+      },
+    },
+    {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin', 'linux'],
+      platforms: ['linux'],
     },
   ],
   plugins: [

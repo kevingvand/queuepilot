@@ -49,7 +49,7 @@ interface RawAPI {
 
 const ApiContext = createContext<QueuePilotAPI | null>(null)
 
-const API_BASE_URL = 'http://localhost:3000/api'
+const API_BASE_URL = '/api'
 
 // Fallback HTTP-based API for browser/dev mode
 function createHttpApi(): RawAPI {

@@ -9,6 +9,8 @@ jobs:
   release-macos:
     name: Release (macOS)
     runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -31,8 +33,6 @@ jobs:
 
       - name: Make distributable
         run: pnpm --filter @queuepilot/desktop make
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -43,6 +43,8 @@ jobs:
   release-windows:
     name: Release (Windows)
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -65,8 +67,6 @@ jobs:
 
       - name: Make distributable
         run: pnpm --filter @queuepilot/desktop make
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -77,6 +77,8 @@ jobs:
   release-linux:
     name: Release (Linux)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -94,18 +96,16 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y rpm fakeroot dpkg
+          sudo apt-get install -y build-essential python3-setuptools rpm fakeroot dpkg
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Make distributable
         run: pnpm --filter @queuepilot/desktop make
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
