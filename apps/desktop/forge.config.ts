@@ -4,56 +4,29 @@ import path from 'path'
 import fs from 'fs'
 import { execFileSync } from 'child_process'
 
-function findNodeFiles(dir: string, found: string[] = [], visited = new Set<string>()): string[] {
-  let realDir: string
-  try { realDir = fs.realpathSync(dir) } catch { return found }
-  if (visited.has(realDir)) return found
-  visited.add(realDir)
-  let entries: fs.Dirent[]
-  try { entries = fs.readdirSync(realDir, { withFileTypes: true }) } catch { return found }
-  for (const entry of entries) {
-    const full = path.join(realDir, entry.name)
-    if (entry.isDirectory()) {
-      findNodeFiles(full, found, visited)
-    } else if (entry.isFile() && entry.name.endsWith('.node')) {
-      found.push(full)
-    } else if (entry.isSymbolicLink()) {
-      try {
-        const real = fs.realpathSync(full)
-        const stat = fs.statSync(real)
-        if (stat.isDirectory()) findNodeFiles(real, found, visited)
-        else if (real.endsWith('.node') && !found.includes(real)) found.push(real)
-      } catch { /* ignore broken symlinks */ }
-    }
-  }
-  return found
-}
-
 function codesignNativeModules(appDir: string) {
   // macOS 15 Code Signing Monitor rejects native modules with the `linker-signed`
-  // flag when loaded via dlopen in Electron. Re-signing with codesign removes
-  // that flag and produces a standard adhoc signature that CSM accepts.
+  // flag when loaded via dlopen in Electron. Re-signing removes that flag and
+  // produces a standard adhoc signature that CSM accepts.
   if (process.platform !== 'darwin') return
   const nodeModulesDir = path.join(appDir, 'node_modules')
   if (!fs.existsSync(nodeModulesDir)) return
-  const nodeFiles = findNodeFiles(nodeModulesDir)
-  for (const file of nodeFiles) {
-    try {
-      execFileSync('codesign', ['--force', '--sign', '-', file])
-    } catch {
-      console.warn(`[queuepilot] codesign failed for ${file}`)
+  for (const entry of fs.readdirSync(nodeModulesDir, { recursive: true, withFileTypes: true }) as fs.Dirent[]) {
+    if (entry.isFile() && entry.name.endsWith('.node')) {
+      const full = path.join(entry.parentPath ?? (entry as { path?: string }).path ?? nodeModulesDir, entry.name)
+      try {
+        execFileSync('codesign', ['--force', '--sign', '-', full])
+      } catch {
+        console.warn(`[queuepilot] codesign failed for ${full}`)
+      }
     }
   }
 }
 
 async function rebuildNativeModulesForElectron(appDir: string) {
   // pnpm hoists better-sqlite3 to workspace root but apps/desktop/node_modules/better-sqlite3
-  // is a symlink to the .pnpm virtual store — that is the path Electron actually dlopen()s.
-  //
-  // @electron/rebuild walks the deps of buildPath/package.json; using workspaceRoot misses
-  // better-sqlite3 since it's a dep of apps/desktop, not the workspace root.
-  // Using appDir (apps/desktop) correctly identifies it, follows the symlink into .pnpm,
-  // and runs prebuild-install --runtime=electron there.
+  // is a symlink into the .pnpm virtual store — that is the path Electron actually dlopen()s.
+  // Using appDir (apps/desktop) as buildPath ensures @electron/rebuild finds better-sqlite3.
   const { rebuild } = await import('@electron/rebuild')
   const electronPkg = JSON.parse(
     fs.readFileSync(path.join(appDir, '../../node_modules/electron/package.json'), 'utf8')
@@ -94,10 +67,10 @@ const config: ForgeConfig = {
       await rebuildNativeModulesForElectron(__dirname)
       codesignNativeModules(__dirname)
     },
-    // @electron-forge/plugin-vite only packages .vite/ output — it excludes node_modules
-    // entirely because it assumes Vite bundles all JS. Native modules cannot be bundled
-    // by Vite, so we manually copy them into the staging buildPath here. Forge's own
-    // native-module rebuild step then recompiles them for Electron before ASAR creation.
+    // @electron-forge/plugin-vite only stages .vite/ output — it excludes node_modules
+    // because Vite bundles JS. Native modules (`.node` binaries) can't be bundled, so
+    // we copy them manually into the staging buildPath here. Forge then rebuilds them
+    // for the correct Electron ABI before ASAR creation.
     packageAfterCopy: async (_config, buildPath) => {
       const nativeDeps = ['better-sqlite3', 'bindings', 'file-uri-to-path']
       const destNodeModules = path.join(buildPath, 'node_modules')
