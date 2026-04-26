@@ -29,7 +29,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     heading: 'Actions',
     shortcuts: [
       { keys: ['c'], description: 'Create new item' },
-      { keys: ['⌘K'], description: 'Command palette' },
+      { keys: ['/'], description: 'Focus search' },
       { keys: ['?'], description: 'Show shortcuts' },
     ],
   },

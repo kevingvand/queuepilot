@@ -209,11 +209,17 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         for (const key of Object.keys(parsed)) {
           if (prev[key] !== parsed[key]) {
             const kind = key === 'status' ? 'status_changed' : key === 'priority' ? 'priority_changed' : key === 'title' ? 'title_changed' : 'field_changed'
+            // Resolve human-readable values for known IDs
+            let toVal = parsed[key] ?? null;
+            if (key === 'cycle_id' && toVal) {
+              const cycle = mockData.cycles.find((c) => c.id === String(toVal));
+              if (cycle) toVal = cycle.name;
+            }
             mockData.events[id].push({
               id: String(Date.now()),
               item_id: id,
               kind,
-              payload: JSON.stringify({ field: key, from: prev[key] ?? null, to: parsed[key] ?? null }),
+              payload: JSON.stringify({ field: key, from: prev[key] ?? null, to: toVal }),
               actor: 'You',
               created_at: Date.now(),
             })

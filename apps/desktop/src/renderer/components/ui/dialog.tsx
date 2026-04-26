@@ -61,6 +61,7 @@ export function Dialog({ open, onClose, children, className }: DialogProps) {
         maxWidth: '640px',
         maxHeight: '80vh',
         overflowY: 'auto',
+        outline: 'none',
       }}
     >
       {children}

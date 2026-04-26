@@ -78,34 +78,36 @@ export function SavedFiltersList() {
     (value) => value !== undefined && value !== '',
   );
 
+  // Only show section if there are saved filters, active filter (to save), or loading
+  const hasContent = isLoading || (savedFilters && savedFilters.length > 0);
+  if (!hasContent && !hasActiveFilter) return null;
+
   return (
     <>
       <div className="mb-1">
-        <div className="flex items-center gap-1 px-4 py-1">
-          <Filter size={12} />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Saved Filters
-          </span>
-          <button
-            onClick={() => setDialogOpen(true)}
-            disabled={!hasActiveFilter}
-            title={hasActiveFilter ? 'Save current filter' : 'Apply a filter first to save it'}
-            className={cn(
-              'ml-auto transition-colors',
-              hasActiveFilter
-                ? 'text-muted-foreground hover:text-foreground cursor-pointer'
-                : 'text-muted-foreground/30 cursor-not-allowed',
+        {/* Header: only show label when there are saved filters */}
+        {hasContent && (
+          <div className="flex items-center gap-1 px-4 py-1">
+            <Filter size={12} style={{ color: 'var(--text-muted)' }} />
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+              Saved Filters
+            </span>
+            {hasActiveFilter && (
+              <button
+                onClick={() => setDialogOpen(true)}
+                title="Save current filter"
+                className="ml-auto transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+              >
+                <Plus size={12} />
+              </button>
             )}
-          >
-            <Plus size={12} />
-          </button>
-        </div>
+          </div>
+        )}
 
         {isLoading && <LoadingSkeleton />}
-
-        {!isLoading && (!savedFilters || savedFilters.length === 0) && (
-          <p className="px-4 py-1.5 text-xs text-muted-foreground">No saved filters yet</p>
-        )}
 
         {savedFilters?.map((savedFilter) => {
           const parsed = parseSavedFilterJson(savedFilter.filter_json);
@@ -119,6 +121,20 @@ export function SavedFiltersList() {
             />
           );
         })}
+
+        {/* When a filter is active but no saved filters, show inline save prompt */}
+        {hasActiveFilter && !hasContent && (
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="w-full flex items-center gap-2 px-4 py-1.5 text-xs transition-colors text-left"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+          >
+            <Plus size={12} />
+            Save current filter
+          </button>
+        )}
       </div>
 
       <SaveFilterDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />

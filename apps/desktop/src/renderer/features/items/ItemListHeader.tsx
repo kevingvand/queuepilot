@@ -34,6 +34,7 @@ export function ItemListHeader({ count }: { count: number }) {
       <div className="flex items-center gap-2 px-3 py-2">
         <div className="relative flex-1 min-w-0">
           <input
+            id="qp-search-input"
             type="text"
             placeholder="Search…"
             value={localQ}

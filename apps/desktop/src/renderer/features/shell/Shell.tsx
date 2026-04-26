@@ -43,10 +43,11 @@ function ShellContent() {
 
   const windowWidth = useWindowWidth();
   const isNarrow = windowWidth < 640;
+  const isMedium = windowWidth >= 640 && windowWidth < 1024;
   const isWide = windowWidth >= 1024;
 
-  // On narrow screens, force icon-only sidebar to save space
-  const effectiveCollapsed = isNarrow ? true : sidebarCollapsed;
+  // Auto-collapse sidebar on medium screens, hide on narrow
+  const effectiveCollapsed = isNarrow || isMedium ? true : sidebarCollapsed;
   const sidebarWidth = isNarrow ? 0 : (effectiveCollapsed ? SIDEBAR_ICON : SIDEBAR_FULL);
 
   // Drag resize state for the detail panel

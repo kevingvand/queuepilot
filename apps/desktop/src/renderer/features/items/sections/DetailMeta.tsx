@@ -25,7 +25,7 @@ type EditableField = 'due_at' | 'scheduled_at' | 'start_at' | 'cycle_id';
 export function DetailMeta({ item }: { item: Item }) {
   const api = useApi();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [editingField, setEditingField] = useState<EditableField | null>(null);
 
   const { data: cycles = [] } = useQuery<Cycle[]>({

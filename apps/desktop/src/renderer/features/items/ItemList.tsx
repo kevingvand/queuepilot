@@ -62,6 +62,10 @@ export function ItemList() {
       if (shortcutsOpen || addDialogOpen) return;
 
       switch (e.key) {
+        case '/':
+          e.preventDefault();
+          (document.getElementById('qp-search-input') as HTMLInputElement | null)?.focus();
+          return;
         case '?':
           e.preventDefault();
           setShortcutsOpen(true);

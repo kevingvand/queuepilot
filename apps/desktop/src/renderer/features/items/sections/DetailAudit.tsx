@@ -9,6 +9,29 @@ const PRIORITY_LABELS: Record<number, string> = {
   4: 'low',
 };
 
+const FIELD_DISPLAY_NAMES: Record<string, string> = {
+  due_at: 'Due date',
+  scheduled_at: 'Scheduled',
+  start_at: 'Start date',
+  cycle_id: 'Cycle',
+  body: 'Description',
+  title: 'Title',
+  priority: 'Priority',
+  status: 'Status',
+};
+
+function humanize(str: string): string {
+  return str.replace(/_/g, ' ');
+}
+
+function formatFieldValue(field: string, value: string): string {
+  if ((field === 'due_at' || field === 'scheduled_at' || field === 'start_at') && /^\d+$/.test(value)) {
+    return new Date(Number(value)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  if (field === 'priority') return PRIORITY_LABELS[Number(value)] ?? value;
+  return humanize(value);
+}
+
 interface DetailAuditProps {
   itemId: string;
   events: ItemEvent[];
@@ -26,8 +49,8 @@ function describeEvent(event: ItemEvent): React.ReactNode {
     case 'status_changed':
       return (
         <>
-          Status changed from <strong>{String(payload.from)}</strong> to{' '}
-          <strong>{String(payload.to)}</strong>
+          Status changed from <strong>{humanize(String(payload.from))}</strong> to{' '}
+          <strong>{humanize(String(payload.to))}</strong>
         </>
       );
     case 'priority_changed':
@@ -44,10 +67,12 @@ function describeEvent(event: ItemEvent): React.ReactNode {
       return 'Comment added';
     case 'field_changed': {
       const field = String(payload.field ?? '');
+      const displayName = FIELD_DISPLAY_NAMES[field] ?? humanize(field);
       const to = payload.to != null ? String(payload.to) : '';
-      return to
-        ? <><strong>{field}</strong> changed to <strong>{to}</strong></>
-        : <><strong>{field}</strong> updated</>;
+      const displayTo = to ? formatFieldValue(field, to) : '';
+      return displayTo
+        ? <><strong>{displayName}</strong> set to <strong>{displayTo}</strong></>
+        : <><strong>{displayName}</strong> cleared</>;
     }
     case 'tag_added':
       return (
