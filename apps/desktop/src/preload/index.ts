@@ -56,6 +56,7 @@ const api = {
     list: () => request('GET', '/cycles'),
     create: (body: unknown) => request('POST', '/cycles', { body }),
     update: (id: string, body: unknown) => request('PATCH', `/cycles/${id}`, { body }),
+    delete: (id: string) => request('DELETE', `/cycles/${id}`),
     items: {
       list: (id: string) => request('GET', `/cycles/${id}/items`),
       add: (id: string, body: { item_id: string }) => request('POST', `/cycles/${id}/items`, { body }),

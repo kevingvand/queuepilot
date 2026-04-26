@@ -4,14 +4,14 @@ import {
   CircleDot,
   Inbox,
   Plus,
-  RotateCcw,
   Tag,
 } from 'lucide-react';
-import type { Cycle, Tag as TagType } from '@queuepilot/core/types';
+import type { Tag as TagType } from '@queuepilot/core/types';
 import { Button } from '../../components/ui/button';
 import { useApi } from '../../hooks/useApi';
 import { cn } from '../../lib/utils';
 import { type FilterState, useUiStore } from '../../store/ui.store';
+import { CyclesList } from '../items/CyclesList';
 import { SavedFiltersList } from '../items/SavedFiltersList';
 
 type NavItem = {
@@ -30,14 +30,6 @@ const INBOX_ITEMS: NavItem[] = [
 export function Sidebar() {
   const { filterState, setFilterState, setAddDialogOpen } = useUiStore();
   const api = useApi();
-
-  const { data: cyclesData } = useQuery({
-    queryKey: ['cycles'],
-    queryFn: async () => {
-      const res = await api.cycles.list();
-      return res.data as Cycle[];
-    },
-  });
 
   const { data: tagsData } = useQuery({
     queryKey: ['tags'],
@@ -80,19 +72,7 @@ export function Sidebar() {
 
         <SavedFiltersList />
 
-        <SidebarSection label="Cycles" icon={<RotateCcw size={12} />}>
-          {cyclesData
-            ?.filter((c) => c.status === 'active')
-            .map((c) => (
-              <NavRow
-                key={c.id}
-                icon={<RotateCcw size={14} />}
-                label={c.name}
-                active={isActive({ cycle_id: c.id })}
-                onClick={() => setFilterState({ cycle_id: c.id })}
-              />
-            ))}
-        </SidebarSection>
+        <CyclesList />
 
         <SidebarSection label="Tags" icon={<Tag size={12} />}>
           {tagsData?.map((t) => (

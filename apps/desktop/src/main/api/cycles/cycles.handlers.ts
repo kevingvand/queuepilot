@@ -6,6 +6,8 @@ import type { NewCycle } from '@queuepilot/core/types';
 import type { InferInsertModel } from 'drizzle-orm';
 import type { AppEnv } from '../index';
 
+
+
 type NewCycleItem = InferInsertModel<typeof cycleItems>;
 
 export async function listCycles(c: Context<AppEnv>) {
@@ -59,6 +61,18 @@ export async function addItemToCycle(c: Context<AppEnv>) {
 
   db.insert(cycleItems).values({ cycle_id: id, item_id: body.item_id, added_at: Date.now() } as NewCycleItem).run();
   return c.json({ ok: true }, 201);
+}
+
+export async function deleteCycle(c: Context<AppEnv>) {
+  const db = c.get('db');
+  const { id } = c.req.param();
+
+  const existing = db.select().from(cycles).where(eq(cycles.id, id)).get();
+  if (!existing) return c.json({ error: 'Not found' }, 404);
+
+  db.delete(cycleItems).where(eq(cycleItems.cycle_id, id)).run();
+  db.delete(cycles).where(eq(cycles.id, id)).run();
+  return c.json({ ok: true });
 }
 
 export async function removeItemFromCycle(c: Context<AppEnv>) {

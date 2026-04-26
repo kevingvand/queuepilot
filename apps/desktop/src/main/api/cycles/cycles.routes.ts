@@ -6,6 +6,7 @@ import type { AppEnv } from '../index';
 import {
   addItemToCycle,
   createCycle,
+  deleteCycle,
   listCycleItems,
   listCycles,
   removeItemFromCycle,
@@ -19,6 +20,7 @@ const addItemBodySchema = z.object({ item_id: z.string() });
 cyclesRoutes.get('/', listCycles);
 cyclesRoutes.post('/', zValidator('json', insertCycleSchema as never), createCycle);
 cyclesRoutes.patch('/:id', zValidator('json', insertCycleSchema.partial() as never), updateCycle);
+cyclesRoutes.delete('/:id', deleteCycle);
 cyclesRoutes.get('/:id/items', listCycleItems);
 cyclesRoutes.post('/:id/items', zValidator('json', addItemBodySchema), addItemToCycle);
 cyclesRoutes.delete('/:id/items/:itemId', removeItemFromCycle);
