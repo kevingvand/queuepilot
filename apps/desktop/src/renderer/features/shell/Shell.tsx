@@ -7,6 +7,7 @@ import { useUiStore } from '../../store/ui.store';
 import { CommandPalette } from './CommandPalette';
 import { ItemDetail } from './ItemDetail';
 import { ItemList } from './ItemList';
+import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { Sidebar } from './Sidebar';
 import { StatusBar } from './StatusBar';
 
@@ -15,8 +16,9 @@ const queryClient = new QueryClient({
 });
 
 function ShellContent() {
-  const { addDialogOpen, setAddDialogOpen } = useUiStore();
+  const { addDialogOpen, setAddDialogOpen, setFilterState } = useUiStore();
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -34,14 +36,36 @@ function ShellContent() {
       ) {
         return;
       }
+
       if (e.key === 'c' || e.key === 'C') {
         setAddDialogOpen(true);
+        return;
+      }
+      if (e.key === '?') {
+        setShortcutsOpen(true);
+        return;
+      }
+      if (e.key === '1') {
+        setFilterState({ status: 'inbox' });
+        return;
+      }
+      if (e.key === '2') {
+        setFilterState({ status: 'in_progress' });
+        return;
+      }
+      if (e.key === '3') {
+        setFilterState({ status: 'done' });
+        return;
+      }
+      if (e.key === '0') {
+        setFilterState({});
+        return;
       }
     }
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [setAddDialogOpen]);
+  }, [setAddDialogOpen, setFilterState]);
 
   return (
     <>
@@ -63,6 +87,7 @@ function ShellContent() {
       </div>
       <AddItemDialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} />
       <CommandPalette open={cmdPaletteOpen} onClose={() => setCmdPaletteOpen(false)} />
+      <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </>
   );
 }
