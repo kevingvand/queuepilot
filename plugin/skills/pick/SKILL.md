@@ -83,11 +83,14 @@ Trigger phrases: "work on X", "pick item Y", "activate cycle Z", "I want to work
 8. Present the cycle summary using the same format as `qp:brief` State 2:
    ```
    ── Active cycle: <name> ──────────────────────────
+   📥 inbox       N items
    📋 todo        N items
    🔄 in_progress N items  → [title], [title], …
    ✅ done        N items
+   🗑️  discarded   N items
    ─────────────────────────────── total: N items
    ```
+   Omit rows with 0 items to keep the output concise.
 9. Confirm:
    > "Active cycle set to: <name> — N items"
 
@@ -102,4 +105,5 @@ For an item: the full item is displayed, status is updated to `in_progress`, and
 - **Item loading is the primary use case.** Cycle activation is secondary — most users will activate a cycle via `qp:rally` and then use `qp:pick` to load individual items.
 - **ULID detection is structural.** The classifier checks shape, not a registry lookup — if the identifier is the right shape but does not exist, State 2A handles the not-found case gracefully.
 - **MCP-first.** Always try MCP before bash fallback.
+- **Bash fallback requires Node.js.** The fallback commands call `node` directly. If Node.js is not available in the shell path, bash fallback will fail — in that case surface an error and advise the user to ensure the MCP server is connected.
 - **Context injection.** When loading an item, the full body should be in Copilot's working context — the user should not have to paste it manually.

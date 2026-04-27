@@ -60,18 +60,6 @@ export QUEUEPILOT_DB_PATH="$HOME/work/queuepilot.db"
 
 ---
 
-## Known v1 limitations
-
-### `bump_mention_count` is stubbed
-
-The MCP `bump_mention_count(id)` tool is stubbed in v1. It logs a warning and performs no operation. This requires a schema migration to add the `mention_count` column to the `items` table, tracked as a separate task.
-
-### Cycle `goal` field is not persisted
-
-When `qp:rally` proposes cycle groupings, each cluster includes a `cycle_goal` string. This goal is displayed to the user and used as context during the session, but it is **not written to the database** — the current `cycles` schema does not include a `goal` column. The goal will persist in v2 when the schema migration lands.
-
----
-
 ## Skills reference
 
 | Skill | Trigger | Purpose |

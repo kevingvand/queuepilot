@@ -1,7 +1,7 @@
 // This file mirrors packages/core/src/schema/ — keep in sync manually.
 // It exists here because plugin/mcp is not a pnpm workspace member.
 
-import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const items = sqliteTable('items', {
   id: text('id').primaryKey(),
@@ -18,7 +18,6 @@ export const items = sqliteTable('items', {
   start_at: integer('start_at'),
   mention_count: integer('mention_count').notNull().default(0),
   last_touched_at: integer('last_touched_at'),
-  // embedding (blob) intentionally omitted — binary data not needed by MCP tools
   created_at: integer('created_at').notNull(),
   updated_at: integer('updated_at').notNull(),
 });
@@ -42,3 +41,17 @@ export const cycleItems = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.cycle_id, t.item_id] })],
 );
+
+export const comments = sqliteTable(
+  'comments',
+  {
+    id: text('id').primaryKey(),
+    item_id: text('item_id').notNull(),
+    body: text('body').notNull(),
+    author: text('author').notNull().default('local'),
+    created_at: integer('created_at').notNull(),
+    updated_at: integer('updated_at').notNull(),
+  },
+  (t) => [index('comments_item_id_idx').on(t.item_id)],
+);
+

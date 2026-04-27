@@ -44,7 +44,14 @@ Trigger phrases: "park this", "save this for later", "add to inbox", "don't lose
    - Extract significant words (length ≥ 4, excluding stop words: "the", "this", "that", "with", "from", "into", "have", "will", "should", "would", "been", "just", "also", "some")
    - If ≥ 40% of significant words from the new thought appear in the existing item → **match found**
 7. If a match is found:
-   - Call `bump_mention_count(id)` via MCP — **note: this is stubbed in v1 and will log a warning without writing**
+   - Call `bump_mention_count(id)` via MCP, or via bash fallback:
+     ```
+     node ~/.copilot/plugins/qp/mcp/dist/index.js bump-mention-count <id>
+     ```
+   - Call `add_comment(item_id, body)` via MCP with the full captured thought as `body`, or via bash fallback:
+     ```
+     node ~/.copilot/plugins/qp/mcp/dist/index.js add-comment "<full thought text>" --item-id <id>
+     ```
    - Set `merged = true` and record the matched item's identifier and title
    - Do not create a new item
 8. If QP is unavailable (MCP and bash both fail): set `qp_available = false` and proceed to State 4 with fallback path.
@@ -91,9 +98,9 @@ Trigger phrases: "park this", "save this for later", "add to inbox", "don't lose
       ```
       📥 Parked to QP: "<first 80 characters of the thought, truncated with … if longer>"
       ```
-    - Dedup merged (v1 — mention noted but not persisted):
+    - Dedup merged:
       ```
-      📥 Already in QP inbox: "<matched item title>" — mention noted (bump_mention_count stubbed in v1)
+      📥 Already in QP: "<matched item title>" — mention bumped and context recorded
       ```
     - Written to inbox.json fallback:
       ```

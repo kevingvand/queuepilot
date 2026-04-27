@@ -36,10 +36,10 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
 ### State 2 — Cluster with theme-grouper
 
 4. Dispatch the `theme-grouper` agent with the formatted JSON array and this prompt:
-   > "Group these QueuePilot inbox items into 2–5 thematic clusters. Each cluster will become a cycle. Return the strict JSON format described in your instructions."
+   > "Group these QueuePilot inbox items into thematic clusters (1–5, as few or as many as the items warrant — 1 is valid when all items share a single coherent theme). Each cluster will become a cycle. Return the strict JSON format described in your instructions."
 5. If the `theme-grouper` agent is unavailable, fall back to base model clustering — note this to the user:
    > "Note: theme-grouper agent not available — using base model clustering. Results may be less precise."
-   Then perform the clustering yourself following the same rules: find shared WHY, not just keywords; propose 2–5 groups; name them 1–2 words lowercase hyphenated; write actionable goals.
+   Then perform the clustering yourself following the same rules: find shared WHY, not just keywords; propose 1–5 groups; name them 1–2 words lowercase hyphenated; write actionable goals.
 6. Parse the response. Expected shape:
    ```json
    {
