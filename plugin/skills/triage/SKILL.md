@@ -48,12 +48,14 @@ Trigger phrases: "triage my inbox", "process my qp inbox", "let's go through my 
    Age:     <N days old>
    ─────────────────────────────────────────────────
    ```
-6. Use `ask_user` with the following choices:
+6. Use `ask_user` with the following choices, and **always set `allow_freeform: true`** so the user can type a custom instruction (e.g. "move to copilot-context and mark high priority", "split into two items", "rename it to X"):
    - One choice per available cycle, formatted as: `"Assign to '<cycle name>'"`
    - `"Mark as todo (no cycle yet)"`
    - `"Defer — leave in inbox"`
    - `"Discard"`
    - `"Stop triaging here"`
+
+   If the user types a freeform response, interpret it as a natural-language instruction and apply it using the available MCP tools (update_item, add_item_to_cycle, update_item_status, add_tag_to_item, add_comment, etc.).
 
 ---
 
@@ -91,7 +93,12 @@ Trigger phrases: "triage my inbox", "process my qp inbox", "let's go through my 
    🗑  Discarded:          N
    ─────────────────────────────────────────────────
    ```
-10. If deferred items remain, suggest: `"Run qp:rally to turn your todo and inbox items into focused cycles."`
+10. After the summary, use `ask_user` with choices:
+    - `"Yes — rally now"`
+    - `"No thanks"`
+    > "Would you like to run qp:rally now to group remaining items into cycles?"
+
+    If the user chooses **Yes**, execute the `qp:rally` skill inline (do not just suggest it — run it).
 
 ---
 
