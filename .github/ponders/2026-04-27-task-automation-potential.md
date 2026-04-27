@@ -6,7 +6,13 @@ scope: project
 tags: [automation, task-model, ai-collaboration, queuepilot, schema, skills]
 status: pondered
 summary: "QP items should carry an automation potential score and a blocked_by reason. The score captures what role a human plays (executor, collaborator, reviewer, approver), not whether a human is present — humans always stay in the loop. Scoring happens at triage time, not capture time."
-sources: []
+sources:
+  - url: https://en.wikipedia.org/wiki/Human-in-the-loop
+    description: "Human-in-the-loop — structural reasons humans remain essential in automated systems"
+    provided_by: research
+  - url: https://hbr.org/2018/07/collaborative-intelligence-humans-and-ai-are-joining-forces
+    description: "HBR Collaborative Intelligence (2018) — AI as augmentation, not replacement"
+    provided_by: research
 related: []
 ---
 
@@ -112,8 +118,8 @@ Users can split cycles by profile (extract AI-ready items, defer blocked items) 
 None.
 
 ### Found during research
-- Wikipedia — Human-in-the-loop: three reasons humans remain essential (presence, judgment, accountability)
-- HBR "Collaborative Intelligence" (2018): AI complements human capabilities rather than replacing them — the operative model is augmentation
+- https://en.wikipedia.org/wiki/Human-in-the-loop — Three structural reasons humans remain essential: physical presence, judgment under ambiguity, and accountability/authority
+- https://hbr.org/2018/07/collaborative-intelligence-humans-and-ai-are-joining-forces — HBR "Collaborative Intelligence" (2018): AI complements human capabilities rather than replacing them — the operative model is augmentation
 
 ## Conclusion & Next Steps
 
