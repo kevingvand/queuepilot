@@ -80,6 +80,12 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
     - `"Create all cycles"`
     - `"Adjust a grouping"` (freeform — describe the change)
     - `"Start over — re-cluster from scratch"`
+10. If the user picks "Create all cycles", follow up immediately with `ask_user`:
+    > "Which cycle do you want to activate now? (One active cycle becomes your current focus. You can always change it later.)"
+    Choices:
+    - One choice per proposed cycle, formatted as: `"Start '<cycle_name>' now"`
+    - `"None — create all as planned, I'll activate one later"`
+    Capture this as the **activation choice** for use in State 5.
 
 ---
 
@@ -104,7 +110,8 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
        ```
        npx @queuepilot/mcp-server create-cycle "<cycle_name>" --goal "<cycle_goal>"
        ```
-       Capture the returned `cycle_id`.
+       Cycles are created with `status: 'planned'` — no auto-archiving occurs.
+       Capture the returned `cycle_id` and record the mapping of `cycle_name → cycle_id`.
     2. For each item in `item_ids`:
        - Call `add_item_to_cycle(item_id, cycle_id)` via MCP, or bash fallback:
          ```
@@ -114,25 +121,36 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
          ```
          npx @queuepilot/mcp-server update-item-status <item_id> todo
          ```
-17. Unrelated items are left in inbox with no changes.
-18. Display the completion summary:
+17. After all cycles and items are created, check the **activation choice** captured in State 3:
+    - If the user chose to start a specific cycle now, call `set_active_cycle(cycle_id)` via MCP, or bash fallback:
+      ```
+      npx @queuepilot/mcp-server set-active-cycle <cycle_id>
+      ```
+    - If the user chose "None", skip this step — all cycles remain `planned`.
+18. Unrelated items are left in inbox with no changes.
+19. Display the completion summary:
     ```
     ── Rally complete ────────────────────────────────
     ✅ Created N cycles
+    🚀 Active now:    <cycle_name> (or "none — activate later with qp:pick")
     📋 Assigned M items
     📥 Left in inbox: K unrelated items
     ─────────────────────────────────────────────────
     ```
-19. Suggest next steps: `"Run qp:pick to activate a cycle and start working, or qp:brief for a full status view."`
+20. Suggest next steps:
+    - If a cycle was activated: `"You're all set — run qp:brief for a full status view."`
+    - If no cycle was activated: `"Run qp:pick to activate a cycle when you're ready to start working."`
 
 ---
 
 ## Expected Output
 
-One or more new cycles created in QueuePilot, with inbox items assigned and status updated to `todo`. Unrelated items remain in inbox unchanged.
+One or more new cycles created in QueuePilot with `status: 'planned'`, with inbox items assigned and status updated to `todo`. If the user chose to activate a cycle immediately, that cycle is set as active. Unrelated items remain in inbox unchanged.
 
 ## Notes
 
 - **cycle_goal is persisted.** Pass `goal` to `create_cycle` — the MCP tool and schema both support it.
+- **Cycles are created as `planned`.** `create_cycle` no longer auto-archives an existing active cycle. Use `set_active_cycle` to explicitly activate a cycle.
+- **Multiple planned cycles can coexist.** All proposed cycles are created regardless of which (if any) is activated now.
 - **theme-grouper is preferred.** The fallback to base model clustering is a degraded path — encourage users to ensure the plugin is fully installed.
 - **No partial commits.** If cycle creation fails mid-way, report which cycles were created and which were not. Do not silently continue.
