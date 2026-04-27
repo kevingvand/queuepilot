@@ -10,6 +10,15 @@ export type FilterState = {
 export type SortOrder = 'newest' | 'oldest' | 'priority' | 'title';
 
 const DETAIL_WIDTH_KEY = 'qp:detailPanelWidth';
+const SIDEBAR_WIDTH_KEY = 'qp:sidebarWidth';
+
+function getStoredSidebarWidth(): number {
+  try {
+    const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    if (stored) return Math.min(400, Math.max(160, Number(stored)));
+  } catch {}
+  return 240;
+}
 
 function getStoredDetailWidth(): number {
   try {
@@ -26,6 +35,7 @@ type UiStore = {
   addDialogOpen: boolean;
   shortcutsOpen: boolean;
   sidebarCollapsed: boolean;
+  sidebarWidth: number;
   detailPanelWidth: number;
   focusDetailTitle: boolean;
   setSelectedItemId: (id: string | null) => void;
@@ -34,6 +44,7 @@ type UiStore = {
   setAddDialogOpen: (open: boolean) => void;
   setShortcutsOpen: (open: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  setSidebarWidth: (w: number) => void;
   setDetailPanelWidth: (width: number) => void;
   triggerFocusDetailTitle: () => void;
   clearFocusDetailTitle: () => void;
@@ -41,11 +52,12 @@ type UiStore = {
 
 export const useUiStore = create<UiStore>((set) => ({
   selectedItemId: null,
-  filterState: {},
+  filterState: { status: 'inbox' as string },
   sortOrder: 'newest',
   addDialogOpen: false,
   shortcutsOpen: false,
   sidebarCollapsed: false,
+  sidebarWidth: getStoredSidebarWidth(),
   detailPanelWidth: getStoredDetailWidth(),
   focusDetailTitle: false,
   setSelectedItemId: (id) => set({ selectedItemId: id }),
@@ -54,6 +66,10 @@ export const useUiStore = create<UiStore>((set) => ({
   setAddDialogOpen: (open) => set({ addDialogOpen: open }),
   setShortcutsOpen: (open) => set({ shortcutsOpen: open }),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  setSidebarWidth: (w) => {
+    try { localStorage.setItem(SIDEBAR_WIDTH_KEY, String(w)); } catch {}
+    set({ sidebarWidth: w });
+  },
   setDetailPanelWidth: (width) => {
     try { localStorage.setItem(DETAIL_WIDTH_KEY, String(width)); } catch {}
     set({ detailPanelWidth: width });

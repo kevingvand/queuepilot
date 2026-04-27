@@ -11,10 +11,15 @@ import { ShortcutsOverlay } from './ShortcutsOverlay'
 import { useUiStore } from '../../store/ui.store'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 1000 * 30 } },
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 10,
+      refetchOnWindowFocus: true,
+      refetchInterval: 10000,
+    },
+  },
 })
 
-const SIDEBAR_FULL = 240;
 const SIDEBAR_ICON = 48;
 
 function useWindowWidth() {
@@ -35,6 +40,8 @@ function ShellContent() {
     setSelectedItemId,
     sidebarCollapsed,
     setSidebarCollapsed,
+    sidebarWidth: storeSidebarWidth,
+    setSidebarWidth,
     detailPanelWidth,
     setDetailPanelWidth,
     addDialogOpen,
@@ -48,7 +55,37 @@ function ShellContent() {
 
   // Auto-collapse sidebar on medium screens, hide on narrow
   const effectiveCollapsed = isNarrow || isMedium ? true : sidebarCollapsed;
-  const sidebarWidth = isNarrow ? 0 : (effectiveCollapsed ? SIDEBAR_ICON : SIDEBAR_FULL);
+  const sidebarWidth = isNarrow ? 0 : (effectiveCollapsed ? SIDEBAR_ICON : storeSidebarWidth);
+
+  // Drag resize state for the sidebar
+  const isSidebarDragging = useRef(false);
+  const sidebarDragStartX = useRef(0);
+  const sidebarDragStartWidth = useRef(0);
+
+  const handleSidebarDragStart = useCallback((e: React.MouseEvent) => {
+    isSidebarDragging.current = true;
+    sidebarDragStartX.current = e.clientX;
+    sidebarDragStartWidth.current = storeSidebarWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMove = (e: MouseEvent) => {
+      if (!isSidebarDragging.current) return;
+      const newWidth = Math.min(400, Math.max(160, sidebarDragStartWidth.current + (e.clientX - sidebarDragStartX.current)));
+      setSidebarWidth(newWidth);
+    };
+
+    const onUp = () => {
+      isSidebarDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [storeSidebarWidth, setSidebarWidth]);
 
   // Drag resize state for the detail panel
   const isDragging = useRef(false);
@@ -89,21 +126,43 @@ function ShellContent() {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
         {/* Sidebar — hidden on narrow, icon strip on medium, full on wide */}
         {!isNarrow && (
-          <div
-            style={{
-              width: `${sidebarWidth}px`,
-              flexShrink: 0,
-              borderRight: '1px solid var(--border)',
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              backgroundColor: 'var(--bg-primary)',
-              transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          >
-            <Sidebar
-              collapsed={effectiveCollapsed}
-              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
+          <div style={{ display: 'flex', flexShrink: 0, height: '100%' }}>
+            <div
+              style={{
+                width: `${sidebarWidth}px`,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                backgroundColor: 'var(--bg-primary)',
+                borderRight: (!isWide || effectiveCollapsed) ? '1px solid var(--border)' : undefined,
+                transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              <Sidebar
+                collapsed={effectiveCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              />
+            </div>
+            {/* Drag handle at right edge — only on wide screens when not collapsed */}
+            {isWide && !effectiveCollapsed && (
+              <div
+                onMouseDown={handleSidebarDragStart}
+                style={{
+                  width: '4px',
+                  cursor: 'col-resize',
+                  flexShrink: 0,
+                  backgroundColor: 'transparent',
+                  borderRight: '1px solid var(--border)',
+                  transition: 'background-color 150ms',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--accent)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSidebarDragging.current)
+                    (e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent';
+                }}
+              />
+            )}
           </div>
         )}
 

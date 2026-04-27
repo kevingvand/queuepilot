@@ -21,10 +21,10 @@ type NavItem = {
 };
 
 const INBOX_ITEMS: NavItem[] = [
-  { label: 'All Items', icon: <Inbox size={14} />, filter: {} },
   { label: 'Inbox', icon: <Inbox size={14} />, filter: { status: 'inbox' } },
   { label: 'In Progress', icon: <CircleDot size={14} />, filter: { status: 'in_progress' } },
   { label: 'Done', icon: <CheckCircle2 size={14} />, filter: { status: 'done' } },
+  { label: 'All Items', icon: <Inbox size={14} />, filter: {} },
 ];
 
 type SidebarProps = {
