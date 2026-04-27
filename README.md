@@ -39,6 +39,14 @@ No cloud account. No telemetry. Everything lives in a local SQLite file.
 Install once and Copilot gains five skills that read and write your QueuePilot database in real time:
 
 ```bash
+# From GitHub (recommended)
+copilot plugin install kevingvand/queuepilot:plugin
+
+# Via the QueuePilot marketplace
+copilot plugin marketplace add kevingvand/queuepilot
+copilot plugin install qp@queuepilot
+
+# From a local clone
 copilot plugin install /path/to/queuepilot/plugin
 ```
 

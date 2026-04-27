@@ -14,6 +14,21 @@ The QueuePilot plugin connects Copilot CLI to your local QueuePilot database. It
 
 ## Install the plugin
 
+### From GitHub (recommended)
+
+```bash
+copilot plugin install kevingvand/queuepilot:plugin
+```
+
+### Via the QueuePilot marketplace
+
+```bash
+copilot plugin marketplace add kevingvand/queuepilot
+copilot plugin install qp@queuepilot
+```
+
+### From a local clone
+
 ```bash
 copilot plugin install /path/to/queuepilot/plugin
 ```
