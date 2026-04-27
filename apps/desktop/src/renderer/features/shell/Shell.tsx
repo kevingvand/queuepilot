@@ -4,7 +4,7 @@ import { TooltipProvider } from '../../components/ui/tooltip'
 import { AddItemDialog } from '../items/AddItemDialog'
 import { ItemDetail } from './ItemDetail'
 import { ItemList } from './ItemList'
-import { CycleBoard } from '../items/CycleBoard'
+import { CycleBoard } from '../cycles/CycleBoard'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
 import { Header } from './Header'
@@ -48,6 +48,7 @@ function ShellContent() {
     addDialogOpen,
     setAddDialogOpen,
     filterState,
+    activeCycleId,
   } = useUiStore();
 
   const windowWidth = useWindowWidth();
@@ -183,8 +184,8 @@ function ShellContent() {
             overflow: 'hidden',
           }}
         >
-          {filterState.cycle_id ? (
-              <CycleBoard cycleId={filterState.cycle_id} />
+          {activeCycleId ? (
+              <CycleBoard cycleId={activeCycleId} />
             ) : (
               <ItemList />
             )}

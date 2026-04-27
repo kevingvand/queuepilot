@@ -35,6 +35,7 @@ interface QueuePilotAPI {
     create: (data: any) => Promise<any>
     update: (id: string, data: any) => Promise<any>
     delete: (id: string) => Promise<any>
+    items: (id: string) => Promise<any>
   }
   filters: {
     list: () => Promise<any>
@@ -123,6 +124,7 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
       create: (data: any) => rawApi.request('POST', '/cycles', data),
       update: (id: string, data: any) => rawApi.request('PATCH', `/cycles/${id}`, data),
       delete: (id: string) => rawApi.request('DELETE', `/cycles/${id}`),
+      items: (id: string) => rawApi.request('GET', `/cycles/${id}/items`),
     },
     filters: {
       list: () => rawApi.request('GET', '/filters'),

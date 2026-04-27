@@ -3,7 +3,6 @@ import { create } from 'zustand';
 export type FilterState = {
   status?: string;
   tag?: string;
-  cycle_id?: string;
   q?: string;
 };
 
@@ -38,6 +37,7 @@ type UiStore = {
   sidebarWidth: number;
   detailPanelWidth: number;
   focusDetailTitle: boolean;
+  activeCycleId: string | null;
   setSelectedItemId: (id: string | null) => void;
   setFilterState: (filter: FilterState) => void;
   setSortOrder: (order: SortOrder) => void;
@@ -48,6 +48,7 @@ type UiStore = {
   setDetailPanelWidth: (width: number) => void;
   triggerFocusDetailTitle: () => void;
   clearFocusDetailTitle: () => void;
+  setActiveCycleId: (id: string | null) => void;
 };
 
 export const useUiStore = create<UiStore>((set) => ({
@@ -60,6 +61,7 @@ export const useUiStore = create<UiStore>((set) => ({
   sidebarWidth: getStoredSidebarWidth(),
   detailPanelWidth: getStoredDetailWidth(),
   focusDetailTitle: false,
+  activeCycleId: null,
   setSelectedItemId: (id) => set({ selectedItemId: id }),
   setFilterState: (filter) => set({ filterState: filter }),
   setSortOrder: (order) => set({ sortOrder: order }),
@@ -76,4 +78,5 @@ export const useUiStore = create<UiStore>((set) => ({
   },
   triggerFocusDetailTitle: () => set({ focusDetailTitle: true }),
   clearFocusDetailTitle: () => set({ focusDetailTitle: false }),
+  setActiveCycleId: (id) => set({ activeCycleId: id }),
 }));

@@ -104,7 +104,7 @@ export function CyclesList() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editCycle, setEditCycle] = useState<Cycle | null>(null);
   const [completedExpanded, setCompletedExpanded] = useState(false);
-  const { filterState, setFilterState } = useUiStore();
+  const { activeCycleId, setActiveCycleId } = useUiStore();
   const { data: cycles, isLoading } = useCycles();
   const { mutate: deleteCycle } = useDeleteCycle();
   const { mutate: activateCycle } = useActivateCycle();
@@ -141,8 +141,8 @@ export function CyclesList() {
           <CycleRow
             key={cycle.id}
             cycle={cycle}
-            selected={filterState.cycle_id === cycle.id}
-            onClick={() => setFilterState({ cycle_id: cycle.id })}
+            selected={activeCycleId === cycle.id}
+            onClick={() => setActiveCycleId(cycle.id)}
             onEdit={() => setEditCycle(cycle)}
             onDelete={() => deleteCycle(cycle.id)}
             onActivate={() => activateCycle(cycle.id)}
@@ -172,8 +172,8 @@ export function CyclesList() {
                 <CycleRow
                   key={cycle.id}
                   cycle={cycle}
-                  selected={filterState.cycle_id === cycle.id}
-                  onClick={() => setFilterState({ cycle_id: cycle.id })}
+                  selected={activeCycleId === cycle.id}
+                  onClick={() => setActiveCycleId(cycle.id)}
                   onEdit={() => setEditCycle(cycle)}
                   onDelete={() => deleteCycle(cycle.id)}
                   onActivate={() => activateCycle(cycle.id)}

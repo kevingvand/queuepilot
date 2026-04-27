@@ -11,7 +11,7 @@ import type { Tag as TagType } from '@queuepilot/core/types';
 import { useApi } from '../../hooks/useApi';
 import { cn } from '../../lib/utils';
 import { type FilterState, useUiStore } from '../../store/ui.store';
-import { CyclesList } from '../items/CyclesList';
+import { CyclesList } from '../cycles/CyclesList';
 import { SavedFiltersList } from '../items/SavedFiltersList';
 
 type NavItem = {
@@ -33,7 +33,7 @@ type SidebarProps = {
 };
 
 export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
-  const { filterState, setFilterState } = useUiStore();
+  const { filterState, setFilterState, setActiveCycleId } = useUiStore();
   const api = useApi();
 
   const { data: tagsData } = useQuery({
@@ -63,7 +63,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
                 icon={item.icon}
                 label={item.label}
                 active={isActive(item.filter)}
-                onClick={() => setFilterState(item.filter)}
+                onClick={() => { setFilterState(item.filter); setActiveCycleId(null); }}
               />
             ))}
           </div>
@@ -76,7 +76,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
                   icon={item.icon}
                   label={item.label}
                   active={isActive(item.filter)}
-                  onClick={() => setFilterState(item.filter)}
+                  onClick={() => { setFilterState(item.filter); setActiveCycleId(null); }}
                 />
               ))}
             </SidebarSection>
@@ -97,7 +97,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
                   }
                   label={t.name}
                   active={isActive({ tag: t.id })}
-                  onClick={() => setFilterState({ tag: t.id })}
+                  onClick={() => { setFilterState({ tag: t.id }); setActiveCycleId(null); }}
                 />
               ))}
             </SidebarSection>
