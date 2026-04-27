@@ -5,8 +5,8 @@
 <h1 align="center">QueuePilot</h1>
 
 <p align="center">
-  <strong>Persistent local memory for GitHub Copilot CLI.</strong><br/>
-  Capture ideas, track tasks, and keep context alive across sessions — everything stays on your machine.
+  <strong>Stop switching context. Start shipping faster.</strong><br/>
+  QueuePilot is a local-first task manager that plugs directly into Copilot CLI, so your AI pair always knows what you're working on.
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 ---
 
 <p align="center">
-  <img src="docs/screenshot-placeholder.png" alt="QueuePilot — 3-pane shell" width="800" />
+  <img src="docs/screenshot.png" alt="QueuePilot 3-pane shell" width="800" />
 </p>
 
 *3-pane layout: sidebar (cycles, tags, saved filters) → item list → drag-resizable detail panel.*
@@ -28,7 +28,7 @@
 
 ## What is QueuePilot?
 
-QueuePilot is a local Electron desktop app and a Copilot CLI plugin that work together. The app is your persistent inbox — capture ideas, organise work into cycles, and track what matters. The plugin bridges that directly into Copilot CLI sessions, so Copilot knows what you're working on and what's waiting, without you ever switching context or repeating yourself.
+QueuePilot is a local Electron desktop app and a Copilot CLI plugin that work together. The app is your persistent inbox: capture ideas, organise work into cycles, and track what matters. The plugin bridges that directly into Copilot CLI sessions, so Copilot knows what you're working on and what's waiting, without you ever switching context or repeating yourself.
 
 No cloud account. No telemetry. Everything lives in a local SQLite file.
 
@@ -36,7 +36,7 @@ No cloud account. No telemetry. Everything lives in a local SQLite file.
 
 ## Copilot CLI plugin
 
-Install once — Copilot gains five skills that read and write your QueuePilot database in real time:
+Install once and Copilot gains five skills that read and write your QueuePilot database in real time:
 
 ```bash
 copilot plugin install /path/to/queuepilot/plugin
@@ -58,14 +58,14 @@ See [plugin/README.md](plugin/README.md) for full setup, environment variables, 
 
 ## Highlights
 
-- **Copilot-native** — MCP plugin bridges your task database directly into Copilot CLI context
-- **Local-first** — Every operation hits a local SQLite file; sub-millisecond reads, fully offline
-- **Zero account** — No signup, no telemetry, no cloud dependency
-- **Cycles** — Organise work into focused sprints; active cycle surfaces automatically in Copilot
-- **Full item model** — Status workflow, priority, due dates, tags, sub-tasks, and relationships
-- **Command palette** — `Cmd+K` to create, navigate, filter, and change status without the mouse
-- **Keyboard-driven** — `C` create · `E` edit · `J/K` navigate · `S` status · `T` tag · `?` overlay
-- **Portable data** — SQLite file you own; put it in a git repo, encrypted volume, or Dropbox
+- **Copilot-native**: MCP plugin bridges your task database directly into Copilot CLI context
+- **Local-first**: Every operation hits a local SQLite file; sub-millisecond reads, fully offline
+- **Zero account**: No signup, no telemetry, no cloud dependency
+- **Cycles**: Organise work into focused sprints; active cycle surfaces automatically in Copilot
+- **Full item model**: Status workflow, priority, due dates, tags, sub-tasks, and relationships
+- **Command palette**: `Cmd+K` to create, navigate, filter, and change status without the mouse
+- **Keyboard-driven**: `C` create · `E` edit · `J/K` navigate · `S` status · `T` tag · `?` overlay
+- **Portable data**: SQLite file you own; put it in a git repo, encrypted volume, or Dropbox
 
 ---
 
@@ -84,13 +84,13 @@ Node.js ≥ 20 and pnpm ≥ 9 are required. On first launch, QueuePilot creates 
 
 ## Status
 
-**v0.1 — early alpha.** Core data model, API layer, and 3-pane shell are working. Not production-ready. See [ROADMAP.md](ROADMAP.md) for what ships next.
+**v0.1, early alpha.** Core data model, API layer, and 3-pane shell are working. Not production-ready. See [ROADMAP.md](ROADMAP.md) for what ships next.
 
 ---
 
 ## Architecture
 
-pnpm monorepo — one Electron app, two shared packages. The Node.js main process owns SQLite (via `better-sqlite3` + Drizzle ORM) and a Hono HTTP server. The React renderer talks to it via typed IPC — no raw `fetch`, no untyped channels.
+pnpm monorepo with one Electron app and two shared packages. The Node.js main process owns SQLite (via `better-sqlite3` + Drizzle ORM) and a Hono HTTP server. The React renderer talks to it via typed IPC, no raw `fetch`, no untyped channels.
 
 ```
 queuepilot/
@@ -109,10 +109,10 @@ queuepilot/
 
 ## Contributing
 
-PRs are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, commit format, and code conventions. Check [ROADMAP.md](ROADMAP.md) for what's planned — open an issue to discuss scope before starting anything non-trivial.
+PRs are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, commit format, and code conventions. Check [ROADMAP.md](ROADMAP.md) for what's planned. Open an issue to discuss scope before starting anything non-trivial.
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

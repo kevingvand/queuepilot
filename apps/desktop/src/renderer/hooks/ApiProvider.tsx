@@ -55,7 +55,7 @@ const API_BASE_URL = '/api'
 function createHttpApi(): RawAPI {
   return {
     request: async (method: string, path: string, body?: unknown, query?: Record<string, unknown>) => {
-      const url = new URL(`${API_BASE_URL}${path}`)
+      const url = new URL(`${API_BASE_URL}${path}`, window.location.origin)
       if (query) {
         Object.entries(query).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
