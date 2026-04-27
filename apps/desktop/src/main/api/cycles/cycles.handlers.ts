@@ -68,6 +68,7 @@ export async function addItemToCycle(c: Context<AppEnv>) {
   const body = c.req.valid('json' as never) as { item_id: string };
 
   db.insert(cycleItems).values({ cycle_id: id, item_id: body.item_id, added_at: Date.now() } as NewCycleItem).run();
+  db.update(items).set({ cycle_id: id }).where(eq(items.id, body.item_id)).run();
   return c.json({ ok: true }, 201);
 }
 
@@ -98,6 +99,8 @@ export async function removeItemFromCycle(c: Context<AppEnv>) {
   db.delete(cycleItems)
     .where(and(eq(cycleItems.cycle_id, id), eq(cycleItems.item_id, itemId)))
     .run();
+
+  db.update(items).set({ cycle_id: null }).where(eq(items.id, itemId)).run();
 
   return c.json({ ok: true });
 }
