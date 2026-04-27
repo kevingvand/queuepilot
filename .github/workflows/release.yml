@@ -158,7 +158,7 @@ jobs:
       - name: Set version from tag
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          npm version "$VERSION" --no-git-tag-version
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
         working-directory: plugin/mcp
 
       - name: Install MCP dependencies
