@@ -118,7 +118,7 @@ Core tables (see `packages/core/src/schema/tables.ts`):
 - `item_events` — Audit trail (every status/field change)
 - `sources` / `sync_targets` / `sync_log` — Future integration hooks
 
-Status workflow: `inbox → todo → in_progress → done | discarded`
+Status workflow: `inbox → todo → in_progress → review → done | discarded`
 
 ---
 

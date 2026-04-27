@@ -6,12 +6,12 @@ import { VALID_STATUSES } from './types.js';
 export const definition = {
   name: 'update_item_status',
   description:
-    'Transition an item through its lifecycle: inbox → todo → in_progress → done | discarded. Also updates last_touched_at so the item surfaces as recently active.',
+    'Transition an item through its lifecycle: inbox → todo → in_progress → review → done | discarded. Also updates last_touched_at so the item surfaces as recently active.',
   inputSchema: {
     type: 'object' as const,
     properties: {
       id: { type: 'string', description: 'Item ULID' },
-      status: { type: 'string', description: 'inbox | todo | in_progress | done | discarded' },
+      status: { type: 'string', description: 'inbox | todo | in_progress | review | done | discarded' },
     },
     required: ['id', 'status'],
   },

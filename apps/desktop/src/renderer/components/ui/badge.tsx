@@ -10,6 +10,7 @@ const badgeVariants = cva(
         inbox:       'bg-blue-500/20   text-blue-800   dark:text-blue-300',
         todo:        'bg-purple-500/20 text-purple-800 dark:text-purple-300',
         in_progress: 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-300',
+        review:      'bg-indigo-500/20 text-indigo-800 dark:text-indigo-300',
         done:        'bg-green-500/20  text-green-800  dark:text-green-300',
         discarded:   'bg-gray-500/20   text-gray-700   dark:text-gray-400',
       },

@@ -9,7 +9,7 @@ import { useToast } from '../../../components/ui/toast';
 import { useApi } from '../../../hooks/useApi';
 import { useUiStore } from '../../../store/ui.store';
 
-const STATUS_CYCLE = ['inbox', 'todo', 'in_progress', 'done', 'discarded'] as const;
+const STATUS_CYCLE = ['inbox', 'todo', 'in_progress', 'review', 'done', 'discarded'] as const;
 type ItemStatus = (typeof STATUS_CYCLE)[number];
 
 const PRIORITY_COLORS = ['bg-muted', 'bg-blue-400', 'bg-yellow-400', 'bg-orange-400', 'bg-red-500'];

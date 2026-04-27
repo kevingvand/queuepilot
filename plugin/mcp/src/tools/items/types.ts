@@ -36,4 +36,4 @@ export const ITEM_COLUMNS = {
 
 export const CYCLE_ITEMS_TABLE = cycleItems;
 
-export const VALID_STATUSES = ['inbox', 'todo', 'in_progress', 'done', 'discarded'] as const;
+export const VALID_STATUSES = ['inbox', 'todo', 'in_progress', 'review', 'done', 'discarded'] as const;
