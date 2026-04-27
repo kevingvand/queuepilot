@@ -3,8 +3,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { openDb } from './db.js';
 import { dispatch } from './dispatch.js';
-import { ITEM_TOOL_DEFINITIONS } from './tools/items.js';
-import { CYCLE_TOOL_DEFINITIONS } from './tools/cycles.js';
+import { ITEM_TOOL_DEFINITIONS } from './tools/items.definitions.js';
+import { CYCLE_TOOL_DEFINITIONS } from './tools/cycles.definitions.js';
 import { COMMENT_TOOL_DEFINITIONS } from './tools/comments.js';
 
 const TOOL_DEFINITIONS = [
