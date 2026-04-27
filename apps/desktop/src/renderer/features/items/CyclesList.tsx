@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import type { Cycle } from '@queuepilot/core/types';
-import { Pencil, Plus, RotateCcw, X } from 'lucide-react';
+import { ChevronDown, Pencil, Plus, RotateCcw, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useUiStore } from '../../store/ui.store';
 import { CreateCycleDialog } from './CreateCycleDialog';
 import { EditCycleDialog } from './EditCycleDialog';
 import { useCycles, useDeleteCycle } from './hooks/useCycles';
 
-type CycleStatus = 'planned' | 'active' | 'completed';
+type CycleStatus = 'planned' | 'active' | 'completed' | 'archived';
 
 const STATUS_BADGE_CLASSES: Record<CycleStatus, string> = {
   planned: 'bg-blue-500/20 text-blue-700 dark:text-blue-300',
   active: 'bg-green-500/20 text-green-800 dark:text-green-300',
   completed: 'bg-gray-500/20 text-gray-600 dark:text-gray-400',
+  archived: 'bg-muted text-muted-foreground',
 };
 
 function formatDateRange(startsAt: number | null, endsAt: number | null): string {
@@ -49,7 +50,6 @@ function CycleRow({ cycle, active, onClick, onEdit, onDelete }: CycleRowProps) {
             : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
         )}
       >
-        <RotateCcw size={14} className="flex-shrink-0" />
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="truncate text-sm">{cycle.name}</span>
@@ -107,9 +107,14 @@ function LoadingSkeleton() {
 export function CyclesList() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editCycle, setEditCycle] = useState<Cycle | null>(null);
+  const [completedExpanded, setCompletedExpanded] = useState(false);
   const { filterState, setFilterState } = useUiStore();
   const { data: cycles, isLoading } = useCycles();
   const { mutate: deleteCycle } = useDeleteCycle();
+
+  const activeCycles = cycles?.filter((c) => c.status === 'active' || c.status === 'planned') ?? [];
+  const completedCycles =
+    cycles?.filter((c) => c.status === 'completed' || c.status === 'archived') ?? [];
 
   return (
     <>
@@ -134,7 +139,7 @@ export function CyclesList() {
           <p className="px-4 py-1.5 text-xs text-muted-foreground">No cycles yet</p>
         )}
 
-        {cycles?.map((cycle) => (
+        {activeCycles.map((cycle) => (
           <CycleRow
             key={cycle.id}
             cycle={cycle}
@@ -144,6 +149,37 @@ export function CyclesList() {
             onDelete={() => deleteCycle(cycle.id)}
           />
         ))}
+
+        {completedCycles.length > 0 && (
+          <>
+            <button
+              onClick={() => setCompletedExpanded((prev) => !prev)}
+              className="w-full flex items-center gap-1.5 px-4 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronDown
+                size={12}
+                className={cn(
+                  'flex-shrink-0 transition-transform',
+                  completedExpanded ? 'rotate-0' : '-rotate-90',
+                )}
+              />
+              <span>
+                {completedExpanded ? 'Completed' : `Completed (${completedCycles.length})`}
+              </span>
+            </button>
+            {completedExpanded &&
+              completedCycles.map((cycle) => (
+                <CycleRow
+                  key={cycle.id}
+                  cycle={cycle}
+                  active={filterState.cycle_id === cycle.id}
+                  onClick={() => setFilterState({ cycle_id: cycle.id })}
+                  onEdit={() => setEditCycle(cycle)}
+                  onDelete={() => deleteCycle(cycle.id)}
+                />
+              ))}
+          </>
+        )}
       </div>
 
       <CreateCycleDialog open={createOpen} onClose={() => setCreateOpen(false)} />

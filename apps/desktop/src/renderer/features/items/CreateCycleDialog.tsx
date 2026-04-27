@@ -48,11 +48,7 @@ export function CreateCycleDialog({ open, onClose }: CreateCycleDialogProps) {
       setValidationError('Name is required.');
       return;
     }
-    if (!startsAt || !endsAt) {
-      setValidationError('Start and end dates are required.');
-      return;
-    }
-    if (msFromDateString(endsAt) <= msFromDateString(startsAt)) {
+    if (startsAt && endsAt && msFromDateString(endsAt) <= msFromDateString(startsAt)) {
       setValidationError('End date must be after start date.');
       return;
     }
@@ -60,8 +56,8 @@ export function CreateCycleDialog({ open, onClose }: CreateCycleDialogProps) {
     const body = {
       name: name.trim(),
       status,
-      starts_at: msFromDateString(startsAt),
-      ends_at: msFromDateString(endsAt),
+      starts_at: startsAt ? msFromDateString(startsAt) : undefined,
+      ends_at: endsAt ? msFromDateString(endsAt) : undefined,
     } satisfies Partial<NewCycle>;
 
     createCycle(body as NewCycle, { onSuccess: handleClose });
@@ -91,7 +87,6 @@ export function CreateCycleDialog({ open, onClose }: CreateCycleDialogProps) {
                   type="date"
                   value={startsAt}
                   onChange={(e) => setStartsAt(e.target.value)}
-                  required
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -100,7 +95,6 @@ export function CreateCycleDialog({ open, onClose }: CreateCycleDialogProps) {
                   type="date"
                   value={endsAt}
                   onChange={(e) => setEndsAt(e.target.value)}
-                  required
                 />
               </div>
             </div>
