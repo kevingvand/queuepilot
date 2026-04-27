@@ -11,4 +11,7 @@ await build({
   banner: {
     js: '#!/usr/bin/env node',
   },
+  loader: {
+    '.sql': 'text',
+  },
 });
