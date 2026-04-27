@@ -144,7 +144,10 @@ export function CyclesList() {
             selected={activeCycleId === cycle.id}
             onClick={() => setActiveCycleId(cycle.id)}
             onEdit={() => setEditCycle(cycle)}
-            onDelete={() => deleteCycle(cycle.id)}
+            onDelete={() => {
+              if (activeCycleId === cycle.id) setActiveCycleId(null);
+              deleteCycle(cycle.id);
+            }}
             onActivate={() => activateCycle(cycle.id)}
             onDeactivate={() => deactivateCycle(cycle.id)}
           />
@@ -175,7 +178,10 @@ export function CyclesList() {
                   selected={activeCycleId === cycle.id}
                   onClick={() => setActiveCycleId(cycle.id)}
                   onEdit={() => setEditCycle(cycle)}
-                  onDelete={() => deleteCycle(cycle.id)}
+                  onDelete={() => {
+                    if (activeCycleId === cycle.id) setActiveCycleId(null);
+                    deleteCycle(cycle.id);
+                  }}
                   onActivate={() => activateCycle(cycle.id)}
                   onDeactivate={() => deactivateCycle(cycle.id)}
                 />

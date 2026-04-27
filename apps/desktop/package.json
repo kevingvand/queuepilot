@@ -14,7 +14,8 @@
     "predev:server": "node scripts/restore-sqlite-for-tests.mjs",
     "dev:server": "tsx src/dev-server.ts",
     "dev:vite": "vite",
-    "pretest": "node scripts/restore-sqlite-for-tests.mjs"
+    "pretest": "node scripts/restore-sqlite-for-tests.mjs",
+    "seed:dev": "node scripts/seed-dev.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

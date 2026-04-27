@@ -55,6 +55,10 @@ export async function createItem(c: Context<AppEnv>) {
   const id = ulid();
   const now = Date.now();
 
+  if (body.status && !(VALID_STATUSES as readonly string[]).includes(body.status)) {
+    return c.json({ error: `Invalid status "${body.status}"` }, 400);
+  }
+
   db.insert(items).values({ ...body, id, created_at: now, updated_at: now } as unknown as NewItem).run();
 
   db.insert(itemEvents)
@@ -88,7 +92,7 @@ export async function updateItem(c: Context<AppEnv>) {
   const prevStatus = existing.status;
   const nextStatus = safeBody.status;
 
-  // Validate status transition: terminal states (done, discarded) cannot transition further
+  // Validate status transition against the full state machine
   if (nextStatus && nextStatus !== prevStatus) {
     if (!(VALID_STATUSES as readonly string[]).includes(nextStatus)) {
       return c.json({ error: `Invalid status "${nextStatus}"` }, 400);
@@ -96,6 +100,9 @@ export async function updateItem(c: Context<AppEnv>) {
     const allowed = VALID_TRANSITIONS[prevStatus] ?? [];
     if (allowed.length === 0) {
       return c.json({ error: `Cannot transition from terminal status "${prevStatus}"` }, 400);
+    }
+    if (!allowed.includes(nextStatus)) {
+      return c.json({ error: `Transition from "${prevStatus}" to "${nextStatus}" is not allowed` }, 400);
     }
   }
 

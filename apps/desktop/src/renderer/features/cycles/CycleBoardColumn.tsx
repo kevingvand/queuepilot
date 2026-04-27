@@ -8,12 +8,14 @@ export function CycleBoardColumn({
   label,
   accent,
   items,
+  emptyText = 'Nothing here yet',
   onCardClick,
 }: {
   columnId: string;
   label: string;
   accent: string;
   items: Item[];
+  emptyText?: string;
   onCardClick: (item: Item) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: columnId });
@@ -40,6 +42,7 @@ export function CycleBoardColumn({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexShrink: 0,
         }}
       >
         <span className={`text-sm font-semibold ${accent}`}>{label}</span>
@@ -75,13 +78,18 @@ export function CycleBoardColumn({
         {items.length === 0 && (
           <div
             style={{
-              padding: '24px 16px',
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '32px 16px',
               textAlign: 'center',
               color: 'var(--text-muted)',
               fontSize: '12px',
+              lineHeight: '1.5',
             }}
           >
-            Drop items here
+            {emptyText}
           </div>
         )}
       </div>

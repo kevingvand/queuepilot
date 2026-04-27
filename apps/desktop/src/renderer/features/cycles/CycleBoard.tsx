@@ -14,7 +14,6 @@ import { useCycles } from './hooks/useCycles';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCard } from './CycleBoardCard';
 import { CycleBoardColumn } from './CycleBoardColumn';
-import { CycleBoardDoneColumn } from './CycleBoardDoneColumn';
 import { CycleBoardHeader } from './CycleBoardHeader';
 import { ConfirmDoneDialog } from './ConfirmDoneDialog';
 import { resolveTargetStatus, itemStatusToColumn, VALID_TRANSITIONS } from './cycleBoardTransitions';
@@ -94,7 +93,8 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const todoItems = filteredItems.filter((i) => i.status === 'todo' || i.status === 'inbox');
   const inProgressItems = filteredItems.filter((i) => i.status === 'in_progress');
   const reviewItems = filteredItems.filter((i) => i.status === 'review');
-  const doneItems = filteredItems.filter((i) => i.status === 'done' || i.status === 'discarded');
+  const doneItems = filteredItems.filter((i) => i.status === 'done');
+  const discardedItems = filteredItems.filter((i) => i.status === 'discarded');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -117,6 +117,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             label="Todo"
             accent="text-blue-400"
             items={todoItems}
+            emptyText="No items yet — add some to get started"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
           <CycleBoardColumn
@@ -124,6 +125,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             label="In Progress"
             accent="text-amber-400"
             items={inProgressItems}
+            emptyText="Pick something from Todo to begin"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
           <CycleBoardColumn
@@ -131,10 +133,23 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             label="Review"
             accent="text-indigo-400"
             items={reviewItems}
+            emptyText="Finish an item to move it here"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
-          <CycleBoardDoneColumn
+          <CycleBoardColumn
+            columnId="done"
+            label="Done"
+            accent="text-green-400"
             items={doneItems}
+            emptyText="Reviewed items land here"
+            onCardClick={(item) => setSelectedItemId(item.id)}
+          />
+          <CycleBoardColumn
+            columnId="discarded"
+            label="Cancelled"
+            accent="text-muted-foreground"
+            items={discardedItems}
+            emptyText="Nothing cancelled — great work!"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
           <DragOverlay>
