@@ -1,89 +1,85 @@
 import { useState } from 'react';
 import type { Cycle } from '@queuepilot/core/types';
-import { ChevronDown, Pencil, Plus, RotateCcw, X } from 'lucide-react';
+import { ChevronDown, Pencil, Plus, RotateCcw, X, Zap, ZapOff } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useUiStore } from '../../store/ui.store';
 import { CreateCycleDialog } from './CreateCycleDialog';
 import { EditCycleDialog } from './EditCycleDialog';
-import { useCycles, useDeleteCycle } from './hooks/useCycles';
+import { useActivateCycle, useCycles, useDeactivateCycle, useDeleteCycle } from './hooks/useCycles';
 
 type CycleStatus = 'planned' | 'active' | 'completed' | 'archived';
 
-const STATUS_BADGE_CLASSES: Record<CycleStatus, string> = {
-  planned: 'bg-blue-500/20 text-blue-700 dark:text-blue-300',
-  active: 'bg-green-500/20 text-green-800 dark:text-green-300',
-  completed: 'bg-gray-500/20 text-gray-600 dark:text-gray-400',
-  archived: 'bg-muted text-muted-foreground',
+const STATUS_DOT_CLASSES: Record<CycleStatus, string> = {
+  planned: 'bg-blue-400',
+  active: 'bg-green-400',
+  completed: 'bg-gray-400',
+  archived: 'bg-gray-300',
 };
-
-function formatDateRange(startsAt: number | null, endsAt: number | null): string {
-  const formatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
-  const parts: string[] = [];
-  if (startsAt) parts.push(formatter.format(new Date(startsAt)));
-  if (endsAt) parts.push(formatter.format(new Date(endsAt)));
-  return parts.join(' – ');
-}
 
 type CycleRowProps = {
   cycle: Cycle;
-  active: boolean;
+  selected: boolean;
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onActivate: () => void;
+  onDeactivate: () => void;
 };
 
-function CycleRow({ cycle, active, onClick, onEdit, onDelete }: CycleRowProps) {
-  const statusClass =
-    STATUS_BADGE_CLASSES[(cycle.status as CycleStatus) ?? 'planned'] ??
-    STATUS_BADGE_CLASSES.planned;
-
-  const dateRange = formatDateRange(cycle.starts_at, cycle.ends_at);
+function CycleRow({ cycle, selected, onClick, onEdit, onDelete, onActivate, onDeactivate }: CycleRowProps) {
+  const status = (cycle.status ?? 'planned') as CycleStatus;
+  const dotClass = STATUS_DOT_CLASSES[status] ?? STATUS_DOT_CLASSES.planned;
+  const isActive = status === 'active';
 
   return (
     <div className="group relative">
       <button
         onClick={onClick}
         className={cn(
-          'w-full flex items-center gap-2 px-4 py-1.5 pr-16 text-sm text-left transition-colors',
-          active
+          'w-full flex items-start gap-2 px-4 py-1.5 pr-20 text-sm text-left transition-colors',
+          selected
             ? 'bg-accent text-accent-foreground'
             : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
         )}
       >
+        <span className={cn('mt-1.5 w-2 h-2 rounded-full flex-shrink-0', dotClass)} />
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="truncate text-sm">{cycle.name}</span>
-            <span
-              className={cn(
-                'inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium flex-shrink-0',
-                statusClass,
-              )}
-            >
-              {cycle.status}
+          <span className="truncate text-sm font-medium leading-snug">{cycle.name}</span>
+          {cycle.goal && (
+            <span className="truncate text-xs text-muted-foreground leading-snug mt-0.5">
+              {cycle.goal}
             </span>
-          </div>
-          {dateRange && (
-            <span className="text-xs text-muted-foreground truncate">{dateRange}</span>
           )}
         </div>
       </button>
 
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {isActive ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onDeactivate(); }}
+            className="text-green-400 hover:text-muted-foreground transition-colors"
+            title="Deactivate cycle"
+          >
+            <ZapOff size={11} />
+          </button>
+        ) : (status === 'planned') ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onActivate(); }}
+            className="text-muted-foreground hover:text-yellow-400 transition-colors"
+            title="Activate cycle"
+          >
+            <Zap size={11} />
+          </button>
+        ) : null}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
           className="text-muted-foreground hover:text-foreground transition-colors"
           title="Edit cycle"
         >
           <Pencil size={11} />
         </button>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
           className="text-muted-foreground hover:text-foreground transition-colors"
           title="Delete cycle"
         >
@@ -111,6 +107,8 @@ export function CyclesList() {
   const { filterState, setFilterState } = useUiStore();
   const { data: cycles, isLoading } = useCycles();
   const { mutate: deleteCycle } = useDeleteCycle();
+  const { mutate: activateCycle } = useActivateCycle();
+  const { mutate: deactivateCycle } = useDeactivateCycle();
 
   const activeCycles = cycles?.filter((c) => c.status === 'active' || c.status === 'planned') ?? [];
   const completedCycles =
@@ -143,10 +141,12 @@ export function CyclesList() {
           <CycleRow
             key={cycle.id}
             cycle={cycle}
-            active={filterState.cycle_id === cycle.id}
+            selected={filterState.cycle_id === cycle.id}
             onClick={() => setFilterState({ cycle_id: cycle.id })}
             onEdit={() => setEditCycle(cycle)}
             onDelete={() => deleteCycle(cycle.id)}
+            onActivate={() => activateCycle(cycle.id)}
+            onDeactivate={() => deactivateCycle(cycle.id)}
           />
         ))}
 
@@ -172,10 +172,12 @@ export function CyclesList() {
                 <CycleRow
                   key={cycle.id}
                   cycle={cycle}
-                  active={filterState.cycle_id === cycle.id}
+                  selected={filterState.cycle_id === cycle.id}
                   onClick={() => setFilterState({ cycle_id: cycle.id })}
                   onEdit={() => setEditCycle(cycle)}
                   onDelete={() => deleteCycle(cycle.id)}
+                  onActivate={() => activateCycle(cycle.id)}
+                  onDeactivate={() => deactivateCycle(cycle.id)}
                 />
               ))}
           </>

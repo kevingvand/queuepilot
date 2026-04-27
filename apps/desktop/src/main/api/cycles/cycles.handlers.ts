@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import { cycleItems, cycles, items } from '@queuepilot/core/schema';
 import type { NewCycle } from '@queuepilot/core/types';
@@ -35,6 +35,14 @@ export async function updateCycle(c: Context<AppEnv>) {
   if (!existing) return c.json({ error: 'Not found' }, 404);
 
   db.update(cycles).set(body as unknown as Partial<NewCycle>).where(eq(cycles.id, id)).run();
+
+  // If activating this cycle, demote any other active cycle to planned
+  if ((body as Record<string, unknown>).status === 'active') {
+    db.update(cycles)
+      .set({ status: 'planned' } as unknown as Partial<NewCycle>)
+      .where(and(eq(cycles.status, 'active'), sql`id != ${id}`))
+      .run();
+  }
 
   const updated = db.select().from(cycles).where(eq(cycles.id, id)).get();
   return c.json(updated);
