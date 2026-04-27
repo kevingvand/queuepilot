@@ -52,15 +52,42 @@ Trigger phrases: "what's active", "orient me", "what should I work on", "catch m
 
 ---
 
-### State 3 — Surface aging inbox items
+### State 3 — Surface carry-forward items from previous cycle
 
-7. Call `list_items(status='inbox')` via MCP, or via bash fallback:
+When a new cycle becomes active, the previous cycle is archived. Any items left in it that were not
+resolved (status `todo` or `in_progress`) are carry-forwards — they represent unfinished work.
+
+7. Call `list_cycles(status='archived')` via MCP, or via bash fallback:
+   ```
+   node ~/.copilot/plugins/qp/mcp/dist/index.js list-cycles --status archived
+   ```
+8. Sort by `created_at` descending — take the **most recently archived** cycle only (the one that was
+   replaced when the current active cycle was created).
+9. Call `list_items(cycle_id=<that cycle's id>)` and filter client-side for items where
+   `status` is `todo` or `in_progress`.
+10. If any carry-forward items exist, display:
+    ```
+    📦 Carry-forward from "<previous cycle name>": N unresolved item(s)
+       • [title] — <status>
+       • [title] — <status>
+    ```
+    If there are more than 5 carry-forwards, show the first 5 and "…and N more".
+11. If no carry-forward items, skip this section entirely (no output).
+
+> **Why items are not moved automatically:** Items stay in their original cycle so context is
+> preserved. Use `qp:triage` or `qp:pick` to assign carry-forward items to the current cycle.
+
+---
+
+### State 4 — Surface aging inbox items
+
+12. Call `list_items(status='inbox')` via MCP, or via bash fallback:
    ```
    node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --status inbox
    ```
-8. For each item, compute age in days from `created_at` to now.
-9. Classify items with age > 7 days as "aging".
-10. Display:
+13. For each item, compute age in days from `created_at` to now.
+14. Classify items with age > 7 days as "aging".
+15. Display:
     ```
     📥 Inbox: N items total — X aging (>7 days)
     ```
@@ -69,22 +96,22 @@ Trigger phrases: "what's active", "orient me", "what should I work on", "catch m
     ⚠️  "<title>" — 14 days
     ⚠️  "<title>" — 23 days
     ```
-11. If inbox is empty, display: `📥 Inbox: empty — nothing waiting`.
+16. If inbox is empty, display: `📥 Inbox: empty — nothing waiting`.
 
 ---
 
-### State 4 — Optional focus question
+### State 5 — Optional focus question
 
-12. Use `ask_user` with the following choices:
+17. Use `ask_user` with the following choices:
     - One choice per in-progress item title (from State 2), if any exist
     - "Something else" (freeform — user can name any item or describe what they want to work on)
     - "Just the overview, thanks — I'll pick later"
-13. If the user picks a specific in-progress item:
+18. If the user picks a specific in-progress item:
     - Load the full item via `get_item(id)` (MCP) or bash fallback: `node ~/.copilot/plugins/qp/mcp/dist/index.js get-item <id>`
     - Present the full item (title, body, priority, any linked items) and make it available in context for Copilot to work from
     - Confirm: `"Loaded: <title> — ready to work."`
-14. If the user picks "Something else": accept freeform input and hand off to `qp:pick` with that input.
-15. If the user picks "Just the overview": end the skill without further action.
+19. If the user picks "Something else": accept freeform input and hand off to `qp:pick` with that input.
+20. If the user picks "Just the overview": end the skill without further action.
 
 ---
 
