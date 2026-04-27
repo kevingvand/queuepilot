@@ -1,15 +1,15 @@
 ---
 name: rally
-description: "Propose and create a new QueuePilot cycle by grouping inbox items around a shared theme. Dispatches the theme-grouper agent for semantic clustering, then lets you review, adjust, and confirm before any cycles are created. Trigger phrases: 'create a cycle', 'rally my items', 'start a sprint', '/qp:rally'."
+description: "Propose and create a new QueuePilot cycle by grouping unassigned inbox and todo items around a shared theme. Dispatches the theme-grouper agent for semantic clustering, then lets you review, adjust, and confirm before any cycles are created. Trigger phrases: 'create a cycle', 'rally my items', 'start a sprint', '/qp:rally'."
 ---
 
 # Rally
 
 ## Purpose
-Turn a pile of inbox items into one or more focused cycles by finding the themes that connect them. The `theme-grouper` agent does the semantic clustering; you review and adjust before anything is committed to the database.
+Turn unassigned items into one or more focused cycles by finding the themes that connect them. The `theme-grouper` agent does the semantic clustering; you review and adjust before anything is committed to the database.
 
 ## When to Use
-When you have enough inbox items to form a coherent sprint or focus period. Best run after `qp:triage` has cleaned out noise, but can be run directly against any inbox.
+When you have enough unassigned items to form a coherent sprint or focus period. Best run after `qp:triage` has cleaned out noise, but can be run directly at any time.
 
 Trigger phrases: "create a cycle", "rally my items", "what should my next cycle be", "start a sprint", `/qp:rally`.
 
@@ -17,16 +17,27 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
 
 ## Instructions
 
-### State 1 — Load inbox
+### State 1 — Load unassigned items
 
-1. Fetch all items with `status='inbox'` via MCP `list_items(status='inbox')`, or via bash fallback:
+1. Fetch all **unassigned** items — those with no cycle yet — from two sources:
+   - `status='inbox'` via MCP `list_items(status='inbox')`
+   - `status='todo'` via MCP `list_items(status='todo')`
+
+   Or via bash fallback:
    ```
    npx @queuepilot/mcp-server list-items --status inbox
+   npx @queuepilot/mcp-server list-items --status todo
    ```
-2. If fewer than 3 items are found:
-   > "You need at least 3 inbox items to rally. Currently you have N. Add more with `qp:park`, or run `qp:triage` to move todo items back if needed."
+
+   From the todo results, **keep only items where `cycle_id` is null** — already-assigned todos are not candidates for rally.
+
+2. Merge the inbox items and unassigned todos into a single candidate list.
+
+3. If fewer than 3 candidates are found:
+   > "You need at least 3 unassigned items to rally. Currently you have N (M inbox + K unassigned todos). Add more with `qp:park`."
    End the skill.
-3. Format the inbox items as a JSON array for the clustering step:
+
+4. Format the candidate items as a JSON array for the clustering step:
    ```json
    [{ "id": "...", "title": "...", "body": "..." }]
    ```
