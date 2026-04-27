@@ -177,7 +177,7 @@ jobs:
       - name: Publish to npm
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          npm publish --provenance --access public
+          npm publish --access public
         working-directory: plugin/mcp
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
