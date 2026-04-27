@@ -1,5 +1,4 @@
 import { build } from 'esbuild';
-import { writeFileSync } from 'fs';
 
 await build({
   entryPoints: ['src/index.ts'],
@@ -13,5 +12,3 @@ await build({
     js: '#!/usr/bin/env node',
   },
 });
-
-writeFileSync('dist/README.txt', 'better-sqlite3 must be available in node_modules/\n');
