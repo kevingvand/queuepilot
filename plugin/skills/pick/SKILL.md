@@ -34,7 +34,7 @@ Trigger phrases: "work on X", "pick item Y", "activate cycle Z", "I want to work
 
 4. Load the item via MCP `get_item(id)`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js get-item <id>
+   npx @queuepilot/mcp-server get-item <id>
    ```
 5. If the item is not found:
    > "No item found with identifier '<input>'. Check the identifier and try again, or use `qp:brief` to find items by browsing the active cycle."
@@ -51,7 +51,7 @@ Trigger phrases: "work on X", "pick item Y", "activate cycle Z", "I want to work
    ```
 7. Mark the item in_progress via MCP `update_item_status(id, 'in_progress')`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js update-item-status <id> in_progress
+   npx @queuepilot/mcp-server update-item-status <id> in_progress
    ```
 8. Confirm and load into context:
    > "Ready to work on: <title>"
@@ -64,21 +64,21 @@ Trigger phrases: "work on X", "pick item Y", "activate cycle Z", "I want to work
 
 4. Load the cycle via MCP `get_cycle(id_or_name)`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js get-cycle "<name>"
+   npx @queuepilot/mcp-server get-cycle "<name>"
    ```
    The MCP tool attempts exact match first, then case-insensitive name search.
 5. If the cycle is not found, list all available cycles via MCP `list_cycles()` or bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-cycles
+   npx @queuepilot/mcp-server list-cycles
    ```
    Display the list and use `ask_user` (freeform) to ask the user to pick one.
 6. Set the cycle active via MCP `set_active_cycle(id)`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js set-active-cycle <id>
+   npx @queuepilot/mcp-server set-active-cycle <id>
    ```
 7. Load the cycle's items via MCP `list_items(cycle_id=<id>)`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --cycle <id>
+   npx @queuepilot/mcp-server list-items --cycle <id>
    ```
 8. Present the cycle summary using the same format as `qp:brief` State 2:
    ```

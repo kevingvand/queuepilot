@@ -21,7 +21,7 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
 
 1. Fetch all items with `status='inbox'` via MCP `list_items(status='inbox')`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --status inbox
+   npx @queuepilot/mcp-server list-items --status inbox
    ```
 2. If fewer than 3 items are found:
    > "You need at least 3 inbox items to rally. Currently you have N. Add more with `qp:park`, or run `qp:triage` to move todo items back if needed."
@@ -76,9 +76,7 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
    • <title>
    ─────────────────────────────────────────────────
    ```
-9. Note the v1 limitation to the user:
-   > "Note: cycle goals are shown here for context but are not persisted to the database in v1."
-10. Use `ask_user` with choices:
+9. Use `ask_user` with choices:
     - `"Create all cycles"`
     - `"Adjust a grouping"` (freeform — describe the change)
     - `"Start over — re-cluster from scratch"`
@@ -102,19 +100,19 @@ Trigger phrases: "create a cycle", "rally my items", "what should my next cycle 
 ### State 5 — Create cycles
 
 16. For each approved grouping, in order:
-    1. Call `create_cycle(name)` via MCP, or via bash fallback:
+    1. Call `create_cycle(name, goal)` via MCP, or via bash fallback:
        ```
-       node ~/.copilot/plugins/qp/mcp/dist/index.js create-cycle "<cycle_name>"
+       npx @queuepilot/mcp-server create-cycle "<cycle_name>" --goal "<cycle_goal>"
        ```
        Capture the returned `cycle_id`.
     2. For each item in `item_ids`:
        - Call `add_item_to_cycle(item_id, cycle_id)` via MCP, or bash fallback:
          ```
-         node ~/.copilot/plugins/qp/mcp/dist/index.js add-item-to-cycle <item_id> <cycle_id>
+         npx @queuepilot/mcp-server add-item-to-cycle <item_id> <cycle_id>
          ```
        - Call `update_item_status(item_id, 'todo')` via MCP, or bash fallback:
          ```
-         node ~/.copilot/plugins/qp/mcp/dist/index.js update-item-status <item_id> todo
+         npx @queuepilot/mcp-server update-item-status <item_id> todo
          ```
 17. Unrelated items are left in inbox with no changes.
 18. Display the completion summary:
@@ -135,6 +133,6 @@ One or more new cycles created in QueuePilot, with inbox items assigned and stat
 
 ## Notes
 
-- **cycle_goal is display-only in v1.** The `create_cycle` MCP tool does not accept a `goal` parameter until the schema migration lands. Show it to the user but do not attempt to persist it.
+- **cycle_goal is persisted.** Pass `goal` to `create_cycle` — the MCP tool and schema both support it.
 - **theme-grouper is preferred.** The fallback to base model clustering is a degraded path — encourage users to ensure the plugin is fully installed.
 - **No partial commits.** If cycle creation fails mid-way, report which cycles were created and which were not. Do not silently continue.

@@ -1,0 +1,20 @@
+{
+  "name": "queuepilot",
+  "owner": {
+    "name": "Kevin Gvand",
+    "email": "kevin@kevingvand.com"
+  },
+  "metadata": {
+    "description": "QueuePilot plugins for Copilot CLI — task management, inbox capture, and session context",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "qp",
+      "description": "QueuePilot companion plugin — capture ideas, triage your inbox, rally cycles, and orient sessions with qp:park, qp:triage, qp:rally, qp:brief, qp:pick.",
+      "version": "0.1.0",
+      "source": "plugin",
+      "repository": "https://github.com/kevingvand/queuepilot"
+    }
+  ]
+}

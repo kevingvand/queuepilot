@@ -38,7 +38,7 @@ Trigger phrases: "park this", "save this for later", "add to inbox", "don't lose
 
 5. Fetch all items with `status='inbox'` via MCP `list_items(status='inbox')`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --status inbox
+   npx @queuepilot/mcp-server list-items --status inbox
    ```
 6. For each existing inbox item, compute keyword overlap between the new thought and the item's `title` + `body`:
    - Extract significant words (length ≥ 4, excluding stop words: "the", "this", "that", "with", "from", "into", "have", "will", "should", "would", "been", "just", "also", "some")
@@ -46,11 +46,11 @@ Trigger phrases: "park this", "save this for later", "add to inbox", "don't lose
 7. If a match is found:
    - Call `bump_mention_count(id)` via MCP, or via bash fallback:
      ```
-     node ~/.copilot/plugins/qp/mcp/dist/index.js bump-mention-count <id>
+     npx @queuepilot/mcp-server bump-mention-count <id>
      ```
    - Call `add_comment(item_id, body)` via MCP with the full captured thought as `body`, or via bash fallback:
      ```
-     node ~/.copilot/plugins/qp/mcp/dist/index.js add-comment "<full thought text>" --item-id <id>
+     npx @queuepilot/mcp-server add-comment "<full thought text>" --item-id <id>
      ```
    - Set `merged = true` and record the matched item's identifier and title
    - Do not create a new item
@@ -64,7 +64,7 @@ Trigger phrases: "park this", "save this for later", "add to inbox", "don't lose
 10. **If `merged == false` and `qp_available == true`**:
     Call `add_item(title, body)` via MCP, or via bash fallback:
     ```
-    node ~/.copilot/plugins/qp/mcp/dist/index.js add-item "<title>" --body "<body>"
+    npx @queuepilot/mcp-server add-item "<title>" --body "<body>"
     ```
     where `title` is the first line or a short summary of the thought, and `body` is the full captured text.
 
@@ -116,6 +116,6 @@ A single `📥` confirmation line. The thought is now either in QP's inbox or in
 ## Notes
 
 - **Non-blocking by design.** Complete in a single turn and return control immediately.
-- **bump_mention_count is stubbed in v1.** When a duplicate is detected, the match is noted in the confirmation but the mention count is not incremented in the database. This will be resolved in v2.
+- **bump_mention_count is live.** When a duplicate is detected, the mention count is incremented in the database and the context is recorded via `add_comment`.
 - **Fallback is transparent.** The user always knows whether the thought landed in QP or inbox.json.
 - **Not a triage step.** Parked items are raw captures. Sorting happens in `qp:triage` or `qp:rally`.

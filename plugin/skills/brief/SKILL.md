@@ -23,7 +23,7 @@ Trigger phrases: "what's active", "orient me", "what should I work on", "catch m
    - Expected response shape: `{ cycle: { id, name, status } | null }`
 2. If MCP is unavailable, fall back to bash:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js get-active-cycle
+   npx @queuepilot/mcp-server get-active-cycle
    ```
 3. If no active cycle is found (response is `null`), inform the user:
    > "No active cycle found in QueuePilot. Run `qp:rally` to create one, or `qp:triage` to sort your inbox first."
@@ -35,7 +35,7 @@ Trigger phrases: "what's active", "orient me", "what should I work on", "catch m
 
 4. Call `list_items(cycle_id=<active cycle id>)` via MCP, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --cycle <id>
+   npx @queuepilot/mcp-server list-items --cycle <id>
    ```
 5. Group the returned items by status: `todo`, `in_progress`, `done`.
 6. Display the cycle summary in this format:
@@ -59,7 +59,7 @@ resolved (status `todo` or `in_progress`) are carry-forwards — they represent 
 
 7. Call `list_cycles(status='archived')` via MCP, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-cycles --status archived
+   npx @queuepilot/mcp-server list-cycles --status archived
    ```
 8. Sort by `created_at` descending — take the **most recently archived** cycle only (the one that was
    replaced when the current active cycle was created).
@@ -83,7 +83,7 @@ resolved (status `todo` or `in_progress`) are carry-forwards — they represent 
 
 12. Call `list_items(status='inbox')` via MCP, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --status inbox
+   npx @queuepilot/mcp-server list-items --status inbox
    ```
 13. For each item, compute age in days from `created_at` to now.
 14. Classify items with age > 7 days as "aging".
@@ -107,7 +107,7 @@ resolved (status `todo` or `in_progress`) are carry-forwards — they represent 
     - "Something else" (freeform — user can name any item or describe what they want to work on)
     - "Just the overview, thanks — I'll pick later"
 18. If the user picks a specific in-progress item:
-    - Load the full item via `get_item(id)` (MCP) or bash fallback: `node ~/.copilot/plugins/qp/mcp/dist/index.js get-item <id>`
+    - Load the full item via `get_item(id)` (MCP) or bash fallback: `npx @queuepilot/mcp-server get-item <id>`
     - Present the full item (title, body, priority, any linked items) and make it available in context for Copilot to work from
     - Confirm: `"Loaded: <title> — ready to work."`
 19. If the user picks "Something else": accept freeform input and hand off to `qp:pick` with that input.
@@ -123,4 +123,4 @@ A formatted status block showing the active cycle, item counts by status, and ag
 
 - **Read-only.** This skill does not write any data.
 - **MCP-first.** Always try MCP before bash fallback; the bash path is for environments where the MCP server is not running.
-- **Graceful degradation.** If both MCP and bash fail, surface a clear error: "Could not connect to QueuePilot. Is the MCP server running? Try: `node ~/.copilot/plugins/qp/mcp/dist/index.js get-active-cycle`"
+- **Graceful degradation.** If both MCP and bash fail, surface a clear error: "Could not connect to QueuePilot. Is the MCP server running? Try: `npx @queuepilot/mcp-server get-active-cycle`"

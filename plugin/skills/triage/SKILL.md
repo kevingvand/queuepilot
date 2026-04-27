@@ -21,7 +21,7 @@ Trigger phrases: "triage my inbox", "process my qp inbox", "let's go through my 
 
 1. Fetch all items with `status='inbox'` via MCP `list_items(status='inbox')`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-items --status inbox
+   npx @queuepilot/mcp-server list-items --status inbox
    ```
 2. If the inbox is empty:
    > "Your QP inbox is empty — nothing to triage. 🎉"
@@ -30,7 +30,7 @@ Trigger phrases: "triage my inbox", "process my qp inbox", "let's go through my 
    > "You have N items in your QP inbox."
 4. Fetch all available cycles via MCP `list_cycles()`, or via bash fallback:
    ```
-   node ~/.copilot/plugins/qp/mcp/dist/index.js list-cycles
+   npx @queuepilot/mcp-server list-cycles
    ```
    Store the cycle list for use in the triage loop.
 
@@ -63,17 +63,17 @@ Trigger phrases: "triage my inbox", "process my qp inbox", "let's go through my 
    - **Assign to cycle**:
      1. Call `add_item_to_cycle(item_id, cycle_id)` via MCP, or bash fallback:
         ```
-        node ~/.copilot/plugins/qp/mcp/dist/index.js add-item-to-cycle <id> <cycle_id>
+        npx @queuepilot/mcp-server add-item-to-cycle <id> <cycle_id>
         ```
      2. Call `update_item_status(id, 'todo')` via MCP, or bash fallback:
         ```
-        node ~/.copilot/plugins/qp/mcp/dist/index.js update-item-status <id> todo
+        npx @queuepilot/mcp-server update-item-status <id> todo
         ```
    - **Mark as todo**: Call `update_item_status(id, 'todo')` only.
    - **Defer**: No operation — item remains in inbox.
    - **Discard**: Call `update_item_status(id, 'discarded')` via MCP, or bash fallback:
      ```
-     node ~/.copilot/plugins/qp/mcp/dist/index.js update-item-status <id> discarded
+     npx @queuepilot/mcp-server update-item-status <id> discarded
      ```
    - **Stop triaging**: Break the loop immediately and advance to State 4.
 8. Accumulate decision counts (assigned, todo, deferred, discarded) as the loop runs.
