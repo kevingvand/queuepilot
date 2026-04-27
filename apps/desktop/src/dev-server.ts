@@ -12,7 +12,7 @@ import { cors } from 'hono/cors'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import path from 'node:path'
 import { ulid } from 'ulid'
-import { createDb, items, tags, cycles, itemTags } from '@queuepilot/core/schema'
+import { createDb, items, tags, cycles, itemTags, comments, itemEvents } from '@queuepilot/core/schema'
 import { createApp } from './main/api/index'
 
 const PORT = 3000
@@ -83,11 +83,12 @@ db.insert(items).values([
   {
     id: itemIds[2],
     title: 'Add bump_mention_count to MCP server',
-    body: 'Implement the stub: UPDATE items SET mention_count = mention_count + 1, last_touched_at = ? WHERE id = ?.',
+    body: 'Implement the stub: UPDATE items SET mention_count = mention_count + 1, last_touched_at = ? WHERE id = ?.\n\nThis is called by the qp:park skill when a duplicate idea is detected — each re-park increments the score so high-signal ideas surface naturally during triage.',
     status: 'in_progress',
-    priority: 2,
+    priority: 3,
     cycle_id: cycleId,
     due_at: now + 2 * DAY,
+    start_at: now - DAY,
     created_at: now - 2 * DAY,
     updated_at: now,
   },
@@ -163,6 +164,60 @@ db.insert(itemTags).values([
   { item_id: itemIds[6], tag_id: tagFeature },
   { item_id: itemIds[7], tag_id: tagFeature },
   { item_id: itemIds[8], tag_id: tagDx      },
+]).run()
+
+db.insert(comments).values([
+  {
+    id: ulid(),
+    item_id: itemIds[2],
+    body: 'The SQL is straightforward but we should make sure last_touched_at uses server-side Date.now() and not a client timestamp.',
+    author: 'kevin',
+    created_at: now - DAY,
+    updated_at: now - DAY,
+  },
+  {
+    id: ulid(),
+    item_id: itemIds[2],
+    body: 'Confirmed — qp:park calls this on every re-park. Keeping it atomic with a single UPDATE statement.',
+    author: 'copilot',
+    created_at: now - 6 * 3600_000,
+    updated_at: now - 6 * 3600_000,
+  },
+  {
+    id: ulid(),
+    item_id: itemIds[2],
+    body: 'Shipped in dispatch.ts. Tests passing on main.',
+    author: 'kevin',
+    created_at: now - 3600_000,
+    updated_at: now - 3600_000,
+  },
+]).run()
+
+db.insert(itemEvents).values([
+  {
+    id: ulid(),
+    item_id: itemIds[2],
+    kind: 'status_changed',
+    payload: JSON.stringify({ from: 'todo', to: 'in_progress' }),
+    actor: 'kevin',
+    created_at: now - DAY,
+  },
+  {
+    id: ulid(),
+    item_id: itemIds[2],
+    kind: 'priority_changed',
+    payload: JSON.stringify({ from: 2, to: 3 }),
+    actor: 'copilot',
+    created_at: now - 6 * 3600_000,
+  },
+  {
+    id: ulid(),
+    item_id: itemIds[2],
+    kind: 'cycle_assigned',
+    payload: JSON.stringify({ cycle_id: cycleId }),
+    actor: 'kevin',
+    created_at: now - 2 * DAY,
+  },
 ]).run()
 
 // ---------------------------------------------------------------------------
