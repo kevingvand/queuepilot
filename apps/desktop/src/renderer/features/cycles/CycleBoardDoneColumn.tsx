@@ -3,6 +3,85 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { Item } from '@queuepilot/core/types';
 import { CycleBoardCard } from './CycleBoardCard';
 
+function SubBlock({
+  label,
+  accent,
+  count,
+  items,
+  emptyText,
+  onCardClick,
+}: {
+  label: string;
+  accent: string;
+  count: number;
+  items: Item[];
+  emptyText: string;
+  onCardClick: (item: Item) => void;
+}) {
+  return (
+    <div
+      style={{
+        borderRadius: '6px',
+        border: '1px solid var(--border)',
+        overflow: 'hidden',
+        backgroundColor: 'var(--bg-primary)',
+      }}
+    >
+      <div
+        style={{
+          padding: '8px 12px',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: 'var(--surface)',
+        }}
+      >
+        <span className={`text-xs font-semibold ${accent}`}>{label}</span>
+        <span
+          style={{
+            fontSize: '11px',
+            color: 'var(--text-muted)',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: '10px',
+            padding: '1px 7px',
+          }}
+        >
+          {count}
+        </span>
+      </div>
+      <div
+        style={{
+          padding: '6px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '5px',
+        }}
+      >
+        <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+          {items.map((item) => (
+            <div key={item.id} onClick={() => onCardClick(item)}>
+              <CycleBoardCard item={item} />
+            </div>
+          ))}
+        </SortableContext>
+        {items.length === 0 && (
+          <div
+            style={{
+              padding: '10px 8px',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              fontSize: '12px',
+            }}
+          >
+            {emptyText}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function CycleBoardDoneColumn({
   items,
   onCardClick,
@@ -29,6 +108,7 @@ export function CycleBoardDoneColumn({
         overflow: 'hidden',
       }}
     >
+      {/* Column header */}
       <div
         style={{
           padding: '12px 16px',
@@ -36,6 +116,7 @@ export function CycleBoardDoneColumn({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexShrink: 0,
         }}
       >
         <span className="text-sm font-semibold text-green-400">Done / Cancelled</span>
@@ -48,9 +129,11 @@ export function CycleBoardDoneColumn({
             padding: '1px 7px',
           }}
         >
-          {doneItems.length} done · {discardedItems.length} cancelled
+          {doneItems.length} · {discardedItems.length}
         </span>
       </div>
+
+      {/* Two distinct sub-blocks */}
       <div
         style={{
           flex: 1,
@@ -58,54 +141,25 @@ export function CycleBoardDoneColumn({
           padding: '8px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '6px',
+          gap: '8px',
         }}
       >
-        <SortableContext items={doneItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-          {doneItems.map((item) => (
-            <div key={item.id} onClick={() => onCardClick(item)}>
-              <CycleBoardCard item={item} />
-            </div>
-          ))}
-        </SortableContext>
-        {doneItems.length === 0 && (
-          <div
-            style={{
-              padding: '8px',
-              textAlign: 'center',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-            }}
-          >
-            No done items
-          </div>
-        )}
-        {discardedItems.length > 0 && (
-          <>
-            <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '8px 0' }} />
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 500,
-                color: 'var(--text-muted)',
-                paddingLeft: '4px',
-                marginBottom: '4px',
-              }}
-            >
-              Cancelled
-            </div>
-            <SortableContext
-              items={discardedItems.map((i) => i.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {discardedItems.map((item) => (
-                <div key={item.id} onClick={() => onCardClick(item)}>
-                  <CycleBoardCard item={item} />
-                </div>
-              ))}
-            </SortableContext>
-          </>
-        )}
+        <SubBlock
+          label="Done"
+          accent="text-green-400"
+          count={doneItems.length}
+          items={doneItems}
+          emptyText="No done items"
+          onCardClick={onCardClick}
+        />
+        <SubBlock
+          label="Cancelled"
+          accent="text-gray-400"
+          count={discardedItems.length}
+          items={discardedItems}
+          emptyText="No cancelled items"
+          onCardClick={onCardClick}
+        />
       </div>
     </div>
   );
