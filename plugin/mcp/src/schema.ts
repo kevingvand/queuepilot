@@ -3,6 +3,7 @@
 
 import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
+
 export const items = sqliteTable('items', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
@@ -54,4 +55,28 @@ export const comments = sqliteTable(
   },
   (t) => [index('comments_item_id_idx').on(t.item_id)],
 );
+
+export const tags = sqliteTable('tags', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  color: text('color').notNull().default('#6b7280'),
+  created_at: integer('created_at').notNull(),
+});
+
+export const itemTags = sqliteTable(
+  'item_tags',
+  {
+    item_id: text('item_id').notNull(),
+    tag_id: text('tag_id').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.item_id, t.tag_id] })],
+);
+
+export const itemLinks = sqliteTable('item_links', {
+  id: text('id').primaryKey(),
+  source_item_id: text('source_item_id').notNull(),
+  target_item_id: text('target_item_id').notNull(),
+  kind: text('kind').notNull(),
+  created_at: integer('created_at').notNull(),
+});
 

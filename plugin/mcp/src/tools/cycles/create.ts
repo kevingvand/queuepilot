@@ -7,7 +7,7 @@ import { CYCLE_COLUMNS, type CycleRow } from './types.js';
 export const definition = {
   name: 'create_cycle',
   description:
-    'Create a new active cycle (sprint/session), archiving any currently active cycle. Provide a short name and an optional goal describing what this session aims to accomplish.',
+    'Create a new cycle (sprint/session). Cycles start as planned. Use set_active_cycle to make one active.',
   inputSchema: {
     type: 'object' as const,
     properties: {
@@ -22,11 +22,8 @@ export function createCycle(db: Db, name: string, goal?: string): { cycle: Cycle
   const id = ulid();
   const now = Date.now();
 
-  // Archive any existing active cycles — only one cycle may be active at a time.
-  db.update(cycles).set({ status: 'archived' }).where(eq(cycles.status, 'active')).run();
-
   db.insert(cycles)
-    .values({ id, name, goal: goal ?? null, status: 'active', starts_at: null, ends_at: null, created_at: now })
+    .values({ id, name, goal: goal ?? null, status: 'planned', starts_at: null, ends_at: null, created_at: now })
     .run();
 
   const row = db.select(CYCLE_COLUMNS).from(cycles).where(eq(cycles.id, id)).get();

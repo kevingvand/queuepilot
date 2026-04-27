@@ -6,11 +6,15 @@ import { dispatch } from './dispatch.js';
 import { ITEM_TOOL_DEFINITIONS } from './tools/items/index.js';
 import { CYCLE_TOOL_DEFINITIONS } from './tools/cycles/index.js';
 import { COMMENT_TOOL_DEFINITIONS } from './tools/comments/index.js';
+import { TAG_TOOL_DEFINITIONS } from './tools/tags/index.js';
+import { LINK_TOOL_DEFINITIONS } from './tools/links/index.js';
 
 const TOOL_DEFINITIONS = [
   ...ITEM_TOOL_DEFINITIONS,
   ...CYCLE_TOOL_DEFINITIONS,
   ...COMMENT_TOOL_DEFINITIONS,
+  ...TAG_TOOL_DEFINITIONS,
+  ...LINK_TOOL_DEFINITIONS,
 ];
 
 export function runMcpServer(): void {

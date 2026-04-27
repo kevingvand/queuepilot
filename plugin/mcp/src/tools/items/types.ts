@@ -6,6 +6,7 @@ export interface ItemRow {
   body: string;
   status: string;
   priority: number;
+  parent_id: string | null;
   cycle_id: string | null;
   due_at: number | null;
   scheduled_at: number | null;
@@ -22,6 +23,7 @@ export const ITEM_COLUMNS = {
   body: items.body,
   status: items.status,
   priority: items.priority,
+  parent_id: items.parent_id,
   cycle_id: items.cycle_id,
   due_at: items.due_at,
   scheduled_at: items.scheduled_at,
