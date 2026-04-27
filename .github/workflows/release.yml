@@ -137,3 +137,39 @@ jobs:
           files: artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-mcp:
+    name: Publish MCP to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Set version from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          npm version "$VERSION" --no-git-tag-version
+        working-directory: plugin/mcp
+
+      - name: Install MCP dependencies
+        run: npm install
+        working-directory: plugin/mcp
+
+      - name: Build MCP server
+        run: npm run build
+        working-directory: plugin/mcp
+
+      - name: Publish to npm
+        run: npm publish
+        working-directory: plugin/mcp
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

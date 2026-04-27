@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "queuepilot": {
-      "command": "node",
-      "args": ["./mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@queuepilot/mcp-server"],
       "env": {}
     }
   }

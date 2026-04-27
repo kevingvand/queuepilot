@@ -1,9 +1,14 @@
 {
   "name": "@queuepilot/mcp-server",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "node build.mjs",
     "dev": "tsx src/index.ts"
