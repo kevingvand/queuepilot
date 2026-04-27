@@ -99,6 +99,7 @@ function createWindow(): void {
 }
 
 function initializeApp() {
+  fs.mkdirSync(dataDir, { recursive: true })
   db = createDb(dataDir)
 
   // Run migrations to ensure schema is up to date.
