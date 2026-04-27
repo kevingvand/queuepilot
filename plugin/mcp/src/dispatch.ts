@@ -1,5 +1,5 @@
 import type { Db } from './db.js';
-import { addItem, bumpMentionCount, getItem, listItems, updateItem, updateItemStatus } from './tools/items/index.js';
+import { addItem, bumpMentionCount, getItem, listItems, searchItems, updateItem, updateItemStatus } from './tools/items/index.js';
 import { addItemToCycle, createCycle, getActiveCycle, getCycle, listCycles, setActiveCycle } from './tools/cycles/index.js';
 import { addComment } from './tools/comments/index.js';
 import { addTagToItem, listTags, removeTagFromItem } from './tools/tags/index.js';
@@ -25,6 +25,15 @@ export function optionalInteger(args: Record<string, unknown>, key: string): num
 
 export function dispatch(db: Db, toolName: string, args: Record<string, unknown>): unknown {
   switch (toolName) {
+    case 'search_items':
+      return searchItems(
+        db,
+        optionalString(args, 'q'),
+        optionalString(args, 'status'),
+        optionalString(args, 'cycle_id'),
+        optionalString(args, 'tag'),
+        optionalInteger(args, 'priority'),
+      );
     case 'list_items':
       return listItems(db, optionalString(args, 'status'), optionalString(args, 'cycle_id'));
     case 'get_item':
