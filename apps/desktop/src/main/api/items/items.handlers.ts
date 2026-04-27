@@ -9,6 +9,7 @@ import {
   tags,
 } from '@queuepilot/core/schema';
 import type { NewItem, NewItemEvent, NewItemLink } from '@queuepilot/core/types';
+import { VALID_STATUSES, VALID_TRANSITIONS } from '@queuepilot/core/types';
 import type { AppEnv } from '../index';
 
 export async function listItems(c: Context<AppEnv>) {
@@ -75,15 +76,30 @@ export async function getItem(c: Context<AppEnv>) {
 export async function updateItem(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id } = c.req.param();
-  const body = c.req.valid('json' as never) as Partial<NewItem>;
+  const rawBody = c.req.valid('json' as never) as Partial<NewItem>;
+
+  // Strip cycle_id — cycle membership must go through dedicated cycle endpoints
+  const { cycle_id: _ignoredCycleId, ...body } = rawBody as Record<string, unknown>;
+  const safeBody = body as Partial<NewItem>;
 
   const existing = db.select().from(items).where(eq(items.id, id)).get();
   if (!existing) return c.json({ error: 'Not found' }, 404);
 
   const prevStatus = existing.status;
-  const nextStatus = body.status;
+  const nextStatus = safeBody.status;
 
-  db.update(items).set({ ...body, updated_at: Date.now() } as unknown as Partial<NewItem>).where(eq(items.id, id)).run();
+  // Validate status transition: terminal states (done, discarded) cannot transition further
+  if (nextStatus && nextStatus !== prevStatus) {
+    if (!(VALID_STATUSES as readonly string[]).includes(nextStatus)) {
+      return c.json({ error: `Invalid status "${nextStatus}"` }, 400);
+    }
+    const allowed = VALID_TRANSITIONS[prevStatus] ?? [];
+    if (allowed.length === 0) {
+      return c.json({ error: `Cannot transition from terminal status "${prevStatus}"` }, 400);
+    }
+  }
+
+  db.update(items).set({ ...safeBody, updated_at: Date.now() } as unknown as Partial<NewItem>).where(eq(items.id, id)).run();
 
   if (nextStatus && nextStatus !== prevStatus) {
     db.insert(itemEvents)
@@ -97,7 +113,7 @@ export async function updateItem(c: Context<AppEnv>) {
   }
 
   const prevPriority = existing.priority;
-  const nextPriority = body.priority;
+  const nextPriority = safeBody.priority;
   if (nextPriority !== undefined && nextPriority !== prevPriority) {
     db.insert(itemEvents)
       .values({
@@ -110,7 +126,7 @@ export async function updateItem(c: Context<AppEnv>) {
   }
 
   const prevTitle = existing.title;
-  const nextTitle = body.title;
+  const nextTitle = safeBody.title;
   if (nextTitle && nextTitle !== prevTitle) {
     db.insert(itemEvents)
       .values({

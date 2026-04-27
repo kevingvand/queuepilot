@@ -33,7 +33,6 @@ export function CycleBoardCard({
       ref={setNodeRef}
       style={{
         ...style,
-        borderLeft: `3px solid ${PRIORITY_COLOR[item.priority ?? 0]}`,
         backgroundColor: 'var(--surface)',
         border: '1px solid var(--border)',
         borderLeftColor: PRIORITY_COLOR[item.priority ?? 0],

@@ -68,6 +68,7 @@ export function useDeactivateCycle() {
     },
   });
 }
+
 export function useDeleteCycle() {
   const api = useApi();
   const queryClient = useQueryClient();

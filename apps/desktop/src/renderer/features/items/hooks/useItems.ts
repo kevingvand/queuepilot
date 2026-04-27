@@ -16,7 +16,15 @@ export function useItems(filter: FilterState) {
 }
 
 export function useCycleItems(cycleId: string) {
-  return useItems({ cycle_id: cycleId });
+  const api = useApi();
+  return useQuery({
+    queryKey: ['items', { cycle_id: cycleId }],
+    queryFn: async () => {
+      const res = await api.cycles.items(cycleId);
+      return res.data as Item[];
+    },
+    staleTime: 1000 * 15,
+  });
 }
 
 export function useUpdateItemStatus() {

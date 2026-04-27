@@ -49,6 +49,11 @@ describe('cycles — CRUD and item membership', () => {
     });
     expect(res.status).toBe(201);
     expect((await res.json()).ok).toBe(true);
+
+    const itemsInCycle = await app.request(`/items?cycle_id=${cycle.id}`);
+    expect(itemsInCycle.status).toBe(200);
+    const cycleItemList: { id: string }[] = await itemsInCycle.json();
+    expect(cycleItemList.some((i) => i.id === item.id)).toBe(true);
   });
 
   it('returns items in a cycle via GET /cycles/:id/items', async () => {
@@ -106,5 +111,9 @@ describe('cycles — CRUD and item membership', () => {
 
     const listRes = await app.request(`/cycles/${cycle.id}/items`);
     expect(await listRes.json()).toEqual([]);
+
+    const itemsStillInCycle = await app.request(`/items?cycle_id=${cycle.id}`);
+    expect(itemsStillInCycle.status).toBe(200);
+    expect(await itemsStillInCycle.json()).toEqual([]);
   });
 });

@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
+import { sql } from 'drizzle-orm'
 import type { Db } from '@queuepilot/core/schema'
 import { createDb } from '@queuepilot/core/schema'
 import type { AppType } from './api/index'
@@ -111,6 +112,11 @@ function initializeApp() {
   logDebug(`Running migrations from: ${migrationsFolder}`)
   migrate(db, { migrationsFolder })
   logDebug('Migrations complete')
+
+  // Backfill: sync items.cycle_id from cycle_items for any pre-existing data
+  // Idempotent — safe to run on every startup
+  db.run(sql`UPDATE items SET cycle_id = (SELECT cycle_id FROM cycle_items WHERE item_id = items.id LIMIT 1) WHERE cycle_id IS NULL AND id IN (SELECT item_id FROM cycle_items)`)
+  logDebug('cycle_id backfill complete')
 
   honoApp = createApp(db)
   registerIpcBridge(honoApp!)

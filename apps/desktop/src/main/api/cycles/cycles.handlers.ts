@@ -67,8 +67,10 @@ export async function addItemToCycle(c: Context<AppEnv>) {
   const { id } = c.req.param();
   const body = c.req.valid('json' as never) as { item_id: string };
 
-  db.insert(cycleItems).values({ cycle_id: id, item_id: body.item_id, added_at: Date.now() } as NewCycleItem).run();
-  db.update(items).set({ cycle_id: id }).where(eq(items.id, body.item_id)).run();
+  db.transaction((tx) => {
+    tx.insert(cycleItems).values({ cycle_id: id, item_id: body.item_id, added_at: Date.now() } as NewCycleItem).run();
+    tx.update(items).set({ cycle_id: id }).where(eq(items.id, body.item_id)).run();
+  });
   return c.json({ ok: true }, 201);
 }
 
@@ -79,6 +81,7 @@ export async function deleteCycle(c: Context<AppEnv>) {
   const existing = db.select().from(cycles).where(eq(cycles.id, id)).get();
   if (!existing) return c.json({ error: 'Not found' }, 404);
 
+  db.update(items).set({ cycle_id: null }).where(eq(items.cycle_id, id)).run();
   db.delete(cycleItems).where(eq(cycleItems.cycle_id, id)).run();
   db.delete(cycles).where(eq(cycles.id, id)).run();
   return c.json({ ok: true });
@@ -96,11 +99,12 @@ export async function removeItemFromCycle(c: Context<AppEnv>) {
 
   if (!existing) return c.json({ error: 'Not found' }, 404);
 
-  db.delete(cycleItems)
-    .where(and(eq(cycleItems.cycle_id, id), eq(cycleItems.item_id, itemId)))
-    .run();
-
-  db.update(items).set({ cycle_id: null }).where(eq(items.id, itemId)).run();
+  db.transaction((tx) => {
+    tx.delete(cycleItems)
+      .where(and(eq(cycleItems.cycle_id, id), eq(cycleItems.item_id, itemId)))
+      .run();
+    tx.update(items).set({ cycle_id: null }).where(eq(items.id, itemId)).run();
+  });
 
   return c.json({ ok: true });
 }
