@@ -41,6 +41,33 @@ export function useUpdateCycle() {
   });
 }
 
+export function useActivateCycle() {
+  const api = useApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.cycles.update(id, { status: 'active' } as Partial<NewCycle>);
+      return res.data as Cycle;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cycles'] });
+    },
+  });
+}
+
+export function useDeactivateCycle() {
+  const api = useApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.cycles.update(id, { status: 'planned' } as Partial<NewCycle>);
+      return res.data as Cycle;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cycles'] });
+    },
+  });
+}
 export function useDeleteCycle() {
   const api = useApi();
   const queryClient = useQueryClient();

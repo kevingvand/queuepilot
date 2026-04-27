@@ -61,11 +61,13 @@ function ShellContent() {
   const isSidebarDragging = useRef(false);
   const sidebarDragStartX = useRef(0);
   const sidebarDragStartWidth = useRef(0);
+  const [isSidebarResizing, setIsSidebarResizing] = useState(false);
 
   const handleSidebarDragStart = useCallback((e: React.MouseEvent) => {
     isSidebarDragging.current = true;
     sidebarDragStartX.current = e.clientX;
     sidebarDragStartWidth.current = storeSidebarWidth;
+    setIsSidebarResizing(true);
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
 
@@ -77,6 +79,7 @@ function ShellContent() {
 
     const onUp = () => {
       isSidebarDragging.current = false;
+      setIsSidebarResizing(false);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       document.removeEventListener('mousemove', onMove);
@@ -134,7 +137,7 @@ function ShellContent() {
                 overflowX: 'hidden',
                 backgroundColor: 'var(--bg-primary)',
                 borderRight: (!isWide || effectiveCollapsed) ? '1px solid var(--border)' : undefined,
-                transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: isSidebarResizing ? 'none' : 'width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
               <Sidebar
