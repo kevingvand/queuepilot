@@ -1,14 +1,26 @@
 # QueuePilot — Copilot CLI Plugin
 
-The QueuePilot plugin connects Copilot CLI to your local QueuePilot database, giving you five skills (`brief`, `triage`, `rally`, `park`, `pick`) that read and write items, cycles, and tags directly from the terminal.
+The QueuePilot plugin connects Copilot CLI to your local QueuePilot database. It adds five skills (`brief`, `triage`, `rally`, `park`, `pick`) and an MCP server that reads and writes items, cycles, and tags directly from your terminal — no context switching, no cloud.
 
 ---
 
 ## Prerequisites
 
-- **Node.js 20+** — the MCP server is a compiled Node.js binary
+- **Node.js 20+** — required to run the MCP server via `npx`
 - **QueuePilot installed and launched at least once** — the app must have created its SQLite database before the plugin can connect
 - **Copilot CLI** with plugin support
+
+---
+
+## Install the plugin
+
+```bash
+copilot plugin install /path/to/queuepilot/plugin
+```
+
+Copilot CLI reads `plugin.json` to register the skills and `.mcp.json` to wire up the MCP server. The MCP server (`@queuepilot/mcp-server`) is downloaded automatically via `npx` the first time it runs — no manual build step required.
+
+Skills are available immediately as `qp:brief`, `qp:triage`, `qp:rally`, `qp:park`, and `qp:pick`.
 
 ---
 
@@ -20,29 +32,7 @@ The QueuePilot plugin connects Copilot CLI to your local QueuePilot database, gi
 | Linux    | `~/.config/queuepilot/queuepilot.db` |
 | Windows  | `%APPDATA%\queuepilot\queuepilot.db` |
 
-The MCP server resolves the path automatically at startup using the platform default. Override it with the `QUEUEPILOT_DB_PATH` environment variable (see below).
-
----
-
-## Build the MCP server
-
-```bash
-cd /path/to/queuepilot/plugin/mcp
-npm install
-npm run build
-```
-
-The compiled entry point lands at `plugin/mcp/dist/index.js`.
-
----
-
-## Install the plugin
-
-```bash
-copilot plugin install /path/to/queuepilot/plugin
-```
-
-Copilot CLI reads `plugin.json` to register the skills and `.mcp.json` to wire up the MCP server. Skills are available immediately as `qp:brief`, `qp:triage`, `qp:rally`, `qp:park`, and `qp:pick`.
+The MCP server resolves the path automatically at startup using the platform default. Override it with the `QUEUEPILOT_DB_PATH` environment variable.
 
 ---
 
@@ -79,3 +69,17 @@ copilot plugin uninstall qp
 ```
 
 This removes the plugin registration. Your QueuePilot database is untouched.
+
+---
+
+## Local development
+
+To run the MCP server from a local build instead of the published npm package:
+
+```bash
+cd /path/to/queuepilot/plugin/mcp
+npm install
+npm run build
+```
+
+Then update `.mcp.json` temporarily to point at `./mcp/dist/index.js` instead of using `npx`.

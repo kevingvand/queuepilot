@@ -5,8 +5,8 @@
 <h1 align="center">QueuePilot</h1>
 
 <p align="center">
-  Local-first task and idea manager for developers and teams.<br/>
-  <strong>Your inbox. Your data. Your machine.</strong>
+  The local-first companion for GitHub Copilot CLI.<br/>
+  <strong>Capture ideas, manage tasks, and keep your AI sessions in context — on your machine.</strong>
 </p>
 
 <p align="center">
@@ -18,9 +18,11 @@
 
 ---
 
-## Why this exists
+## What it is
 
-Every mainstream task manager requires a cloud account, leaks data through telemetry, or becomes a read-only brick offline. QueuePilot fixes that. Every operation completes against a local SQLite file — sub-millisecond reads, no network round-trip. Your data lives wherever you put it: a git repo, an encrypted volume, a Dropbox folder. No account required. No telemetry. Fully air-gap capable.
+QueuePilot is an Electron desktop app and a Copilot CLI plugin that work together. The app gives you a local SQLite-backed inbox for ideas, tasks, and notes. The plugin brings that context directly into your Copilot CLI sessions — so Copilot knows what you're working on, what's waiting, and what you just captured, without you switching windows or repeating yourself.
+
+No cloud account. No telemetry. All data lives in a local SQLite file — sub-millisecond reads, works fully offline.
 
 ---
 
@@ -71,6 +73,28 @@ pnpm dev
 ```
 
 Node.js ≥ 20 and pnpm ≥ 9 are required.
+
+---
+
+## Copilot CLI Plugin
+
+Install the plugin once and Copilot CLI gains five skills that read and write your QueuePilot database in real time:
+
+```bash
+copilot plugin install /path/to/queuepilot/plugin
+```
+
+The MCP server (`@queuepilot/mcp-server`) downloads automatically — no manual build step.
+
+| Skill | Say | Does |
+|-------|-----|------|
+| `qp:brief` | "what's active" | Active cycle, in-progress items, aging inbox |
+| `qp:triage` | "triage my inbox" | Walk through inbox items one by one |
+| `qp:rally` | "create a cycle" | Group items into a focused work cycle |
+| `qp:park` | "park this idea" | Capture a thought to QP without leaving the session |
+| `qp:pick` | "work on X" | Load an item or cycle into Copilot context |
+
+See [plugin/README.md](plugin/README.md) for full setup and configuration.
 
 ---
 
