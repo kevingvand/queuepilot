@@ -6,6 +6,11 @@
   "files": [
     "dist/"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kevingvand/queuepilot.git",
+    "directory": "plugin/mcp"
+  },
   "publishConfig": {
     "access": "public"
   },
