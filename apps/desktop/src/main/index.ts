@@ -13,7 +13,11 @@ declare const MAIN_WINDOW_VITE_NAME: string | undefined
 
 function resolveDataDir(): string {
   const flag = process.argv.find((arg) => arg.startsWith('--data-dir='))
-  return flag ? flag.slice('--data-dir='.length) : app.getPath('userData')
+  if (flag) return flag.slice('--data-dir='.length)
+  // In dev, use a separate directory so development never touches production data.
+  // Contributors get this for free without any configuration.
+  const base = app.getPath('userData')
+  return app.isPackaged ? base : `${base}-dev`
 }
 
 export const dataDir = resolveDataDir()
