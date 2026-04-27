@@ -3,9 +3,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { openDb } from './db.js';
 import { dispatch } from './dispatch.js';
-import { ITEM_TOOL_DEFINITIONS } from './tools/items.definitions.js';
-import { CYCLE_TOOL_DEFINITIONS } from './tools/cycles.definitions.js';
-import { COMMENT_TOOL_DEFINITIONS } from './tools/comments.js';
+import { ITEM_TOOL_DEFINITIONS } from './tools/items/index.js';
+import { CYCLE_TOOL_DEFINITIONS } from './tools/cycles/index.js';
+import { COMMENT_TOOL_DEFINITIONS } from './tools/comments/index.js';
 
 const TOOL_DEFINITIONS = [
   ...ITEM_TOOL_DEFINITIONS,

@@ -1,7 +1,7 @@
 import type { Db } from './db.js';
-import { addItem, bumpMentionCount, getItem, listItems, updateItemStatus } from './tools/items.js';
-import { addItemToCycle, createCycle, getActiveCycle, getCycle, listCycles, setActiveCycle } from './tools/cycles.js';
-import { addComment } from './tools/comments.js';
+import { addItem, bumpMentionCount, getItem, listItems, updateItemStatus } from './tools/items/index.js';
+import { addItemToCycle, createCycle, getActiveCycle, getCycle, listCycles, setActiveCycle } from './tools/cycles/index.js';
+import { addComment } from './tools/comments/index.js';
 
 export function requireString(args: Record<string, unknown>, key: string): string {
   const value = args[key];
