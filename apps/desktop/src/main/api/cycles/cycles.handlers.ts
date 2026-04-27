@@ -81,9 +81,11 @@ export async function deleteCycle(c: Context<AppEnv>) {
   const existing = db.select().from(cycles).where(eq(cycles.id, id)).get();
   if (!existing) return c.json({ error: 'Not found' }, 404);
 
-  db.update(items).set({ cycle_id: null }).where(eq(items.cycle_id, id)).run();
-  db.delete(cycleItems).where(eq(cycleItems.cycle_id, id)).run();
-  db.delete(cycles).where(eq(cycles.id, id)).run();
+  db.transaction((tx) => {
+    tx.update(items).set({ cycle_id: null }).where(eq(items.cycle_id, id)).run();
+    tx.delete(cycleItems).where(eq(cycleItems.cycle_id, id)).run();
+    tx.delete(cycles).where(eq(cycles.id, id)).run();
+  });
   return c.json({ ok: true });
 }
 

@@ -1,4 +1,7 @@
 import { cycleItems, items } from '../../schema.js';
+import { VALID_STATUSES, VALID_TRANSITIONS } from '@queuepilot/core/types';
+
+export { VALID_STATUSES, VALID_TRANSITIONS };
 
 export interface ItemRow {
   id: string;
@@ -36,14 +39,4 @@ export const ITEM_COLUMNS = {
 
 export const CYCLE_ITEMS_TABLE = cycleItems;
 
-export const VALID_STATUSES = ['inbox', 'todo', 'in_progress', 'review', 'done', 'discarded'] as const;
 
-// Mirrors VALID_TRANSITIONS from @queuepilot/core — update both if lifecycle changes
-export const VALID_TRANSITIONS: Record<string, string[]> = {
-  inbox: ['todo', 'discarded'],
-  todo: ['in_progress', 'discarded'],
-  in_progress: ['review', 'todo', 'discarded'],
-  review: ['done', 'in_progress', 'discarded'],
-  done: [],
-  discarded: [],
-};

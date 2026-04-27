@@ -8,7 +8,11 @@ export function resolveTargetStatus(columnId: string, draggedStatus: string): st
   if (columnId === 'review') return 'review';
   if (columnId === 'done') {
     if (VALID_TRANSITIONS[draggedStatus]?.includes('done')) return 'done';
-    return null; // block everything else — no silent discard
+    return null; // block — no silent discard into done
+  }
+  if (columnId === 'discarded') {
+    if (VALID_TRANSITIONS[draggedStatus]?.includes('discarded')) return 'discarded';
+    return null;
   }
   return null;
 }
@@ -17,6 +21,7 @@ export function itemStatusToColumn(status: string): string {
   if (status === 'inbox' || status === 'todo') return 'todo';
   if (status === 'in_progress') return 'in_progress';
   if (status === 'review') return 'review';
-  if (status === 'done' || status === 'discarded') return 'done';
+  if (status === 'done') return 'done';
+  if (status === 'discarded') return 'discarded';
   return 'todo';
 }
