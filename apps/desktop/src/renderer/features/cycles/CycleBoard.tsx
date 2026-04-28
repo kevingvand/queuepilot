@@ -13,7 +13,7 @@ import { useCycles } from './hooks/useCycles';
 import { useCycleItems, useCycleTags, useReorderCycleItems, type ItemWithTags } from './hooks/useCycleItems';
 import { useUpdateItemStatus } from '../items/hooks/useItems';
 import { useUiStore } from '../../store/ui.store';
-import { CycleBoardCardContent } from './CycleBoardCard';
+import { CycleBoardCardContent } from './CycleBoardCardContent';
 import { CycleBoardColumn } from './CycleBoardColumn';
 import type { ColumnDragStatus } from './CycleBoardColumn';
 import { CycleBoardHeader } from './CycleBoardHeader';
@@ -21,6 +21,14 @@ import { resolveTargetStatus, itemStatusToColumn, VALID_TRANSITIONS } from './cy
 
 const ALL_COLUMNS = ['todo', 'in_progress', 'review', 'done', 'discarded'] as const;
 type ColumnId = (typeof ALL_COLUMNS)[number];
+
+const KEY_TO_STATUS: Record<string, string> = {
+  '1': 'todo',
+  '2': 'in_progress',
+  '3': 'review',
+  '4': 'done',
+  '5': 'discarded',
+};
 
 export function CycleBoard({ cycleId }: { cycleId: string }) {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -32,12 +40,11 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { setSelectedItemId, selectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
   const [activeItem, setActiveItem] = useState<ItemWithTags | null>(null);
-  // Local ordered list — kept in sync with server data when not dragging
   const [localItems, setLocalItems] = useState<ItemWithTags[]>(allItems);
   const isDragging = useRef(false);
   const isPendingReorder = useRef(false);
 
-  // Sync server data → local when not dragging and no reorder is in-flight
+  // Sync server state → local list when no drag or reorder is in flight
   useEffect(() => {
     if (!isDragging.current && !isPendingReorder.current) {
       setLocalItems(allItems);
@@ -46,19 +53,9 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
 
   const cycle: Cycle | undefined = cycles.find((c) => c.id === cycleId);
 
-  // 1-5 keyboard shortcuts to reassign the selected item's status
   useEffect(() => {
-    const KEY_TO_STATUS: Record<string, string> = {
-      '1': 'todo',
-      '2': 'in_progress',
-      '3': 'review',
-      '4': 'done',
-      '5': 'discarded',
-    };
-
     const handler = (e: KeyboardEvent) => {
       if (!selectedItemId || !KEY_TO_STATUS[e.key]) return;
-      // Don't fire while typing in an input
       const el = document.activeElement;
       if (
         el instanceof HTMLInputElement ||
@@ -91,7 +88,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     return localItems.filter((item) => item.title.toLowerCase().includes(q));
   }, [localItems, search]);
 
-  /** Per-column drag status: computed once when a drag starts. */
   const columnDragStatus = useMemo((): Record<ColumnId, ColumnDragStatus> | null => {
     if (!activeItem) return null;
     const sourceCol = itemStatusToColumn(activeItem.status) as ColumnId;
@@ -119,26 +115,21 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    if (search.trim()) return; // Don't reorder while filtered
+    if (search.trim()) return;
 
     const activeId = String(active.id);
     const overId = String(over.id);
 
-    const activeItem = localItems.find((i) => i.id === activeId);
-    if (!activeItem) return;
+    const draggedItem = localItems.find((i) => i.id === activeId);
+    if (!draggedItem) return;
 
-    // Determine source and target columns
-    const sourceCol = itemStatusToColumn(activeItem.status);
-
-    // over.id could be a column or an item
+    const sourceCol = itemStatusToColumn(draggedItem.status);
     const overItem = localItems.find((i) => i.id === overId);
     const targetCol = overItem ? itemStatusToColumn(overItem.status) : overId;
 
-    // Only reorder within the same column
     if (sourceCol !== targetCol) return;
-    if (!overItem) return; // hovering the column droppable, not a card — no reorder
+    if (!overItem) return;
 
-    // Reorder locally
     setLocalItems((prev) => {
       const oldIndex = prev.findIndex((i) => i.id === activeId);
       const newIndex = prev.findIndex((i) => i.id === overId);
@@ -150,7 +141,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    // Clear drag state BEFORE any early returns so the overlay always hides
+    // Clear drag state before any early returns so the overlay always dismisses
     isDragging.current = false;
     setActiveItem(null);
 
@@ -168,8 +159,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     const sourceColumnId = itemStatusToColumn(draggedItem.status);
 
     if (targetColumnId === sourceColumnId) {
-      // Same-column drop: persist the new order
-      if (search.trim()) return; // reordering disabled while searching
+      if (search.trim()) return;
       const columnStatuses =
         sourceColumnId === 'todo' ? ['inbox', 'todo'] : [sourceColumnId];
       const columnIds = localItems
@@ -183,7 +173,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
       return;
     }
 
-    // Cross-column: status change + reset position so item falls to bottom of new column
     const targetStatus = resolveTargetStatus(targetColumnId, draggedItem.status);
     if (!targetStatus) return;
     if (targetStatus === draggedItem.status) return;
@@ -203,7 +192,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const activeDragId = activeItem?.id ?? null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <div className="flex flex-col h-full overflow-hidden">
       <CycleBoardHeader
         cycle={cycle}
         search={search}
@@ -217,17 +206,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
         }
       />
 
-      <div
-        style={{
-          flex: 1,
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          padding: '16px',
-          display: 'flex',
-          gap: '12px',
-          alignItems: 'stretch',
-        }}
-      >
+      <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 flex gap-3 items-stretch">
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
           <CycleBoardColumn
             columnId="todo"
@@ -263,16 +242,8 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
 
-          {/* Archive: Done (top) + Cancelled (bottom), sharing one flex unit */}
-          <div
-            style={{
-              flex: '1 1 0',
-              minWidth: '200px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-          >
+          {/* Done + Cancelled share one flex unit, stacked vertically */}
+          <div className="flex-1 min-w-[200px] flex flex-col gap-2">
             <CycleBoardColumn
               columnId="done"
               label="Done"
@@ -308,3 +279,4 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     </div>
   );
 }
+
