@@ -4,61 +4,12 @@ import type { Item } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
 import { useUiStore } from '../../../store/ui.store';
 
-function NavigateArrow() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="10"
-      height="10"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="opacity-0 group-hover:opacity-50 transition-opacity shrink-0"
-    >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-function SubtaskRow({ subtask, onToggle, onDelete, onRename, onNavigate }: {
+function SubtaskRow({ subtask, onToggle, onDelete, onNavigate }: {
   subtask: Item;
   onToggle: () => void;
   onDelete: () => void;
-  onRename: (title: string) => void;
   onNavigate: () => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState(subtask.title);
-
-  function commit() {
-    const trimmed = title.trim();
-    if (trimmed && trimmed !== subtask.title) onRename(trimmed);
-    else setTitle(subtask.title);
-    setEditing(false);
-  }
-
-  if (editing) {
-    return (
-      <div className="flex items-center gap-2">
-        <input
-          autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') { setTitle(subtask.title); setEditing(false); }
-          }}
-          className="flex-1 bg-transparent text-sm text-foreground border-b border-primary focus:outline-none"
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="flex items-center gap-2 group">
       <input
@@ -70,16 +21,30 @@ function SubtaskRow({ subtask, onToggle, onDelete, onRename, onNavigate }: {
       <span
         className={`flex-1 text-sm cursor-pointer flex items-center gap-1 min-w-0 ${subtask.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}
         onClick={onNavigate}
-        onDoubleClick={() => setEditing(true)}
-        title="Click to view · Double-click to rename"
+        title="Click to open subtask"
       >
         <span className="truncate">{subtask.title}</span>
-        <NavigateArrow />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="opacity-0 group-hover:opacity-50 transition-opacity shrink-0"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
       </span>
       <button
         onClick={onDelete}
         className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-muted-foreground hover:text-destructive focus:outline-none shrink-0"
         title="Delete subtask"
+        aria-label="Delete subtask"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="3 6 5 6 21 6" />
@@ -122,11 +87,6 @@ export function DetailSubtasks({ item }: { item: Item }) {
     queryClient.invalidateQueries({ queryKey: ['items'] });
   }
 
-  async function renameSubtask(subtask: Item, title: string) {
-    await api.items.update(subtask.id, { title });
-    queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
-  }
-
   async function addSubtask() {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
@@ -156,7 +116,6 @@ export function DetailSubtasks({ item }: { item: Item }) {
             subtask={subtask}
             onToggle={() => toggleDone(subtask)}
             onDelete={() => deleteSubtask(subtask)}
-            onRename={(title) => renameSubtask(subtask, title)}
             onNavigate={() => setSelectedItemId(subtask.id)}
           />
         ))}

@@ -64,7 +64,7 @@ export function ItemList() {
         return;
       }
 
-      const tag = (document.activeElement as HTMLElement)?.tagName;
+      const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (shortcutsOpen || addDialogOpen) return;
 

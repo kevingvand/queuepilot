@@ -56,12 +56,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!selectedItemId || !KEY_TO_STATUS[e.key]) return;
-      const el = document.activeElement;
+      const el = e.target as HTMLElement;
       if (
         el instanceof HTMLInputElement ||
         el instanceof HTMLTextAreaElement ||
         el instanceof HTMLSelectElement ||
-        (el as HTMLElement)?.isContentEditable
+        el?.isContentEditable
       ) return;
 
       const targetStatus = KEY_TO_STATUS[e.key];
