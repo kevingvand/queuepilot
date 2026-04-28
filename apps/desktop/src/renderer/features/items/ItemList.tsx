@@ -3,10 +3,10 @@ import type { Item } from '@queuepilot/core/types';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { useUiStore, type FilterState, type SortOrder } from '../../store/ui.store';
 import { ItemListHeader } from './ItemListHeader';
-import { ItemRow } from './ItemRow';
+import { ItemRow, type ItemWithCounts } from './ItemRow';
 import { useItems } from './hooks/useItems';
 
-function sortItems(items: Item[], order: SortOrder): Item[] {
+function sortItems<T extends Item>(items: T[], order: SortOrder): T[] {
   return [...items].sort((a, b) => {
     switch (order) {
       case 'newest': return b.created_at - a.created_at;
@@ -53,7 +53,7 @@ function EmptyState({ filter }: { filter: FilterState }) {
 export function ItemList() {
   const { filterState, selectedItemId, setSelectedItemId, sortOrder, setShortcutsOpen, shortcutsOpen, addDialogOpen, setAddDialogOpen, triggerFocusDetailTitle, setFilterState } = useUiStore();
   const { data: rawItems = [], isLoading } = useItems(filterState);
-  const items = useMemo(() => sortItems(rawItems, sortOrder), [rawItems, sortOrder]);
+  const items = useMemo(() => sortItems<ItemWithCounts>(rawItems, sortOrder), [rawItems, sortOrder]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

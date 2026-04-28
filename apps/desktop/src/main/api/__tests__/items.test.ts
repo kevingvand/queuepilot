@@ -202,4 +202,81 @@ describe('items — CRUD and filtering', () => {
     expect(links).toHaveLength(1);
     expect(links[0].kind).toBe('relates_to');
   });
+
+  it('filters subtasks from the default list (parent_id IS NULL)', async () => {
+    const r1 = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Parent item' }),
+    });
+    const parent = await r1.json();
+
+    await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Subtask', parent_id: parent.id }),
+    });
+
+    const res = await app.request('/items');
+    const items: { id: string }[] = await res.json();
+    expect(items.every((i) => i.id !== undefined)).toBe(true);
+    expect(items.some((i: { id: string }) => i.id === parent.id)).toBe(true);
+    expect(items.every((i: { id: string }) => i.id !== undefined)).toBe(true);
+    const ids = items.map((i: { id: string }) => i.id);
+    expect(ids).toContain(parent.id);
+    expect(ids).not.toContain((await app.request('/items?parent_id=' + parent.id).then(async (r) => { const s: { id: string }[] = await r.json(); return s[0]?.id; })));
+  });
+
+  it('returns subtasks when querying by parent_id', async () => {
+    const r1 = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Parent' }),
+    });
+    const parent = await r1.json();
+
+    await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Child', parent_id: parent.id }),
+    });
+
+    const res = await app.request(`/items?parent_id=${parent.id}`);
+    const subtasks: { title: string }[] = await res.json();
+    expect(subtasks).toHaveLength(1);
+    expect(subtasks[0].title).toBe('Child');
+  });
+
+  it('enriches top-level items with subtask_total and subtask_done counts', async () => {
+    const r1 = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Parent with subtasks' }),
+    });
+    const parent = await r1.json();
+
+    await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Sub 1', parent_id: parent.id }),
+    });
+    const r3 = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Sub 2', parent_id: parent.id }),
+    });
+    const sub2 = await r3.json();
+
+    await app.request(`/items/${sub2.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'done' }),
+    });
+
+    const res = await app.request('/items');
+    const items: { id: string; subtask_total: number; subtask_done: number }[] = await res.json();
+    const row = items.find((i) => i.id === parent.id);
+    expect(row?.subtask_total).toBe(2);
+    expect(row?.subtask_done).toBe(1);
+  });
 });

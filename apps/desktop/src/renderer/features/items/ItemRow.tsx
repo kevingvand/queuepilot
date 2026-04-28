@@ -2,6 +2,8 @@ import type { Item } from '@queuepilot/core/types';
 import type { BadgeProps } from '../../components/ui/badge';
 import { Badge } from '../../components/ui/badge';
 
+export type ItemWithCounts = Item & { subtask_total?: number; subtask_done?: number };
+
 const PRIORITY_COLOR: Record<number, string> = {
   0: 'transparent',
   1: '#3b82f6',
@@ -15,10 +17,13 @@ export function ItemRow({
   selected,
   onSelect,
 }: {
-  item: Item;
+  item: ItemWithCounts;
   selected: boolean;
   onSelect: (id: string) => void;
 }) {
+  const subtaskTotal = item.subtask_total ?? 0;
+  const subtaskDone = item.subtask_done ?? 0;
+
   return (
     <div
       className="px-4 py-3 border-b cursor-pointer transition-colors"
@@ -43,9 +48,19 @@ export function ItemRow({
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium truncate flex-1">{item.title}</p>
-        <Badge status={item.status as BadgeProps['status']} className="shrink-0 text-[10px]">
-          {item.status.replace('_', ' ')}
-        </Badge>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {subtaskTotal > 0 && (
+            <span
+              className="text-[10px] tabular-nums"
+              style={{ color: selected ? 'rgba(255,255,255,0.65)' : 'var(--text-muted)' }}
+            >
+              {subtaskDone}/{subtaskTotal}
+            </span>
+          )}
+          <Badge status={item.status as BadgeProps['status']} className="shrink-0 text-[10px]">
+            {item.status.replace('_', ' ')}
+          </Badge>
+        </div>
       </div>
       {item.body && (
         <p className="text-xs truncate mt-1" style={{ color: selected ? 'rgba(255,255,255,0.85)' : 'var(--text-secondary)' }}>

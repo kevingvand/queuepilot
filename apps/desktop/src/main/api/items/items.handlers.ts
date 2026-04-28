@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { and, desc, eq, inArray, like, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import {
   itemEvents,
@@ -19,7 +19,11 @@ export async function listItems(c: Context<AppEnv>) {
   const conditions: ReturnType<typeof eq>[] = [];
   if (status) conditions.push(eq(items.status, status));
   if (cycle_id) conditions.push(eq(items.cycle_id, cycle_id));
-  if (parent_id) conditions.push(eq(items.parent_id, parent_id));
+  if (parent_id) {
+    conditions.push(eq(items.parent_id, parent_id));
+  } else {
+    conditions.push(isNull(items.parent_id) as ReturnType<typeof eq>);
+  }
   if (q) {
     conditions.push(or(like(items.title, `%${q}%`), like(items.body, `%${q}%`)) as ReturnType<typeof eq>);
   }
@@ -46,7 +50,31 @@ export async function listItems(c: Context<AppEnv>) {
     .offset(Number(offset))
     .all();
 
-  return c.json(result);
+  if (parent_id || result.length === 0) return c.json(result);
+
+  const ids = result.map((r) => r.id);
+  const counts = db
+    .select({
+      parent_id: items.parent_id,
+      total: sql<number>`count(*)`,
+      done: sql<number>`sum(case when ${items.status} = 'done' then 1 else 0 end)`,
+    })
+    .from(items)
+    .where(inArray(items.parent_id as never, ids))
+    .groupBy(items.parent_id)
+    .all();
+
+  const countMap = Object.fromEntries(
+    counts.map((c) => [c.parent_id!, { subtask_total: Number(c.total), subtask_done: Number(c.done) }]),
+  );
+
+  return c.json(
+    result.map((r) => ({
+      ...r,
+      subtask_total: countMap[r.id]?.subtask_total ?? 0,
+      subtask_done: countMap[r.id]?.subtask_done ?? 0,
+    })),
+  );
 }
 
 export async function createItem(c: Context<AppEnv>) {

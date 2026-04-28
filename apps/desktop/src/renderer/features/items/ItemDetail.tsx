@@ -77,7 +77,7 @@ export function ItemDetail() {
       </div>
       <SectionDivider />
       <div style={{ padding: '16px' }}>
-        <DetailSubtasks itemId={item.data.id} />
+        <DetailSubtasks item={item.data} />
       </div>
       <SectionDivider />
       <div style={{ padding: '16px' }}>

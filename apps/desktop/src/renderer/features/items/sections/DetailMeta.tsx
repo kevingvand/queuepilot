@@ -143,6 +143,96 @@ function CycleField({ item, cycles, editingField, setEditingField, onSave }: Cyc
   );
 }
 
+function ParentField({ item, onSave }: { item: Item; onSave: (value: string | null) => void }) {
+  const api = useApi();
+  const [isEditing, setIsEditing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const { data: currentParent } = useQuery<Item>({
+    queryKey: ['item', item.parent_id],
+    queryFn: async () => (await api.items.get(item.parent_id!)).data as Item,
+    enabled: !!item.parent_id,
+  });
+
+  const { data: searchResults = [] } = useQuery<Item[]>({
+    queryKey: ['items', { q: searchTerm }],
+    queryFn: async () => (await api.items.list({ q: searchTerm })).data as Item[],
+    enabled: isEditing && searchTerm.length > 0,
+  });
+
+  const filteredResults = searchResults.filter((r) => r.id !== item.id).slice(0, 6);
+
+  function close() {
+    setTimeout(() => { setIsEditing(false); setSearchTerm(''); }, 150);
+  }
+
+  if (isEditing) {
+    return (
+      <>
+        <dt className="text-muted-foreground self-center">Parent</dt>
+        <dd className="relative">
+          <input
+            autoFocus
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onBlur={close}
+            placeholder="Search items…"
+            className="bg-transparent text-xs text-foreground border-b border-primary focus:outline-none w-full"
+          />
+          {filteredResults.length > 0 && (
+            <div
+              className="absolute z-10 top-full left-0 mt-1 w-52 rounded border border-border shadow-lg overflow-hidden"
+              style={{ backgroundColor: 'var(--bg-secondary)' }}
+            >
+              {filteredResults.map((r) => (
+                <button
+                  key={r.id}
+                  onMouseDown={() => { onSave(r.id); setIsEditing(false); setSearchTerm(''); }}
+                  className="w-full text-left text-xs px-2 py-1.5 hover:bg-muted truncate transition-colors text-foreground"
+                >
+                  {r.title}
+                </button>
+              ))}
+            </div>
+          )}
+          {item.parent_id && (
+            <button
+              onMouseDown={() => { onSave(null); setIsEditing(false); setSearchTerm(''); }}
+              className="text-xs text-muted-foreground/50 hover:text-destructive transition-colors mt-0.5 block"
+            >
+              Clear parent
+            </button>
+          )}
+        </dd>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <dt className="text-muted-foreground self-center">Parent</dt>
+      <dd>
+        {currentParent ? (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-foreground hover:text-primary transition-colors text-left group flex items-center gap-1"
+          >
+            {currentParent.title}
+            <svg className="opacity-0 group-hover:opacity-60 transition-opacity" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-muted-foreground/50 hover:text-muted-foreground transition-colors text-xs italic"
+          >
+            + Set parent
+          </button>
+        )}
+      </dd>
+    </>
+  );
+}
+
 export function DetailMeta({ item }: { item: Item }) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -159,6 +249,18 @@ export function DetailMeta({ item }: { item: Item }) {
     await api.items.update(item.id, { [field]: value });
     queryClient.invalidateQueries({ queryKey: ['item', item.id] });
     queryClient.invalidateQueries({ queryKey: ['events', item.id] });
+  }
+
+  async function saveParentId(value: string | null) {
+    const prevParentId = item.parent_id;
+    await api.items.update(item.id, { parent_id: value });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+      queryClient.invalidateQueries({ queryKey: ['items'] }),
+      queryClient.invalidateQueries({ queryKey: ['events', item.id] }),
+      ...(prevParentId ? [queryClient.invalidateQueries({ queryKey: ['subtasks', prevParentId] })] : []),
+      ...(value ? [queryClient.invalidateQueries({ queryKey: ['subtasks', value] })] : []),
+    ]);
   }
 
   return (
@@ -195,6 +297,7 @@ export function DetailMeta({ item }: { item: Item }) {
             </>
           )}
           <CycleField item={item} cycles={cycles} editingField={editingField} setEditingField={setEditingField} onSave={saveField} />
+          <ParentField item={item} onSave={saveParentId} />
           {item.source_id && (
             <>
               <dt className="text-muted-foreground">Source</dt>

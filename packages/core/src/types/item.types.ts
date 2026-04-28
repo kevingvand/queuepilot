@@ -16,9 +16,9 @@ export const VALID_STATUSES = ['inbox', 'todo', 'in_progress', 'review', 'done',
 export type ItemStatus = typeof VALID_STATUSES[number];
 
 export const VALID_TRANSITIONS: Record<string, string[]> = {
-  inbox: ['todo', 'in_progress', 'discarded'],
-  todo: ['in_progress', 'discarded'],
-  in_progress: ['review', 'todo', 'discarded'],
+  inbox: ['todo', 'in_progress', 'done', 'discarded'],
+  todo: ['in_progress', 'done', 'discarded'],
+  in_progress: ['review', 'todo', 'done', 'discarded'],
   review: ['done', 'in_progress', 'todo', 'discarded'],
   done: ['in_progress', 'todo', 'discarded'],
   discarded: ['todo', 'in_progress', 'done'],
