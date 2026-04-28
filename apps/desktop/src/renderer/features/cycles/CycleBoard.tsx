@@ -11,7 +11,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import type { Item } from '@queuepilot/core/types';
 import type { Cycle } from '@queuepilot/core/types';
 import { useCycles } from './hooks/useCycles';
-import { useCycleItems, useReorderCycleItems } from './hooks/useCycleItems';
+import { useCycleItems, useCycleTags, useReorderCycleItems } from './hooks/useCycleItems';
 import { useUpdateItemStatus } from '../items/hooks/useItems';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCard';
@@ -24,7 +24,9 @@ const ALL_COLUMNS = ['todo', 'in_progress', 'review', 'done', 'discarded'] as co
 type ColumnId = (typeof ALL_COLUMNS)[number];
 
 export function CycleBoard({ cycleId }: { cycleId: string }) {
-  const { data: allItems = [] } = useCycleItems(cycleId);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const { data: allItems = [] } = useCycleItems(cycleId, selectedTagId ?? undefined);
+  const { data: cycleTags = [] } = useCycleTags(cycleId);
   const { data: cycles = [] } = useCycles();
   const { mutate: updateStatus } = useUpdateItemStatus();
   const { mutate: reorderItems } = useReorderCycleItems(cycleId);
@@ -44,6 +46,41 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   }, [allItems]);
 
   const cycle: Cycle | undefined = cycles.find((c) => c.id === cycleId);
+
+  // 1-5 keyboard shortcuts to reassign the selected item's status
+  useEffect(() => {
+    const KEY_TO_STATUS: Record<string, string> = {
+      '1': 'todo',
+      '2': 'in_progress',
+      '3': 'review',
+      '4': 'done',
+      '5': 'discarded',
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (!selectedItemId || !KEY_TO_STATUS[e.key]) return;
+      // Don't fire while typing in an input
+      const el = document.activeElement;
+      if (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement ||
+        (el as HTMLElement)?.isContentEditable
+      ) return;
+
+      const targetStatus = KEY_TO_STATUS[e.key];
+      const item = localItems.find((i) => i.id === selectedItemId);
+      if (!item || item.status === targetStatus) return;
+
+      const allowed = VALID_TRANSITIONS[item.status] ?? [];
+      if (!allowed.includes(targetStatus)) return;
+
+      updateStatus({ id: item.id, status: targetStatus, position: null });
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedItemId, localItems, updateStatus]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -168,7 +205,14 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <CycleBoardHeader cycle={cycle} search={search} onSearchChange={setSearch} />
+      <CycleBoardHeader
+        cycle={cycle}
+        search={search}
+        onSearchChange={setSearch}
+        tags={cycleTags}
+        selectedTagId={selectedTagId}
+        onTagSelect={setSelectedTagId}
+      />
 
       <div
         style={{
