@@ -16,7 +16,6 @@ import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCard';
 import { CycleBoardColumn } from './CycleBoardColumn';
 import { CycleBoardHeader } from './CycleBoardHeader';
-import { ConfirmDoneDialog } from './ConfirmDoneDialog';
 import { resolveTargetStatus, itemStatusToColumn, VALID_TRANSITIONS } from './cycleBoardTransitions';
 
 const dropAnimation = {
@@ -32,8 +31,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { setSelectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
   const [activeItem, setActiveItem] = useState<Item | null>(null);
-  const [confirmPendingItem, setConfirmPendingItem] = useState<Item | null>(null);
-  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   const cycle: Cycle | undefined = cycles.find((c) => c.id === cycleId);
 
@@ -74,27 +71,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     const allowed = VALID_TRANSITIONS[draggedItem.status] ?? [];
     if (!allowed.includes(targetStatus)) return;
 
-    // review → done requires confirmation
-    if (draggedItem.status === 'review' && targetStatus === 'done') {
-      setConfirmPendingItem(draggedItem);
-      setPendingStatus('done');
-      return;
-    }
-
     updateStatus({ id: draggedItem.id, status: targetStatus });
-  }
-
-  function handleConfirmDone() {
-    if (confirmPendingItem && pendingStatus) {
-      updateStatus({ id: confirmPendingItem.id, status: pendingStatus });
-    }
-    setConfirmPendingItem(null);
-    setPendingStatus(null);
-  }
-
-  function handleCancelDone() {
-    setConfirmPendingItem(null);
-    setPendingStatus(null);
   }
 
   const todoItems = filteredItems.filter((i) => i.status === 'todo' || i.status === 'inbox');
@@ -149,12 +126,13 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
 
-          {/* Archive area: Done + Cancelled share one column's flex unit to prevent overflow */}
+          {/* Archive area: Done (top) + Cancelled (bottom) share one column's flex unit */}
           <div
             style={{
               flex: '1 1 0',
               minWidth: '200px',
               display: 'flex',
+              flexDirection: 'column',
               gap: '8px',
             }}
           >
@@ -185,12 +163,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
           </DragOverlay>
         </DndContext>
       </div>
-
-      <ConfirmDoneDialog
-        item={confirmPendingItem}
-        onConfirm={handleConfirmDone}
-        onCancel={handleCancelDone}
-      />
     </div>
   );
 }
