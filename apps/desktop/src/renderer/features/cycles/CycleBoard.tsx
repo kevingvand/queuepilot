@@ -8,7 +8,6 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
-import type { Item } from '@queuepilot/core/types';
 import type { Cycle } from '@queuepilot/core/types';
 import { useCycles } from './hooks/useCycles';
 import { useCycleItems, useCycleTags, useReorderCycleItems, type ItemWithTags } from './hooks/useCycleItems';

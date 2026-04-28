@@ -47,7 +47,6 @@ function ShellContent() {
     setDetailPanelWidth,
     addDialogOpen,
     setAddDialogOpen,
-    filterState,
     activeCycleId,
   } = useUiStore();
 
