@@ -62,6 +62,8 @@ export async function listCycleItems(c: Context<AppEnv>) {
     sql`${items.created_at} DESC`,
   ] as const;
 
+  let rows;
+
   if (tagIds.length > 0) {
     // Items matching ANY of the selected tags (OR logic)
     const taggedIds = [
@@ -77,23 +79,47 @@ export async function listCycleItems(c: Context<AppEnv>) {
 
     if (taggedIds.length === 0) return c.json([]);
 
-    const rows = db
+    rows = db
       .select()
       .from(items)
       .where(and(eq(items.cycle_id, id), inArray(items.id, taggedIds)))
       .orderBy(...orderByClauses)
       .all();
-    return c.json(rows);
+  } else {
+    rows = db
+      .select()
+      .from(items)
+      .where(eq(items.cycle_id, id))
+      .orderBy(...orderByClauses)
+      .all();
   }
 
-  const rows = db
-    .select()
-    .from(items)
-    .where(eq(items.cycle_id, id))
-    .orderBy(...orderByClauses)
-    .all();
+  // Enrich items with their tags in one batch query
+  const itemIds = rows.map((r) => r.id);
+  const tagRows =
+    itemIds.length > 0
+      ? db
+          .select({
+            item_id: itemTags.item_id,
+            id: tags.id,
+            name: tags.name,
+            color: tags.color,
+          })
+          .from(itemTags)
+          .innerJoin(tags, eq(itemTags.tag_id, tags.id))
+          .where(inArray(itemTags.item_id, itemIds))
+          .all()
+      : [];
 
-  return c.json(rows);
+  const tagsByItemId = tagRows.reduce<Record<string, { id: string; name: string; color: string }[]>>(
+    (acc, row) => {
+      (acc[row.item_id] ??= []).push({ id: row.id, name: row.name, color: row.color });
+      return acc;
+    },
+    {},
+  );
+
+  return c.json(rows.map((row) => ({ ...row, tags: tagsByItemId[row.id] ?? [] })));
 }
 
 export async function listCycleTags(c: Context<AppEnv>) {

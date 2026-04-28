@@ -2,7 +2,7 @@ import { GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
-import type { Item } from '@queuepilot/core/types';
+import type { ItemWithTags } from './hooks/useCycleItems';
 
 const PRIORITY_COLOR: Record<number, string> = {
   0: 'transparent',
@@ -20,7 +20,7 @@ export function CycleBoardCardContent({
   lifted = false,
   isSelected = false,
 }: {
-  item: Item;
+  item: ItemWithTags;
   dragListeners?: DraggableSyntheticListeners;
   dragAttributes?: DraggableAttributes;
   lifted?: boolean;
@@ -80,19 +80,38 @@ export function CycleBoardCardContent({
           >
             {item.title}
           </p>
-          {item.body && (
-            <p
-              style={{
-                fontSize: '11px',
-                color: 'var(--text-muted)',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                margin: '4px 0 0 0',
-              }}
-            >
-              {item.body}
-            </p>
+          {item.tags.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '6px' }}>
+              {item.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '3px',
+                    padding: '1px 6px',
+                    borderRadius: '999px',
+                    fontSize: '10px',
+                    fontWeight: 500,
+                    backgroundColor: `${tag.color}22`,
+                    color: tag.color,
+                    border: `1px solid ${tag.color}55`,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '5px',
+                      height: '5px',
+                      borderRadius: '50%',
+                      backgroundColor: tag.color,
+                      flexShrink: 0,
+                    }}
+                  />
+                  {tag.name}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -101,7 +120,7 @@ export function CycleBoardCardContent({
 }
 
 /** Sortable card — wraps CycleBoardCardContent with @dnd-kit/sortable. Use inside SortableContext only. */
-export function CycleBoardCard({ item, isSelected = false }: { item: Item; isSelected?: boolean }) {
+export function CycleBoardCard({ item, isSelected = false }: { item: ItemWithTags; isSelected?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });

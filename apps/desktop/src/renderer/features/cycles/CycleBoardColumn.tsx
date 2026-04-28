@@ -1,6 +1,6 @@
 import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import type { Item } from '@queuepilot/core/types';
+import type { ItemWithTags } from './hooks/useCycleItems';
 import { CycleBoardCard } from './CycleBoardCard';
 
 export type ColumnDragStatus = 'valid' | 'invalid' | 'source' | undefined;
@@ -20,7 +20,7 @@ export function CycleBoardColumn({
   columnId: string;
   label: string;
   accent: string;
-  items: Item[];
+  items: ItemWithTags[];
   emptyText?: string;
   /** ID of the item currently being dragged. */
   activeDragId?: string | null;
@@ -30,7 +30,7 @@ export function CycleBoardColumn({
   selectedItemId?: string | null;
   /** When true, removes the fixed minWidth so a parent can control sizing. */
   compact?: boolean;
-  onCardClick: (item: Item) => void;
+  onCardClick: (item: ItemWithTags) => void;
 }) {
   const { setNodeRef } = useDroppable({ id: columnId });
   const { over } = useDndContext();
