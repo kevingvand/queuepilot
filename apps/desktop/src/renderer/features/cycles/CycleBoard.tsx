@@ -11,7 +11,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import type { Item } from '@queuepilot/core/types';
 import type { Cycle } from '@queuepilot/core/types';
 import { useCycles } from './hooks/useCycles';
-import { useCycleItems, useCycleTags, useReorderCycleItems } from './hooks/useCycleItems';
+import { useCycleItems, useCycleTags, useReorderCycleItems, type ItemWithTags } from './hooks/useCycleItems';
 import { useUpdateItemStatus } from '../items/hooks/useItems';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCard';
@@ -32,9 +32,9 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { mutate: reorderItems } = useReorderCycleItems(cycleId);
   const { setSelectedItemId, selectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
-  const [activeItem, setActiveItem] = useState<Item | null>(null);
+  const [activeItem, setActiveItem] = useState<ItemWithTags | null>(null);
   // Local ordered list — kept in sync with server data when not dragging
-  const [localItems, setLocalItems] = useState<Item[]>(allItems);
+  const [localItems, setLocalItems] = useState<ItemWithTags[]>(allItems);
   const isDragging = useRef(false);
   const isPendingReorder = useRef(false);
 
