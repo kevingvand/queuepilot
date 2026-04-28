@@ -82,7 +82,6 @@ export async function updateItem(c: Context<AppEnv>) {
   const { id } = c.req.param();
   const rawBody = c.req.valid('json' as never) as Partial<NewItem>;
 
-  // Strip cycle_id — cycle membership must go through dedicated cycle endpoints
   const { cycle_id: _ignoredCycleId, ...body } = rawBody as Record<string, unknown>;
   const safeBody = body as Partial<NewItem>;
 
@@ -92,7 +91,6 @@ export async function updateItem(c: Context<AppEnv>) {
   const prevStatus = existing.status;
   const nextStatus = safeBody.status;
 
-  // Validate status transition against the full state machine
   if (nextStatus && nextStatus !== prevStatus) {
     if (!(VALID_STATUSES as readonly string[]).includes(nextStatus)) {
       return c.json({ error: `Invalid status "${nextStatus}"` }, 400);
