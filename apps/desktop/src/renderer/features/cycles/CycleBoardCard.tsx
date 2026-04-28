@@ -30,7 +30,7 @@ export function CycleBoardCardContent({
     <div
       style={{
         backgroundColor: isSelected ? 'color-mix(in srgb, var(--accent) 12%, var(--surface))' : 'var(--surface)',
-        border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border)',
+        border: '1px solid var(--border)',
         borderLeftColor: PRIORITY_COLOR[item.priority ?? 0],
         borderLeftWidth: '3px',
         borderRadius: '6px',
@@ -38,7 +38,7 @@ export function CycleBoardCardContent({
         boxShadow: lifted
           ? '0 12px 32px rgba(0,0,0,0.35)'
           : isSelected
-            ? '0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent)'
+            ? 'inset 0 0 0 2px var(--accent)'
             : undefined,
         transform: lifted ? 'rotate(1.5deg) scale(1.03)' : undefined,
         cursor: lifted ? 'grabbing' : 'pointer',
