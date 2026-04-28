@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { Db } from '../../db.js';
 import { items } from '../../schema.js';
-import { VALID_STATUSES } from './types.js';
+import { VALID_STATUSES, VALID_TRANSITIONS } from './types.js';
 
 export const definition = {
   name: 'update_item_status',
@@ -29,20 +29,28 @@ export function updateItemStatus(
     };
   }
 
-  db.update(items)
-    .set({ status, last_touched_at: Date.now(), updated_at: Date.now() })
-    .where(eq(items.id, id))
-    .run();
-
-  const row = db
+  const current = db
     .select({ id: items.id, status: items.status })
     .from(items)
     .where(eq(items.id, id))
     .get();
 
-  if (!row) {
+  if (!current) {
     return { success: false, message: `Item "${id}" not found` };
   }
 
-  return { success: true, item: row };
+  const allowed = VALID_TRANSITIONS[current.status] ?? [];
+  if (!allowed.includes(status)) {
+    return {
+      success: false,
+      message: `Cannot transition from "${current.status}" to "${status}". Allowed: ${allowed.join(', ')}`,
+    };
+  }
+
+  db.update(items)
+    .set({ status, last_touched_at: Date.now(), updated_at: Date.now() })
+    .where(eq(items.id, id))
+    .run();
+
+  return { success: true, item: { id: current.id, status } };
 }

@@ -53,6 +53,7 @@ export function CycleBoardCardContent({
         <button
           {...dragAttributes}
           {...dragListeners}
+          onClick={(e) => e.stopPropagation()}
           aria-label="Drag to reorder"
           className={cn(
             'text-muted-foreground shrink-0 mt-[1px] bg-transparent border-0 p-0 flex items-center',

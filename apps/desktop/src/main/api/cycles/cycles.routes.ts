@@ -21,9 +21,17 @@ const addItemBodySchema = z.object({ item_id: z.string() });
 
 const reorderBodySchema = z.object({ column: z.string(), ids: z.array(z.string()).min(1) });
 
+const updateCycleBodySchema = z.object({
+  name: z.string().min(1).optional(),
+  goal: z.string().optional().nullable(),
+  status: z.enum(['planned', 'active', 'completed']).optional(),
+  starts_at: z.number().int().optional().nullable(),
+  ends_at: z.number().int().optional().nullable(),
+});
+
 cyclesRoutes.get('/', listCycles);
 cyclesRoutes.post('/', zValidator('json', insertCycleSchema as never), createCycle);
-cyclesRoutes.patch('/:id', zValidator('json', insertCycleSchema.partial() as never), updateCycle);
+cyclesRoutes.patch('/:id', zValidator('json', updateCycleBodySchema as never), updateCycle);
 cyclesRoutes.delete('/:id', deleteCycle);
 cyclesRoutes.get('/:id/items', listCycleItems);
 cyclesRoutes.get('/:id/tags', listCycleTags);
