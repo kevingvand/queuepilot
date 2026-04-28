@@ -98,9 +98,6 @@ export async function updateItem(c: Context<AppEnv>) {
       return c.json({ error: `Invalid status "${nextStatus}"` }, 400);
     }
     const allowed = VALID_TRANSITIONS[prevStatus] ?? [];
-    if (allowed.length === 0) {
-      return c.json({ error: `Cannot transition from terminal status "${prevStatus}"` }, 400);
-    }
     if (!allowed.includes(nextStatus)) {
       return c.json({ error: `Transition from "${prevStatus}" to "${nextStatus}" is not allowed` }, 400);
     }

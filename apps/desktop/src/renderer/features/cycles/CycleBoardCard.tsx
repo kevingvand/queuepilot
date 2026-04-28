@@ -18,22 +18,28 @@ export function CycleBoardCardContent({
   dragListeners,
   dragAttributes,
   lifted = false,
+  isSelected = false,
 }: {
   item: Item;
   dragListeners?: DraggableSyntheticListeners;
   dragAttributes?: DraggableAttributes;
   lifted?: boolean;
+  isSelected?: boolean;
 }) {
   return (
     <div
       style={{
-        backgroundColor: 'var(--surface)',
-        border: '1px solid var(--border)',
+        backgroundColor: isSelected ? 'color-mix(in srgb, var(--accent) 12%, var(--surface))' : 'var(--surface)',
+        border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border)',
         borderLeftColor: PRIORITY_COLOR[item.priority ?? 0],
         borderLeftWidth: '3px',
         borderRadius: '6px',
         padding: '10px 12px',
-        boxShadow: lifted ? '0 12px 32px rgba(0,0,0,0.35)' : undefined,
+        boxShadow: lifted
+          ? '0 12px 32px rgba(0,0,0,0.35)'
+          : isSelected
+            ? '0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent)'
+            : undefined,
         transform: lifted ? 'rotate(1.5deg) scale(1.03)' : undefined,
         cursor: lifted ? 'grabbing' : 'pointer',
         userSelect: 'none',
@@ -95,7 +101,7 @@ export function CycleBoardCardContent({
 }
 
 /** Sortable card — wraps CycleBoardCardContent with @dnd-kit/sortable. Use inside SortableContext only. */
-export function CycleBoardCard({ item }: { item: Item }) {
+export function CycleBoardCard({ item, isSelected = false }: { item: Item; isSelected?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -109,7 +115,7 @@ export function CycleBoardCard({ item }: { item: Item }) {
         opacity: isDragging ? 0.3 : 1,
       }}
     >
-      <CycleBoardCardContent item={item} dragListeners={listeners} dragAttributes={attributes} />
+      <CycleBoardCardContent item={item} dragListeners={listeners} dragAttributes={attributes} isSelected={isSelected} />
     </div>
   );
 }
