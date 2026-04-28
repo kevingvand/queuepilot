@@ -20,6 +20,6 @@ export const VALID_TRANSITIONS: Record<string, string[]> = {
   todo: ['in_progress', 'discarded'],
   in_progress: ['review', 'todo', 'discarded'],
   review: ['done', 'in_progress', 'discarded'],
-  done: [],
-  discarded: [],
+  done: ['in_progress'],
+  discarded: ['todo'],
 };
