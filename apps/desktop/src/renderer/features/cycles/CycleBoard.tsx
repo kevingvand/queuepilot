@@ -45,11 +45,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const columnDragStatus = useMemo((): Record<ColumnId, ColumnDragStatus> | null => {
     if (!activeItem) return null;
     const sourceCol = itemStatusToColumn(activeItem.status) as ColumnId;
+    const allowed = VALID_TRANSITIONS[activeItem.status] ?? [];
     return Object.fromEntries(
       ALL_COLUMNS.map((col) => {
         if (col === sourceCol) return [col, 'source'];
         const target = resolveTargetStatus(col, activeItem.status);
-        const isValid = target !== null && target !== activeItem.status;
+        const isValid = target !== null && allowed.includes(target);
         return [col, isValid ? 'valid' : 'invalid'];
       }),
     ) as Record<ColumnId, ColumnDragStatus>;
