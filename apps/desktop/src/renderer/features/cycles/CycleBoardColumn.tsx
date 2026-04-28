@@ -1,4 +1,4 @@
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Item } from '@queuepilot/core/types';
 import { CycleBoardCard } from './CycleBoardCard';
@@ -32,7 +32,12 @@ export function CycleBoardColumn({
   compact?: boolean;
   onCardClick: (item: Item) => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: columnId });
+  const { setNodeRef } = useDroppable({ id: columnId });
+  const { over } = useDndContext();
+
+  // True when the drag pointer is over the column itself OR any card within it
+  const isOver =
+    over?.id === columnId || (over?.id != null && items.some((i) => i.id === over.id));
 
   const isInvalidHover = isOver && dragStatus === 'invalid';
   const isValidHover = isOver && dragStatus !== 'invalid';
