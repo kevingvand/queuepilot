@@ -6,8 +6,6 @@ import type { NewCycle } from '@queuepilot/core/types';
 import type { InferInsertModel } from 'drizzle-orm';
 import type { AppEnv } from '../index';
 
-
-
 type NewCycleItem = InferInsertModel<typeof cycleItems>;
 
 export async function listCycles(c: Context<AppEnv>) {
@@ -36,7 +34,6 @@ export async function updateCycle(c: Context<AppEnv>) {
 
   db.update(cycles).set(body as unknown as Partial<NewCycle>).where(eq(cycles.id, id)).run();
 
-  // If activating this cycle, demote any other active cycle to planned
   if ((body as Record<string, unknown>).status === 'active') {
     db.update(cycles)
       .set({ status: 'planned' } as unknown as Partial<NewCycle>)
@@ -54,8 +51,6 @@ export async function listCycleItems(c: Context<AppEnv>) {
   const tagIdsParam = c.req.query('tagIds');
   const tagIds = tagIdsParam ? tagIdsParam.split(',').filter(Boolean) : [];
 
-  // Null positions (new/moved items) sort to the top; explicitly positioned items follow in order.
-  // Within the null group, most recently created items appear first.
   const orderByClauses = [
     sql`CASE WHEN ${items.position} IS NULL THEN 0 ELSE 1 END ASC`,
     asc(items.position),
@@ -65,7 +60,6 @@ export async function listCycleItems(c: Context<AppEnv>) {
   let rows;
 
   if (tagIds.length > 0) {
-    // Items matching ANY of the selected tags (OR logic)
     const taggedIds = [
       ...new Set(
         db
@@ -94,7 +88,6 @@ export async function listCycleItems(c: Context<AppEnv>) {
       .all();
   }
 
-  // Enrich items with their tags in one batch query
   const itemIds = rows.map((r) => r.id);
   const tagRows =
     itemIds.length > 0
@@ -194,7 +187,6 @@ export async function removeItemFromCycle(c: Context<AppEnv>) {
   return c.json({ ok: true });
 }
 
-/** Visual column → item statuses mapping. */
 const COLUMN_STATUSES: Record<string, string[]> = {
   todo: ['inbox', 'todo'],
   in_progress: ['in_progress'],
@@ -203,12 +195,6 @@ const COLUMN_STATUSES: Record<string, string[]> = {
   discarded: ['discarded'],
 };
 
-/**
- * Reorder items within a visual column.
- * Body: { column: string, ids: string[] }
- * Sets position = index (0-based) for each id in order.
- * Validates all ids belong to the cycle and the specified column.
- */
 export async function reorderCycleItems(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id: cycleId } = c.req.param();
@@ -220,7 +206,6 @@ export async function reorderCycleItems(c: Context<AppEnv>) {
 
   const validStatuses = COLUMN_STATUSES[column];
 
-  // Validate all ids belong to this cycle and the correct column
   const existing = db
     .select({ id: items.id, status: items.status })
     .from(items)
@@ -237,7 +222,6 @@ export async function reorderCycleItems(c: Context<AppEnv>) {
     return c.json({ error: 'Some ids are invalid or do not belong to this cycle/column' }, 400);
   }
 
-  // Assign positions in a transaction
   db.transaction((tx) => {
     ids.forEach((itemId, index) => {
       tx.update(items)

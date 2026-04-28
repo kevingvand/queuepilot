@@ -45,7 +45,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const isPendingReorder = useRef(false);
   const isPendingStatusUpdate = useRef(false);
 
-  // Sync server state → local list when no drag or reorder is in flight
   useEffect(() => {
     if (!isDragging.current && !isPendingReorder.current && !isPendingStatusUpdate.current) {
       setLocalItems(allItems);
@@ -146,7 +145,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    // Clear drag state before any early returns so the overlay always dismisses
     isDragging.current = false;
     setActiveItem(null);
 
