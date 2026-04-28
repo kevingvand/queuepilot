@@ -99,6 +99,54 @@ export function CycleBoardColumn({
         </span>
       </div>
 
+      {/* Sticky drop banner — always visible below header regardless of scroll */}
+      <div
+        aria-hidden
+        style={{
+          flexShrink: 0,
+          overflow: 'hidden',
+          maxHeight: showDropPlaceholder || isInvalidHover ? '52px' : '0px',
+          opacity: showDropPlaceholder || isInvalidHover ? 1 : 0,
+          transition: 'max-height 150ms ease, opacity 150ms ease',
+        }}
+      >
+        <div
+          style={{
+            margin: '8px 8px 0',
+            borderRadius: '6px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+            ...(isInvalidHover
+              ? {
+                  background: 'color-mix(in srgb, #ef4444 12%, transparent)',
+                  border: '1.5px dashed #ef4444',
+                  color: '#ef4444',
+                }
+              : {
+                  background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+                  border: '1.5px dashed var(--accent)',
+                  color: 'var(--accent)',
+                }),
+          }}
+        >
+          {isInvalidHover ? (
+            <>
+              <span style={{ fontSize: '13px' }}>✕</span> Can&apos;t drop here
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: '13px' }}>↓</span> Drop here
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Scrollable card list */}
       <div
         style={{
@@ -119,7 +167,7 @@ export function CycleBoardColumn({
           ))}
         </SortableContext>
 
-        {items.length === 0 && !showDropPlaceholder && (
+        {items.length === 0 && !showDropPlaceholder && !isInvalidHover && (
           <div
             style={{
               flex: 1,
@@ -137,49 +185,6 @@ export function CycleBoardColumn({
           </div>
         )}
       </div>
-
-      {/* Drop placeholder: rendered outside the scroll area so it's always visible
-          at the bottom of the column even when the card list is full */}
-      {showDropPlaceholder && (
-        <div aria-hidden style={{ padding: '0 8px 8px', flexShrink: 0 }}>
-          <div
-            style={{
-              border: '2px dashed var(--accent)',
-              borderRadius: '6px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '11px',
-              color: 'var(--accent)',
-              opacity: 0.7,
-            }}
-          >
-            Drop here
-          </div>
-        </div>
-      )}
-
-      {/* Rejection indicator when hovering an invalid target */}
-      {isInvalidHover && (
-        <div aria-hidden style={{ padding: '0 8px 8px', flexShrink: 0 }}>
-          <div
-            style={{
-              border: '2px dashed #ef4444',
-              borderRadius: '6px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '11px',
-              color: '#ef4444',
-              opacity: 0.7,
-            }}
-          >
-            Can&apos;t drop here
-          </div>
-        </div>
-      )}
     </div>
   );
 }
