@@ -24,8 +24,8 @@ const ALL_COLUMNS = ['todo', 'in_progress', 'review', 'done', 'discarded'] as co
 type ColumnId = (typeof ALL_COLUMNS)[number];
 
 export function CycleBoard({ cycleId }: { cycleId: string }) {
-  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
-  const { data: allItems = [] } = useCycleItems(cycleId, selectedTagId ?? undefined);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const { data: allItems = [] } = useCycleItems(cycleId, selectedTagIds.length > 0 ? selectedTagIds : undefined);
   const { data: cycleTags = [] } = useCycleTags(cycleId);
   const { data: cycles = [] } = useCycles();
   const { mutate: updateStatus } = useUpdateItemStatus();
@@ -210,8 +210,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
         search={search}
         onSearchChange={setSearch}
         tags={cycleTags}
-        selectedTagId={selectedTagId}
-        onTagSelect={setSelectedTagId}
+        selectedTagIds={selectedTagIds}
+        onTagSelect={(tagId) =>
+          setSelectedTagIds((prev) =>
+            prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId],
+          )
+        }
       />
 
       <div
