@@ -22,6 +22,7 @@
   --color-popover-foreground: var(--text-primary);
   --color-input: var(--surface-hover);
   --color-ring: var(--accent);
+  --color-danger: var(--danger);
 }
 
 @theme {

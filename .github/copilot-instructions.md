@@ -158,6 +158,26 @@ pnpm build
 
 ---
 
+## Frontend Coding Rules
+
+### Styling
+- **Tailwind first** — use Tailwind v4 utility classes for all styling
+- **Inline `style={{}}` only for truly dynamic values**: runtime-computed colors (e.g. `tag.color`), `color-mix()` expressions, or values that can't be statically known at build time. Never use inline styles for spacing, layout, typography, or border-radius.
+- **CVA for variant components** — any component with multiple visual states (e.g. selected, lifted, drag states) uses `cva()` from `class-variance-authority`. Combine with `cn()` from `lib/utils`.
+- **No imperative style mutations** — avoid `el.style.foo = ...` in event handlers. Use state-driven class toggling or CSS pseudo-classes (`:focus`, `:hover`) instead.
+
+### Component structure
+- **One component per file** — each file exports exactly one named React component
+- **Interfaces for prop types** — use `interface ComponentNameProps { ... }` not anonymous inline object types
+- **Shared primitives in `components/ui/`** — reuse `Button`, `Badge`, `Input`, etc. before rolling custom versions
+- **Tag pills vs tag filter chips are different UI elements** — `TagPill` is display-only; interactive tag toggles in filters are `<button>` elements with their own styling
+
+### Comments
+- Comments explain **WHY**, not what — omit any comment whose meaning is already obvious from the code
+- Keep comments that explain non-obvious decisions, constraints, or timing requirements
+
+---
+
 ## Testing
 
 - Framework: Vitest

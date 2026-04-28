@@ -1,9 +1,48 @@
 import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { cva } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
 import type { ItemWithTags } from './hooks/useCycleItems';
 import { CycleBoardCard } from './CycleBoardCard';
 
 export type ColumnDragStatus = 'valid' | 'invalid' | 'source' | undefined;
+
+type ColumnVisualState = 'default' | 'source' | 'valid' | 'valid-hover' | 'invalid' | 'invalid-hover';
+
+const columnVariants = cva('flex flex-col rounded-lg border transition-all duration-150 overflow-hidden', {
+  variants: {
+    visualState: {
+      default:        'border-border bg-muted',
+      source:         'border-border bg-muted',
+      valid:          'border-primary/50 bg-muted',
+      'valid-hover':  'border-primary bg-accent',
+      'invalid-hover':'border-danger bg-danger/10',
+      invalid:        'border-border bg-muted opacity-45',
+    },
+  },
+  defaultVariants: { visualState: 'default' },
+});
+
+function toVisualState(dragStatus: ColumnDragStatus, isOver: boolean): ColumnVisualState {
+  if (!dragStatus) return 'default';
+  if (dragStatus === 'source') return 'source';
+  if (dragStatus === 'invalid') return isOver ? 'invalid-hover' : 'invalid';
+  if (dragStatus === 'valid') return isOver ? 'valid-hover' : 'valid';
+  return 'default';
+}
+
+interface CycleBoardColumnProps {
+  columnId: string;
+  label: string;
+  accent: string;
+  items: ItemWithTags[];
+  emptyText?: string;
+  activeDragId?: string | null;
+  dragStatus?: ColumnDragStatus;
+  selectedItemId?: string | null;
+  compact?: boolean;
+  onCardClick: (item: ItemWithTags) => void;
+}
 
 export function CycleBoardColumn({
   columnId,
@@ -16,154 +55,63 @@ export function CycleBoardColumn({
   selectedItemId,
   compact = false,
   onCardClick,
-}: {
-  columnId: string;
-  label: string;
-  accent: string;
-  items: ItemWithTags[];
-  emptyText?: string;
-  /** ID of the item currently being dragged. */
-  activeDragId?: string | null;
-  /** How this column should appear relative to the active drag. */
-  dragStatus?: ColumnDragStatus;
-  /** Currently selected item ID — used to highlight the selected card. */
-  selectedItemId?: string | null;
-  /** When true, removes the fixed minWidth so a parent can control sizing. */
-  compact?: boolean;
-  onCardClick: (item: ItemWithTags) => void;
-}) {
+}: CycleBoardColumnProps) {
   const { setNodeRef } = useDroppable({ id: columnId });
   const { over } = useDndContext();
 
-  // True when the drag pointer is over the column itself OR any card within it
   const isOver =
     over?.id === columnId || (over?.id != null && items.some((i) => i.id === over.id));
 
-  const isInvalidHover = isOver && dragStatus === 'invalid';
-  const isValidHover = isOver && dragStatus !== 'invalid';
+  const visualState = toVisualState(dragStatus, isOver);
 
-  // Drop placeholder shown at bottom (outside scroll) when hovering a valid target
-  // with a card from another column.
   const showDropPlaceholder =
-    isValidHover && activeDragId != null && !items.some((i) => i.id === activeDragId);
+    (visualState === 'valid-hover') &&
+    activeDragId != null &&
+    !items.some((i) => i.id === activeDragId);
 
-  const borderColor = isInvalidHover
-    ? '#ef4444'
-    : isValidHover
-      ? 'var(--accent)'
-      : dragStatus === 'valid'
-        ? 'color-mix(in srgb, var(--accent) 55%, var(--border))'
-        : 'var(--border)';
-
-  const bgColor = isInvalidHover
-    ? 'color-mix(in srgb, #ef4444 8%, var(--bg-secondary))'
-    : isValidHover
-      ? 'var(--surface-hover)'
-      : dragStatus === 'valid'
-        ? 'color-mix(in srgb, var(--accent) 5%, var(--bg-secondary))'
-        : 'var(--bg-secondary)';
+  const showInvalidBanner = visualState === 'invalid-hover';
 
   return (
     <div
       ref={setNodeRef}
-      style={{
-        flex: '1 1 0',
-        minWidth: compact ? 0 : '200px',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: bgColor,
-        borderRadius: '8px',
-        border: `1px solid ${borderColor}`,
-        transition: 'background-color 150ms, border-color 150ms, opacity 150ms',
-        opacity: dragStatus === 'invalid' && !isOver ? 0.45 : 1,
-        overflow: 'hidden',
-      }}
+      className={cn(
+        columnVariants({ visualState }),
+        'flex-1',
+        compact ? 'min-w-0' : 'min-w-[200px]',
+      )}
     >
-      {/* Column header */}
-      <div
-        style={{
-          padding: '12px 16px',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-        }}
-      >
-        <span className={`text-sm font-semibold ${accent}`}>{label}</span>
-        <span
-          style={{
-            fontSize: '11px',
-            color: 'var(--text-muted)',
-            backgroundColor: 'var(--surface)',
-            borderRadius: '10px',
-            padding: '1px 7px',
-          }}
-        >
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between shrink-0">
+        <span className={cn('text-sm font-semibold', accent)}>{label}</span>
+        <span className="text-[11px] text-muted-foreground bg-card rounded-full px-[7px] py-[1px]">
           {items.length}
         </span>
       </div>
 
-      {/* Sticky drop banner — always visible below header regardless of scroll */}
       <div
         aria-hidden
+        className="shrink-0 overflow-hidden transition-all duration-150"
         style={{
-          flexShrink: 0,
-          overflow: 'hidden',
-          maxHeight: showDropPlaceholder || isInvalidHover ? '52px' : '0px',
-          opacity: showDropPlaceholder || isInvalidHover ? 1 : 0,
-          transition: 'max-height 150ms ease, opacity 150ms ease',
+          maxHeight: showDropPlaceholder || showInvalidBanner ? '52px' : '0px',
+          opacity: showDropPlaceholder || showInvalidBanner ? 1 : 0,
         }}
       >
         <div
-          style={{
-            margin: '8px 8px 0',
-            borderRadius: '6px',
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px',
-            fontSize: '11px',
-            fontWeight: 600,
-            letterSpacing: '0.03em',
-            ...(isInvalidHover
-              ? {
-                  background: 'color-mix(in srgb, #ef4444 12%, transparent)',
-                  border: '1.5px dashed #ef4444',
-                  color: '#ef4444',
-                }
-              : {
-                  background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-                  border: '1.5px dashed var(--accent)',
-                  color: 'var(--accent)',
-                }),
-          }}
+          className={cn(
+            'm-2 mt-2 rounded-md h-9 flex items-center justify-center gap-1.5 text-[11px] font-semibold tracking-wide',
+            showInvalidBanner
+              ? 'bg-danger/10 border border-dashed border-danger text-danger'
+              : 'bg-primary/10 border border-dashed border-primary text-primary',
+          )}
         >
-          {isInvalidHover ? (
-            <>
-              <span style={{ fontSize: '13px' }}>✕</span> Can&apos;t drop here
-            </>
+          {showInvalidBanner ? (
+            <><span className="text-[13px]">✕</span> Can&apos;t drop here</>
           ) : (
-            <>
-              <span style={{ fontSize: '13px' }}>↓</span> Drop here
-            </>
+            <><span className="text-[13px]">↓</span> Drop here</>
           )}
         </div>
       </div>
 
-      {/* Scrollable card list */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '8px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          minHeight: 0,
-        }}
-      >
+      <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5 min-h-0">
         <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
           {items.map((item) => (
             <div key={item.id} onClick={() => onCardClick(item)}>
@@ -172,20 +120,8 @@ export function CycleBoardColumn({
           ))}
         </SortableContext>
 
-        {items.length === 0 && !showDropPlaceholder && !isInvalidHover && (
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '32px 16px',
-              textAlign: 'center',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-              lineHeight: '1.5',
-            }}
-          >
+        {items.length === 0 && !showDropPlaceholder && !showInvalidBanner && (
+          <div className="flex-1 flex items-center justify-center p-8 text-center text-muted-foreground text-xs leading-relaxed">
             {emptyText}
           </div>
         )}
@@ -193,3 +129,4 @@ export function CycleBoardColumn({
     </div>
   );
 }
+
