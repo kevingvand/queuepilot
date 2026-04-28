@@ -8,6 +8,7 @@ import {
   createCycle,
   deleteCycle,
   listCycleItems,
+  listCycleTags,
   listCycles,
   removeItemFromCycle,
   reorderCycleItems,
@@ -25,6 +26,7 @@ cyclesRoutes.post('/', zValidator('json', insertCycleSchema as never), createCyc
 cyclesRoutes.patch('/:id', zValidator('json', insertCycleSchema.partial() as never), updateCycle);
 cyclesRoutes.delete('/:id', deleteCycle);
 cyclesRoutes.get('/:id/items', listCycleItems);
+cyclesRoutes.get('/:id/tags', listCycleTags);
 cyclesRoutes.post('/:id/items', zValidator('json', addItemBodySchema), addItemToCycle);
 cyclesRoutes.delete('/:id/items/:itemId', removeItemFromCycle);
 cyclesRoutes.post('/:id/reorder', zValidator('json', reorderBodySchema), reorderCycleItems);

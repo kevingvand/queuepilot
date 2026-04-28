@@ -1,16 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Item } from '@queuepilot/core/types';
+import type { Tag } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
 
-export function useCycleItems(cycleId: string) {
+export function useCycleItems(cycleId: string, tagId?: string) {
   const api = useApi();
   return useQuery({
-    queryKey: ['items', { cycle_id: cycleId }],
+    queryKey: ['items', { cycle_id: cycleId, tagId }],
     queryFn: async () => {
-      const res = await api.cycles.items(cycleId);
+      const res = await api.cycles.items(cycleId, tagId ? { tagId } : undefined);
       return res.data as Item[];
     },
     staleTime: 1000 * 15,
+  });
+}
+
+export function useCycleTags(cycleId: string) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ['cycleTags', cycleId],
+    queryFn: async () => {
+      const res = await api.cycles.tags(cycleId);
+      return res.data as Tag[];
+    },
+    staleTime: 1000 * 30,
   });
 }
 

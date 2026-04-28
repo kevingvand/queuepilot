@@ -32,6 +32,20 @@ export function ItemListHeader({ count: _count }: { count: number }) {
     return () => clearTimeout(timer);
   }, [localQ, setFilterState]);
 
+  // ⌘K / Ctrl+K focuses the search input
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const isModKey = isMac ? e.metaKey : e.ctrlKey;
+      if (!isModKey || e.key !== 'k') return;
+      e.preventDefault();
+      const input = document.getElementById('qp-search-input') as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   return (
     <div style={{ borderBottomColor: 'var(--border)', borderBottomWidth: '1px' }}>
       <div className="flex items-center gap-2 px-3 py-2">

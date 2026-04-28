@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
-import { cycleItems, cycles, items } from '@queuepilot/core/schema';
+import { cycleItems, cycles, items, itemTags, tags } from '@queuepilot/core/schema';
 import type { NewCycle } from '@queuepilot/core/types';
 import type { InferInsertModel } from 'drizzle-orm';
 import type { AppEnv } from '../index';
@@ -51,21 +51,66 @@ export async function updateCycle(c: Context<AppEnv>) {
 export async function listCycleItems(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id } = c.req.param();
+  const tagId = c.req.query('tagId');
 
   // Null positions (new/moved items) sort to the top; explicitly positioned items follow in order.
   // Within the null group, most recently created items appear first.
+  const orderByClauses = [
+    sql`CASE WHEN ${items.position} IS NULL THEN 0 ELSE 1 END ASC`,
+    asc(items.position),
+    sql`${items.created_at} DESC`,
+  ] as const;
+
+  if (tagId) {
+    const taggedIds = db
+      .select({ id: itemTags.item_id })
+      .from(itemTags)
+      .where(eq(itemTags.tag_id, tagId))
+      .all()
+      .map((r) => r.id);
+
+    if (taggedIds.length === 0) return c.json([]);
+
+    const rows = db
+      .select()
+      .from(items)
+      .where(and(eq(items.cycle_id, id), inArray(items.id, taggedIds)))
+      .orderBy(...orderByClauses)
+      .all();
+    return c.json(rows);
+  }
+
   const rows = db
     .select()
     .from(items)
     .where(eq(items.cycle_id, id))
-    .orderBy(
-      sql`CASE WHEN ${items.position} IS NULL THEN 0 ELSE 1 END ASC`,
-      asc(items.position),
-      sql`${items.created_at} DESC`,
-    )
+    .orderBy(...orderByClauses)
     .all();
 
   return c.json(rows);
+}
+
+export async function listCycleTags(c: Context<AppEnv>) {
+  const db = c.get('db');
+  const { id } = c.req.param();
+
+  const cycleItemIds = db
+    .select({ id: items.id })
+    .from(items)
+    .where(eq(items.cycle_id, id))
+    .all()
+    .map((r) => r.id);
+
+  if (cycleItemIds.length === 0) return c.json([]);
+
+  const tagRows = db
+    .selectDistinct({ id: tags.id, name: tags.name, color: tags.color, created_at: tags.created_at })
+    .from(tags)
+    .innerJoin(itemTags, eq(itemTags.tag_id, tags.id))
+    .where(inArray(itemTags.item_id, cycleItemIds))
+    .all();
+
+  return c.json(tagRows);
 }
 
 export async function addItemToCycle(c: Context<AppEnv>) {
