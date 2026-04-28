@@ -21,5 +21,5 @@ export const VALID_TRANSITIONS: Record<string, string[]> = {
   in_progress: ['review', 'todo', 'discarded'],
   review: ['done', 'in_progress', 'discarded'],
   done: ['in_progress'],
-  discarded: ['todo'],
+  discarded: ['todo', 'done'],
 };
