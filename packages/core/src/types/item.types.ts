@@ -16,10 +16,10 @@ export const VALID_STATUSES = ['inbox', 'todo', 'in_progress', 'review', 'done',
 export type ItemStatus = typeof VALID_STATUSES[number];
 
 export const VALID_TRANSITIONS: Record<string, string[]> = {
-  inbox: ['todo', 'discarded'],
+  inbox: ['todo', 'in_progress', 'discarded'],
   todo: ['in_progress', 'discarded'],
   in_progress: ['review', 'todo', 'discarded'],
-  review: ['done', 'in_progress', 'discarded'],
-  done: ['in_progress', 'discarded'],
-  discarded: ['todo', 'done'],
+  review: ['done', 'in_progress', 'todo', 'discarded'],
+  done: ['in_progress', 'todo', 'discarded'],
+  discarded: ['todo', 'in_progress', 'done'],
 };
