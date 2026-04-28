@@ -5,6 +5,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Item } from '@queuepilot/core/types';
@@ -12,11 +13,17 @@ import type { Cycle } from '@queuepilot/core/types';
 import { useCycleItems, useUpdateItemStatus } from '../items/hooks/useItems';
 import { useCycles } from './hooks/useCycles';
 import { useUiStore } from '../../store/ui.store';
-import { CycleBoardCard } from './CycleBoardCard';
+import { CycleBoardCardContent } from './CycleBoardCard';
 import { CycleBoardColumn } from './CycleBoardColumn';
 import { CycleBoardHeader } from './CycleBoardHeader';
 import { ConfirmDoneDialog } from './ConfirmDoneDialog';
 import { resolveTargetStatus, itemStatusToColumn, VALID_TRANSITIONS } from './cycleBoardTransitions';
+
+const dropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: '0.3' } },
+  }),
+};
 
 export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { data: allItems = [] } = useCycleItems(cycleId);
@@ -96,6 +103,8 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const doneItems = filteredItems.filter((i) => i.status === 'done');
   const discardedItems = filteredItems.filter((i) => i.status === 'discarded');
 
+  const activeDragId = activeItem?.id ?? null;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <CycleBoardHeader cycle={cycle} search={search} onSearchChange={setSearch} />
@@ -108,7 +117,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
           padding: '16px',
           display: 'flex',
           gap: '12px',
-          alignItems: 'flex-start',
+          alignItems: 'stretch',
         }}
       >
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -117,6 +126,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             label="Todo"
             accent="text-blue-400"
             items={todoItems}
+            activeDragId={activeDragId}
             emptyText="No items yet — add some to get started"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -125,6 +135,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             label="In Progress"
             accent="text-amber-400"
             items={inProgressItems}
+            activeDragId={activeDragId}
             emptyText="Pick something from Todo to begin"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -133,27 +144,44 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             label="Review"
             accent="text-indigo-400"
             items={reviewItems}
+            activeDragId={activeDragId}
             emptyText="Finish an item to move it here"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
-          <CycleBoardColumn
-            columnId="done"
-            label="Done"
-            accent="text-green-400"
-            items={doneItems}
-            emptyText="Reviewed items land here"
-            onCardClick={(item) => setSelectedItemId(item.id)}
-          />
-          <CycleBoardColumn
-            columnId="discarded"
-            label="Cancelled"
-            accent="text-muted-foreground"
-            items={discardedItems}
-            emptyText="Nothing cancelled — great work!"
-            onCardClick={(item) => setSelectedItemId(item.id)}
-          />
-          <DragOverlay>
-            {activeItem ? <CycleBoardCard item={activeItem} isDragOverlay /> : null}
+
+          {/* Archive area: Done + Cancelled share one column's flex unit to prevent overflow */}
+          <div
+            style={{
+              flex: '1 1 0',
+              minWidth: '200px',
+              display: 'flex',
+              gap: '8px',
+            }}
+          >
+            <CycleBoardColumn
+              columnId="done"
+              label="Done"
+              accent="text-green-400"
+              items={doneItems}
+              activeDragId={activeDragId}
+              emptyText="Reviewed items land here"
+              compact
+              onCardClick={(item) => setSelectedItemId(item.id)}
+            />
+            <CycleBoardColumn
+              columnId="discarded"
+              label="Cancelled"
+              accent="text-muted-foreground"
+              items={discardedItems}
+              activeDragId={activeDragId}
+              emptyText="Nothing cancelled — great work!"
+              compact
+              onCardClick={(item) => setSelectedItemId(item.id)}
+            />
+          </div>
+
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeItem ? <CycleBoardCardContent item={activeItem} lifted /> : null}
           </DragOverlay>
         </DndContext>
       </div>
