@@ -13,6 +13,7 @@ export function CycleBoardColumn({
   emptyText = 'Nothing here yet',
   activeDragId,
   dragStatus,
+  selectedItemId,
   compact = false,
   onCardClick,
 }: {
@@ -25,6 +26,8 @@ export function CycleBoardColumn({
   activeDragId?: string | null;
   /** How this column should appear relative to the active drag. */
   dragStatus?: ColumnDragStatus;
+  /** Currently selected item ID — used to highlight the selected card. */
+  selectedItemId?: string | null;
   /** When true, removes the fixed minWidth so a parent can control sizing. */
   compact?: boolean;
   onCardClick: (item: Item) => void;
@@ -111,7 +114,7 @@ export function CycleBoardColumn({
         <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
           {items.map((item) => (
             <div key={item.id} onClick={() => onCardClick(item)}>
-              <CycleBoardCard item={item} />
+              <CycleBoardCard item={item} isSelected={item.id === selectedItemId} />
             </div>
           ))}
         </SortableContext>

@@ -25,7 +25,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { data: allItems = [] } = useCycleItems(cycleId);
   const { data: cycles = [] } = useCycles();
   const { mutate: updateStatus } = useUpdateItemStatus();
-  const { setSelectedItemId } = useUiStore();
+  const { setSelectedItemId, selectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
   const [activeItem, setActiveItem] = useState<Item | null>(null);
 
@@ -119,6 +119,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             items={todoItems}
             activeDragId={activeDragId}
             dragStatus={getDragStatus('todo')}
+            selectedItemId={selectedItemId}
             emptyText="No items yet — add some to get started"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -129,6 +130,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             items={inProgressItems}
             activeDragId={activeDragId}
             dragStatus={getDragStatus('in_progress')}
+            selectedItemId={selectedItemId}
             emptyText="Pick something from Todo to begin"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -139,6 +141,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             items={reviewItems}
             activeDragId={activeDragId}
             dragStatus={getDragStatus('review')}
+            selectedItemId={selectedItemId}
             emptyText="Finish an item to move it here"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -160,6 +163,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
               items={doneItems}
               activeDragId={activeDragId}
               dragStatus={getDragStatus('done')}
+              selectedItemId={selectedItemId}
               emptyText="Reviewed items land here"
               compact
               onCardClick={(item) => setSelectedItemId(item.id)}
@@ -171,6 +175,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
               items={discardedItems}
               activeDragId={activeDragId}
               dragStatus={getDragStatus('discarded')}
+              selectedItemId={selectedItemId}
               emptyText="Nothing cancelled — great work!"
               compact
               onCardClick={(item) => setSelectedItemId(item.id)}
