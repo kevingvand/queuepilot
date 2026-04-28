@@ -15,7 +15,7 @@ const columnVariants = cva('flex flex-col rounded-lg border transition-all durat
       default:        'border-border bg-muted',
       source:         'border-border bg-muted',
       valid:          'border-primary/50 bg-muted',
-      'valid-hover':  'border-primary bg-accent',
+      'valid-hover':  'border-primary bg-primary/[0.08]',
       'invalid-hover':'border-danger bg-danger/10',
       invalid:        'border-border bg-muted opacity-45',
     },

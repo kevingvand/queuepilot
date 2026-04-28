@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Item } from '@queuepilot/core/types';
 import type { Tag } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
 
@@ -7,8 +6,9 @@ export type ItemWithTags = Item & { tags: Pick<Tag, 'id' | 'name' | 'color'>[] }
 
 export function useCycleItems(cycleId: string, tagIds?: string[]) {
   const api = useApi();
+  const sortedTagIds = tagIds ? [...tagIds].sort() : undefined;
   return useQuery({
-    queryKey: ['items', { cycle_id: cycleId, tagIds }],
+    queryKey: ['cycle-items', cycleId, { tagIds: sortedTagIds }],
     queryFn: async () => {
       const query =
         tagIds && tagIds.length > 0 ? { tagIds: tagIds.join(',') } : undefined;
@@ -40,11 +40,11 @@ export function useReorderCycleItems(cycleId: string) {
       return res.data;
     },
     onMutate: async ({ ids }) => {
-      await queryClient.cancelQueries({ queryKey: ['items'] });
-      const previousData = queryClient.getQueryData<Item[]>(['items', { cycle_id: cycleId }]);
-      queryClient.setQueryData<Item[]>(['items', { cycle_id: cycleId }], (old) => {
+      await queryClient.cancelQueries({ queryKey: ['cycle-items', cycleId] });
+      const previousData = queryClient.getQueriesData<ItemWithTags[]>({ queryKey: ['cycle-items', cycleId] });
+      const reorderedSet = new Set(ids);
+      queryClient.setQueriesData<ItemWithTags[]>({ queryKey: ['cycle-items', cycleId] }, (old) => {
         if (!old) return old;
-        const reorderedSet = new Set(ids);
         const rest = old.filter((i) => !reorderedSet.has(i.id));
         const reordered = ids.map((id) => old.find((i) => i.id === id)!).filter(Boolean);
         return [...reordered, ...rest];
@@ -52,12 +52,12 @@ export function useReorderCycleItems(cycleId: string) {
       return { previousData };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.previousData) {
-        queryClient.setQueryData(['items', { cycle_id: cycleId }], ctx.previousData);
-      }
+      ctx?.previousData.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['items', { cycle_id: cycleId }] });
+      queryClient.invalidateQueries({ queryKey: ['cycle-items', cycleId] });
     },
   });
 }

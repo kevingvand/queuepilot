@@ -11,7 +11,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import type { Cycle } from '@queuepilot/core/types';
 import { useCycles } from './hooks/useCycles';
 import { useCycleItems, useCycleTags, useReorderCycleItems, type ItemWithTags } from './hooks/useCycleItems';
-import { useUpdateItemStatus } from '../items/hooks/useItems';
+import { useCycleBoardItemStatus } from './hooks/useCycleBoardItemStatus';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCardContent';
 import { CycleBoardColumn } from './CycleBoardColumn';
@@ -35,7 +35,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { data: allItems = [] } = useCycleItems(cycleId, selectedTagIds.length > 0 ? selectedTagIds : undefined);
   const { data: cycleTags = [] } = useCycleTags(cycleId);
   const { data: cycles = [] } = useCycles();
-  const { mutate: updateStatus } = useUpdateItemStatus();
+  const { mutate: updateStatus } = useCycleBoardItemStatus(cycleId);
   const { mutate: reorderItems } = useReorderCycleItems(cycleId);
   const { setSelectedItemId, selectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
@@ -43,10 +43,11 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const [localItems, setLocalItems] = useState<ItemWithTags[]>(allItems);
   const isDragging = useRef(false);
   const isPendingReorder = useRef(false);
+  const isPendingStatusUpdate = useRef(false);
 
   // Sync server state → local list when no drag or reorder is in flight
   useEffect(() => {
-    if (!isDragging.current && !isPendingReorder.current) {
+    if (!isDragging.current && !isPendingReorder.current && !isPendingStatusUpdate.current) {
       setLocalItems(allItems);
     }
   }, [allItems]);
@@ -71,7 +72,11 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
       const allowed = VALID_TRANSITIONS[item.status] ?? [];
       if (!allowed.includes(targetStatus)) return;
 
-      updateStatus({ id: item.id, status: targetStatus, position: null });
+      isPendingStatusUpdate.current = true;
+      updateStatus(
+        { id: item.id, status: targetStatus, position: null },
+        { onSettled: () => { isPendingStatusUpdate.current = false; } },
+      );
     };
 
     window.addEventListener('keydown', handler);
@@ -180,7 +185,11 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     const allowed = VALID_TRANSITIONS[draggedItem.status] ?? [];
     if (!allowed.includes(targetStatus)) return;
 
-    updateStatus({ id: draggedItem.id, status: targetStatus, position: null });
+    isPendingStatusUpdate.current = true;
+    updateStatus(
+      { id: draggedItem.id, status: targetStatus, position: null },
+      { onSettled: () => { isPendingStatusUpdate.current = false; } },
+    );
   }
 
   const todoItems = filteredItems.filter((i) => i.status === 'todo' || i.status === 'inbox');

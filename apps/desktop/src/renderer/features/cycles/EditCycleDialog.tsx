@@ -24,7 +24,7 @@ function msFromDateString(dateString: string): number {
 }
 
 function dateStringFromMs(ms: number | null): string {
-  if (!ms) return '';
+  if (ms === null) return '';
   return new Date(ms).toISOString().split('T')[0];
 }
 

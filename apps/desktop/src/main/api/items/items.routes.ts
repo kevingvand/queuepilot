@@ -31,10 +31,24 @@ const linkBodySchema = z.object({
   kind: z.enum(['blocks', 'blocked_by', 'relates_to', 'duplicate']),
 });
 
+const updateItemBodySchema = z.object({
+  title: z.string().min(1).optional(),
+  body: z.string().optional().nullable(),
+  status: z.string().optional(),
+  priority: z.number().int().min(0).max(4).optional().nullable(),
+  due_at: z.number().int().optional().nullable(),
+  scheduled_at: z.number().int().optional().nullable(),
+  start_at: z.number().int().optional().nullable(),
+  position: z.number().int().optional().nullable(),
+  parent_id: z.string().optional().nullable(),
+  source: z.string().optional().nullable(),
+  source_native_id: z.string().optional().nullable(),
+});
+
 itemsRoutes.get('/', listItems);
 itemsRoutes.post('/', zValidator('json', insertItemSchema as never), createItem);
 itemsRoutes.get('/:id', getItem);
-itemsRoutes.patch('/:id', zValidator('json', insertItemSchema.partial() as never), updateItem);
+itemsRoutes.patch('/:id', zValidator('json', updateItemBodySchema as never), updateItem);
 itemsRoutes.delete('/:id', discardItem);
 itemsRoutes.get('/:id/events', listItemEvents);
 itemsRoutes.get('/:id/tags', listItemTags);
