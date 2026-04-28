@@ -3,12 +3,14 @@ import type { Item } from '@queuepilot/core/types';
 import type { Tag } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
 
-export function useCycleItems(cycleId: string, tagId?: string) {
+export function useCycleItems(cycleId: string, tagIds?: string[]) {
   const api = useApi();
   return useQuery({
-    queryKey: ['items', { cycle_id: cycleId, tagId }],
+    queryKey: ['items', { cycle_id: cycleId, tagIds }],
     queryFn: async () => {
-      const res = await api.cycles.items(cycleId, tagId ? { tagId } : undefined);
+      const query =
+        tagIds && tagIds.length > 0 ? { tagIds: tagIds.join(',') } : undefined;
+      const res = await api.cycles.items(cycleId, query);
       return res.data as Item[];
     },
     staleTime: 1000 * 15,

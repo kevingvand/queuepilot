@@ -51,7 +51,8 @@ export async function updateCycle(c: Context<AppEnv>) {
 export async function listCycleItems(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id } = c.req.param();
-  const tagId = c.req.query('tagId');
+  const tagIdsParam = c.req.query('tagIds');
+  const tagIds = tagIdsParam ? tagIdsParam.split(',').filter(Boolean) : [];
 
   // Null positions (new/moved items) sort to the top; explicitly positioned items follow in order.
   // Within the null group, most recently created items appear first.
@@ -61,13 +62,18 @@ export async function listCycleItems(c: Context<AppEnv>) {
     sql`${items.created_at} DESC`,
   ] as const;
 
-  if (tagId) {
-    const taggedIds = db
-      .select({ id: itemTags.item_id })
-      .from(itemTags)
-      .where(eq(itemTags.tag_id, tagId))
-      .all()
-      .map((r) => r.id);
+  if (tagIds.length > 0) {
+    // Items matching ANY of the selected tags (OR logic)
+    const taggedIds = [
+      ...new Set(
+        db
+          .select({ id: itemTags.item_id })
+          .from(itemTags)
+          .where(inArray(itemTags.tag_id, tagIds))
+          .all()
+          .map((r) => r.id),
+      ),
+    ];
 
     if (taggedIds.length === 0) return c.json([]);
 

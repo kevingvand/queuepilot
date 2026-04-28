@@ -10,15 +10,15 @@ export function CycleBoardHeader({
   search,
   onSearchChange,
   tags = [],
-  selectedTagId,
+  selectedTagIds = [],
   onTagSelect,
 }: {
   cycle: Cycle | undefined;
   search: string;
   onSearchChange: (value: string) => void;
   tags?: Tag[];
-  selectedTagId?: string | null;
-  onTagSelect: (tagId: string | null) => void;
+  selectedTagIds?: string[];
+  onTagSelect: (tagId: string) => void;
 }) {
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -128,11 +128,11 @@ export function CycleBoardHeader({
       {tags.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
           {tags.map((tag) => {
-            const active = selectedTagId === tag.id;
-            return (
+            const active = selectedTagIds.includes(tag.id);
+              return (
               <button
                 key={tag.id}
-                onClick={() => onTagSelect(active ? null : tag.id)}
+                onClick={() => onTagSelect(tag.id)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
