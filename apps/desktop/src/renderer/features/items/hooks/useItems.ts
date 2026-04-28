@@ -27,7 +27,38 @@ export function useCycleItems(cycleId: string) {
   });
 }
 
-export function useUpdateItemStatus() {
+export function useReorderCycleItems(cycleId: string) {
+  const api = useApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ column, ids }: { column: string; ids: string[] }) => {
+      const res = await api.cycles.reorder(cycleId, { column, ids });
+      return res.data;
+    },
+    onMutate: async ({ ids }) => {
+      await queryClient.cancelQueries({ queryKey: ['items', { cycle_id: cycleId }] });
+      const previousData = queryClient.getQueryData<Item[]>(['items', { cycle_id: cycleId }]);
+      // Optimistically reorder: rebuild the list with ids in their new positions,
+      // preserving items that aren't part of this column's reorder.
+      queryClient.setQueryData<Item[]>(['items', { cycle_id: cycleId }], (old) => {
+        if (!old) return old;
+        const reorderedSet = new Set(ids);
+        const rest = old.filter((i) => !reorderedSet.has(i.id));
+        const reordered = ids.map((id) => old.find((i) => i.id === id)!).filter(Boolean);
+        return [...reordered, ...rest];
+      });
+      return { previousData };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previousData) {
+        queryClient.setQueryData(['items', { cycle_id: cycleId }], ctx.previousData);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['items', { cycle_id: cycleId }] });
+    },
+  });
+}
   const api = useApi();
   const queryClient = useQueryClient();
   return useMutation({

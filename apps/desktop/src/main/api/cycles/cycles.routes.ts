@@ -10,12 +10,15 @@ import {
   listCycleItems,
   listCycles,
   removeItemFromCycle,
+  reorderCycleItems,
   updateCycle,
 } from './cycles.handlers';
 
 export const cyclesRoutes = new Hono<AppEnv>();
 
 const addItemBodySchema = z.object({ item_id: z.string() });
+
+const reorderBodySchema = z.object({ column: z.string(), ids: z.array(z.string()).min(1) });
 
 cyclesRoutes.get('/', listCycles);
 cyclesRoutes.post('/', zValidator('json', insertCycleSchema as never), createCycle);
@@ -24,3 +27,4 @@ cyclesRoutes.delete('/:id', deleteCycle);
 cyclesRoutes.get('/:id/items', listCycleItems);
 cyclesRoutes.post('/:id/items', zValidator('json', addItemBodySchema), addItemToCycle);
 cyclesRoutes.delete('/:id/items/:itemId', removeItemFromCycle);
+cyclesRoutes.post('/:id/reorder', zValidator('json', reorderBodySchema), reorderCycleItems);

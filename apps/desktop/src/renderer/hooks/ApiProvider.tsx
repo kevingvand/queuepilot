@@ -36,6 +36,7 @@ interface QueuePilotAPI {
     update: (id: string, data: any) => Promise<any>
     delete: (id: string) => Promise<any>
     items: (id: string) => Promise<any>
+    reorder: (id: string, data: { column: string; ids: string[] }) => Promise<any>
   }
   filters: {
     list: () => Promise<any>
@@ -125,6 +126,8 @@ function buildApiClient(rawApi: RawAPI): QueuePilotAPI {
       update: (id: string, data: any) => rawApi.request('PATCH', `/cycles/${id}`, data),
       delete: (id: string) => rawApi.request('DELETE', `/cycles/${id}`),
       items: (id: string) => rawApi.request('GET', `/cycles/${id}/items`),
+      reorder: (id: string, data: { column: string; ids: string[] }) =>
+        rawApi.request('POST', `/cycles/${id}/reorder`, data),
     },
     filters: {
       list: () => rawApi.request('GET', '/filters'),

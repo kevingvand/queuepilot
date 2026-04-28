@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import { cycleItems, cycles, items } from '@queuepilot/core/schema';
 import type { NewCycle } from '@queuepilot/core/types';
@@ -56,6 +56,7 @@ export async function listCycleItems(c: Context<AppEnv>) {
     .select()
     .from(items)
     .where(eq(items.cycle_id, id))
+    .orderBy(asc(items.position), asc(items.created_at))
     .all();
 
   return c.json(rows);
@@ -105,6 +106,62 @@ export async function removeItemFromCycle(c: Context<AppEnv>) {
       .where(and(eq(cycleItems.cycle_id, id), eq(cycleItems.item_id, itemId)))
       .run();
     tx.update(items).set({ cycle_id: null }).where(eq(items.id, itemId)).run();
+  });
+
+  return c.json({ ok: true });
+}
+
+/** Visual column → item statuses mapping. */
+const COLUMN_STATUSES: Record<string, string[]> = {
+  todo: ['inbox', 'todo'],
+  in_progress: ['in_progress'],
+  review: ['review'],
+  done: ['done'],
+  discarded: ['discarded'],
+};
+
+/**
+ * Reorder items within a visual column.
+ * Body: { column: string, ids: string[] }
+ * Sets position = index (0-based) for each id in order.
+ * Validates all ids belong to the cycle and the specified column.
+ */
+export async function reorderCycleItems(c: Context<AppEnv>) {
+  const db = c.get('db');
+  const { id: cycleId } = c.req.param();
+  const body = c.req.valid('json' as never) as { column: string; ids: string[] };
+
+  const { column, ids } = body;
+  if (!COLUMN_STATUSES[column]) return c.json({ error: 'Invalid column' }, 400);
+  if (!Array.isArray(ids) || ids.length === 0) return c.json({ error: 'ids must be a non-empty array' }, 400);
+
+  const validStatuses = COLUMN_STATUSES[column];
+
+  // Validate all ids belong to this cycle and the correct column
+  const existing = db
+    .select({ id: items.id, status: items.status })
+    .from(items)
+    .where(and(eq(items.cycle_id, cycleId), inArray(items.id, ids)))
+    .all();
+
+  const existingIds = new Set(existing.map((i) => i.id));
+  const allValid = ids.every((id) => {
+    const item = existing.find((i) => i.id === id);
+    return item && validStatuses.includes(item.status);
+  });
+
+  if (!allValid || existingIds.size !== ids.length) {
+    return c.json({ error: 'Some ids are invalid or do not belong to this cycle/column' }, 400);
+  }
+
+  // Assign positions in a transaction
+  db.transaction((tx) => {
+    ids.forEach((itemId, index) => {
+      tx.update(items)
+        .set({ position: index, updated_at: Date.now() })
+        .where(eq(items.id, itemId))
+        .run();
+    });
   });
 
   return c.json({ ok: true });

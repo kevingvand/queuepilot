@@ -18,6 +18,7 @@ export const items = sqliteTable(
     due_at: integer('due_at'),
     scheduled_at: integer('scheduled_at'),
     start_at: integer('start_at'),
+    position: integer('position'),
     mention_count: integer('mention_count').notNull().default(0),
     last_touched_at: integer('last_touched_at'),
     embedding: blob('embedding', { mode: 'buffer' }),
