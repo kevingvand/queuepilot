@@ -3,6 +3,8 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { Item } from '@queuepilot/core/types';
 import { CycleBoardCard } from './CycleBoardCard';
 
+export type ColumnDragStatus = 'valid' | 'invalid' | 'source' | undefined;
+
 export function CycleBoardColumn({
   columnId,
   label,
@@ -10,6 +12,7 @@ export function CycleBoardColumn({
   items,
   emptyText = 'Nothing here yet',
   activeDragId,
+  dragStatus,
   compact = false,
   onCardClick,
 }: {
@@ -18,17 +21,39 @@ export function CycleBoardColumn({
   accent: string;
   items: Item[];
   emptyText?: string;
-  /** ID of the item currently being dragged — used to show drop placeholder. */
+  /** ID of the item currently being dragged. */
   activeDragId?: string | null;
+  /** How this column should appear relative to the active drag. */
+  dragStatus?: ColumnDragStatus;
   /** When true, removes the fixed minWidth so a parent can control sizing. */
   compact?: boolean;
   onCardClick: (item: Item) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: columnId });
 
-  // Show a drop placeholder only when hovering with a card that isn't already in this column.
+  const isInvalidHover = isOver && dragStatus === 'invalid';
+  const isValidHover = isOver && dragStatus !== 'invalid';
+
+  // Drop placeholder shown at bottom (outside scroll) when hovering a valid target
+  // with a card from another column.
   const showDropPlaceholder =
-    isOver && activeDragId != null && !items.some((i) => i.id === activeDragId);
+    isValidHover && activeDragId != null && !items.some((i) => i.id === activeDragId);
+
+  const borderColor = isInvalidHover
+    ? '#ef4444'
+    : isValidHover
+      ? 'var(--accent)'
+      : dragStatus === 'valid'
+        ? 'color-mix(in srgb, var(--accent) 55%, var(--border))'
+        : 'var(--border)';
+
+  const bgColor = isInvalidHover
+    ? 'color-mix(in srgb, #ef4444 8%, var(--bg-secondary))'
+    : isValidHover
+      ? 'var(--surface-hover)'
+      : dragStatus === 'valid'
+        ? 'color-mix(in srgb, var(--accent) 5%, var(--bg-secondary))'
+        : 'var(--bg-secondary)';
 
   return (
     <div
@@ -38,13 +63,15 @@ export function CycleBoardColumn({
         minWidth: compact ? 0 : '200px',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: isOver ? 'var(--surface-hover)' : 'var(--bg-secondary)',
+        backgroundColor: bgColor,
         borderRadius: '8px',
-        border: isOver ? '1px solid var(--accent)' : '1px solid var(--border)',
-        transition: 'background-color 150ms, border-color 150ms',
+        border: `1px solid ${borderColor}`,
+        transition: 'background-color 150ms, border-color 150ms, opacity 150ms',
+        opacity: dragStatus === 'invalid' && !isOver ? 0.45 : 1,
         overflow: 'hidden',
       }}
     >
+      {/* Column header */}
       <div
         style={{
           padding: '12px 16px',
@@ -68,6 +95,8 @@ export function CycleBoardColumn({
           {items.length}
         </span>
       </div>
+
+      {/* Scrollable card list */}
       <div
         style={{
           flex: 1,
@@ -76,6 +105,7 @@ export function CycleBoardColumn({
           display: 'flex',
           flexDirection: 'column',
           gap: '6px',
+          minHeight: 0,
         }}
       >
         <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
@@ -85,19 +115,6 @@ export function CycleBoardColumn({
             </div>
           ))}
         </SortableContext>
-
-        {showDropPlaceholder && (
-          <div
-            aria-hidden
-            style={{
-              border: '2px dashed var(--accent)',
-              borderRadius: '6px',
-              height: '56px',
-              flexShrink: 0,
-              opacity: 0.6,
-            }}
-          />
-        )}
 
         {items.length === 0 && !showDropPlaceholder && (
           <div
@@ -117,6 +134,49 @@ export function CycleBoardColumn({
           </div>
         )}
       </div>
+
+      {/* Drop placeholder: rendered outside the scroll area so it's always visible
+          at the bottom of the column even when the card list is full */}
+      {showDropPlaceholder && (
+        <div aria-hidden style={{ padding: '0 8px 8px', flexShrink: 0 }}>
+          <div
+            style={{
+              border: '2px dashed var(--accent)',
+              borderRadius: '6px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              color: 'var(--accent)',
+              opacity: 0.7,
+            }}
+          >
+            Drop here
+          </div>
+        </div>
+      )}
+
+      {/* Rejection indicator when hovering an invalid target */}
+      {isInvalidHover && (
+        <div aria-hidden style={{ padding: '0 8px 8px', flexShrink: 0 }}>
+          <div
+            style={{
+              border: '2px dashed #ef4444',
+              borderRadius: '6px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              color: '#ef4444',
+              opacity: 0.7,
+            }}
+          >
+            Can&apos;t drop here
+          </div>
+        </div>
+      )}
     </div>
   );
 }

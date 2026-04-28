@@ -5,7 +5,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Item } from '@queuepilot/core/types';
@@ -15,14 +14,12 @@ import { useCycles } from './hooks/useCycles';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCard';
 import { CycleBoardColumn } from './CycleBoardColumn';
+import type { ColumnDragStatus } from './CycleBoardColumn';
 import { CycleBoardHeader } from './CycleBoardHeader';
 import { resolveTargetStatus, itemStatusToColumn, VALID_TRANSITIONS } from './cycleBoardTransitions';
 
-const dropAnimation = {
-  sideEffects: defaultDropAnimationSideEffects({
-    styles: { active: { opacity: '0.3' } },
-  }),
-};
+const ALL_COLUMNS = ['todo', 'in_progress', 'review', 'done', 'discarded'] as const;
+type ColumnId = (typeof ALL_COLUMNS)[number];
 
 export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { data: allItems = [] } = useCycleItems(cycleId);
@@ -44,6 +41,24 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     return allItems.filter((item) => item.title.toLowerCase().includes(q));
   }, [allItems, search]);
 
+  /** Per-column drag status: computed once when a drag starts. */
+  const columnDragStatus = useMemo((): Record<ColumnId, ColumnDragStatus> | null => {
+    if (!activeItem) return null;
+    const sourceCol = itemStatusToColumn(activeItem.status) as ColumnId;
+    return Object.fromEntries(
+      ALL_COLUMNS.map((col) => {
+        if (col === sourceCol) return [col, 'source'];
+        const target = resolveTargetStatus(col, activeItem.status);
+        const isValid = target !== null && target !== activeItem.status;
+        return [col, isValid ? 'valid' : 'invalid'];
+      }),
+    ) as Record<ColumnId, ColumnDragStatus>;
+  }, [activeItem]);
+
+  function getDragStatus(col: ColumnId): ColumnDragStatus {
+    return columnDragStatus?.[col];
+  }
+
   function handleDragStart(event: DragStartEvent) {
     const item = allItems.find((i) => i.id === event.active.id);
     setActiveItem(item ?? null);
@@ -57,7 +72,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     const draggedItem = allItems.find((i) => i.id === active.id);
     if (!draggedItem) return;
 
-    // over.id could be a column id or another card id — resolve to column
     let targetColumnId = String(over.id);
     const overItem = allItems.find((i) => i.id === over.id);
     if (overItem) {
@@ -104,6 +118,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             accent="text-blue-400"
             items={todoItems}
             activeDragId={activeDragId}
+            dragStatus={getDragStatus('todo')}
             emptyText="No items yet — add some to get started"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -113,6 +128,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             accent="text-amber-400"
             items={inProgressItems}
             activeDragId={activeDragId}
+            dragStatus={getDragStatus('in_progress')}
             emptyText="Pick something from Todo to begin"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
@@ -122,11 +138,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             accent="text-indigo-400"
             items={reviewItems}
             activeDragId={activeDragId}
+            dragStatus={getDragStatus('review')}
             emptyText="Finish an item to move it here"
             onCardClick={(item) => setSelectedItemId(item.id)}
           />
 
-          {/* Archive area: Done (top) + Cancelled (bottom) share one column's flex unit */}
+          {/* Archive: Done (top) + Cancelled (bottom), sharing one flex unit */}
           <div
             style={{
               flex: '1 1 0',
@@ -142,6 +159,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
               accent="text-green-400"
               items={doneItems}
               activeDragId={activeDragId}
+              dragStatus={getDragStatus('done')}
               emptyText="Reviewed items land here"
               compact
               onCardClick={(item) => setSelectedItemId(item.id)}
@@ -152,13 +170,15 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
               accent="text-muted-foreground"
               items={discardedItems}
               activeDragId={activeDragId}
+              dragStatus={getDragStatus('discarded')}
               emptyText="Nothing cancelled — great work!"
               compact
               onCardClick={(item) => setSelectedItemId(item.id)}
             />
           </div>
 
-          <DragOverlay dropAnimation={dropAnimation}>
+          {/* No drop animation — optimistic updates make the move instant */}
+          <DragOverlay dropAnimation={null}>
             {activeItem ? <CycleBoardCardContent item={activeItem} lifted /> : null}
           </DragOverlay>
         </DndContext>

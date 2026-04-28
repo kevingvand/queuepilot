@@ -35,7 +35,27 @@ export function useUpdateItemStatus() {
       const res = await api.items.update(id, { status });
       return res.data as Item;
     },
-    onSuccess: (_data, { id }) => {
+    onMutate: async ({ id, status }) => {
+      // Cancel in-flight refetches so they don't overwrite the optimistic update.
+      await queryClient.cancelQueries({ queryKey: ['items'] });
+
+      // Snapshot current data for rollback on error.
+      const previousData = queryClient.getQueriesData<Item[]>({ queryKey: ['items'] });
+
+      // Immediately apply the status change across all items query caches.
+      queryClient.setQueriesData<Item[]>({ queryKey: ['items'] }, (old) =>
+        old?.map((item) => (item.id === id ? { ...item, status } : item)) ?? old,
+      );
+
+      return { previousData };
+    },
+    onError: (_err, _vars, ctx) => {
+      // Roll back to the snapshot on failure.
+      ctx?.previousData.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: (_data, _err, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       queryClient.invalidateQueries({ queryKey: ['item', id] });
       queryClient.invalidateQueries({ queryKey: ['events', id] });
