@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Tag } from '@queuepilot/core/types';
+import type { Item, Tag } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
 
 export type ItemWithTags = Item & { tags: Pick<Tag, 'id' | 'name' | 'color'>[] };

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Item } from "@queuepilot/core/types";
 import { useApi } from "../../../hooks/useApi";
 import type { FilterState } from "../../../store/ui.store";
-import type { ItemWithCounts } from "../ItemRow";
+import type { ItemWithCounts } from "../types";
 
 export function useItems(filter: FilterState) {
   const api = useApi();

@@ -45,12 +45,10 @@ export function DetailHeader({ item }: { item: Item }) {
     setTitle(item.title);
   }, [item.id]);
 
-  // `e` shortcut focuses the title inline editor
   useEffect(() => {
     if (!focusDetailTitle) return;
     clearFocusDetailTitle();
     setEditing(true);
-    // focus happens in the next effect via the editing flag
   }, [focusDetailTitle, clearFocusDetailTitle]);
 
   useEffect(() => {
@@ -101,7 +99,6 @@ export function DetailHeader({ item }: { item: Item }) {
   }
 
   function discard() {
-    // Close detail panel immediately for snappy UX; undo restores it
     setSelectedItemId(null);
     let cancelled = false;
     toast({

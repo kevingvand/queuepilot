@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import { cycleItems, cycles, items, itemTags, tags } from '@queuepilot/core/schema';
 import type { NewCycle } from '@queuepilot/core/types';
@@ -76,14 +76,14 @@ export async function listCycleItems(c: Context<AppEnv>) {
     rows = db
       .select()
       .from(items)
-      .where(and(eq(items.cycle_id, id), inArray(items.id, taggedIds)))
+      .where(and(eq(items.cycle_id, id), isNull(items.parent_id), inArray(items.id, taggedIds)))
       .orderBy(...orderByClauses)
       .all();
   } else {
     rows = db
       .select()
       .from(items)
-      .where(eq(items.cycle_id, id))
+      .where(and(eq(items.cycle_id, id), isNull(items.parent_id)))
       .orderBy(...orderByClauses)
       .all();
   }

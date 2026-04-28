@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
 import { GripVertical } from 'lucide-react';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
+import type { Tag } from '@queuepilot/core/types';
 import { cn } from '../../lib/utils';
 import type { ItemWithTags } from './hooks/useCycleItems';
 import { TagPill } from './TagPill';
@@ -68,7 +69,7 @@ export function CycleBoardCardContent({
           </p>
           {item.tags.length > 0 && (
             <div className="flex flex-wrap gap-[3px] mt-1.5">
-              {item.tags.map((tag) => (
+              {item.tags.map((tag: Pick<Tag, 'id' | 'name' | 'color'>) => (
                 <TagPill key={tag.id} tag={tag} />
               ))}
             </div>

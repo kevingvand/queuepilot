@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 import { and, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import {
   itemEvents,
@@ -16,16 +17,16 @@ export async function listItems(c: Context<AppEnv>) {
   const db = c.get('db');
   const { status, tag, cycle_id, parent_id, q, limit = '50', offset = '0' } = c.req.query();
 
-  const conditions: ReturnType<typeof eq>[] = [];
+  const conditions: SQL<unknown>[] = [];
   if (status) conditions.push(eq(items.status, status));
   if (cycle_id) conditions.push(eq(items.cycle_id, cycle_id));
   if (parent_id) {
     conditions.push(eq(items.parent_id, parent_id));
   } else {
-    conditions.push(isNull(items.parent_id) as ReturnType<typeof eq>);
+    conditions.push(isNull(items.parent_id));
   }
   if (q) {
-    conditions.push(or(like(items.title, `%${q}%`), like(items.body, `%${q}%`)) as ReturnType<typeof eq>);
+    conditions.push(or(like(items.title, `%${q}%`), like(items.body, `%${q}%`))!);
   }
 
   if (tag) {
@@ -38,7 +39,7 @@ export async function listItems(c: Context<AppEnv>) {
       .map((r) => r.item_id);
 
     if (taggedIds.length === 0) return c.json([]);
-    conditions.push(inArray(items.id, taggedIds) as ReturnType<typeof eq>);
+    conditions.push(inArray(items.id, taggedIds));
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;

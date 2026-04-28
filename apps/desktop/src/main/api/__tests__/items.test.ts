@@ -211,20 +211,18 @@ describe('items — CRUD and filtering', () => {
     });
     const parent = await r1.json();
 
-    await app.request('/items', {
+    const r2 = await app.request('/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: 'Subtask', parent_id: parent.id }),
     });
+    const subtask = await r2.json();
 
     const res = await app.request('/items');
     const items: { id: string }[] = await res.json();
-    expect(items.every((i) => i.id !== undefined)).toBe(true);
-    expect(items.some((i: { id: string }) => i.id === parent.id)).toBe(true);
-    expect(items.every((i: { id: string }) => i.id !== undefined)).toBe(true);
-    const ids = items.map((i: { id: string }) => i.id);
+    const ids = items.map((i) => i.id);
     expect(ids).toContain(parent.id);
-    expect(ids).not.toContain((await app.request('/items?parent_id=' + parent.id).then(async (r) => { const s: { id: string }[] = await r.json(); return s[0]?.id; })));
+    expect(ids).not.toContain(subtask.id);
   });
 
   it('returns subtasks when querying by parent_id', async () => {
@@ -278,5 +276,45 @@ describe('items — CRUD and filtering', () => {
     const row = items.find((i) => i.id === parent.id);
     expect(row?.subtask_total).toBe(2);
     expect(row?.subtask_done).toBe(1);
+  });
+
+  it('returns 400 when transitioning to an invalid status (VALID_TRANSITIONS enforcement)', async () => {
+    const r = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Transition test' }),
+    });
+    const item = await r.json();
+
+    const res = await app.request(`/items/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'review' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('allows discarded → inbox transition', async () => {
+    const r = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Discard and restore' }),
+    });
+    const item = await r.json();
+
+    await app.request(`/items/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'discarded' }),
+    });
+
+    const res = await app.request(`/items/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'inbox' }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('inbox');
   });
 });

@@ -179,12 +179,52 @@ describe('cycles — CRUD and item membership', () => {
       body: JSON.stringify({ item_id: item.id }),
     });
 
-    // Try to reorder an in_progress item as if it were in the todo column
     const res = await app.request(`/cycles/${cycle.id}/reorder`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ column: 'todo', ids: [item.id] }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it('excludes subtasks from GET /cycles/:id/items', async () => {
+    const cycleRes = await app.request('/cycles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Subtask Filter Sprint' }),
+    });
+    const cycle = await cycleRes.json();
+
+    const parentRes = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Parent task' }),
+    });
+    const parent = await parentRes.json();
+
+    const subtaskRes = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Child task', parent_id: parent.id }),
+    });
+    const subtask = await subtaskRes.json();
+
+    await app.request(`/cycles/${cycle.id}/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: parent.id }),
+    });
+    await app.request(`/cycles/${cycle.id}/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: subtask.id }),
+    });
+
+    const res = await app.request(`/cycles/${cycle.id}/items`);
+    expect(res.status).toBe(200);
+    const body: { id: string }[] = await res.json();
+    const ids = body.map((i) => i.id);
+    expect(ids).toContain(parent.id);
+    expect(ids).not.toContain(subtask.id);
   });
 });

@@ -1,8 +1,4 @@
-import { VALID_TRANSITIONS } from '@queuepilot/core/types';
-
-export { VALID_TRANSITIONS };
-
-export function resolveTargetStatus(columnId: string, draggedStatus: string): string | null {
+import { VALID_TRANSITIONS } from '@queuepilot/core/types';export function resolveTargetStatus(columnId: string, draggedStatus: string): string | null {
   if (columnId === 'todo') return 'todo';
   if (columnId === 'in_progress') return 'in_progress';
   if (columnId === 'review') return 'review';

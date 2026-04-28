@@ -1,8 +1,7 @@
 import type { Item } from '@queuepilot/core/types';
 import type { BadgeProps } from '../../components/ui/badge';
 import { Badge } from '../../components/ui/badge';
-
-export type ItemWithCounts = Item & { subtask_total?: number; subtask_done?: number };
+import type { ItemWithCounts } from './types';
 
 const PRIORITY_COLOR: Record<number, string> = {
   0: 'transparent',

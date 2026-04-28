@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
   DragOverlay,
@@ -17,7 +18,8 @@ import { CycleBoardCardContent } from './CycleBoardCardContent';
 import { CycleBoardColumn } from './CycleBoardColumn';
 import type { ColumnDragStatus } from './CycleBoardColumn';
 import { CycleBoardHeader } from './CycleBoardHeader';
-import { resolveTargetStatus, itemStatusToColumn, VALID_TRANSITIONS } from './cycleBoardTransitions';
+import { VALID_TRANSITIONS } from '@queuepilot/core/types';
+import { resolveTargetStatus, itemStatusToColumn } from './cycleBoardTransitions';
 
 const ALL_COLUMNS = ['todo', 'in_progress', 'review', 'done', 'discarded'] as const;
 type ColumnId = (typeof ALL_COLUMNS)[number];
@@ -37,6 +39,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { data: cycles = [] } = useCycles();
   const { mutate: updateStatus } = useCycleBoardItemStatus(cycleId);
   const { mutate: reorderItems } = useReorderCycleItems(cycleId);
+  const queryClient = useQueryClient();
   const { setSelectedItemId, selectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
   const [activeItem, setActiveItem] = useState<ItemWithTags | null>(null);
@@ -74,7 +77,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
       isPendingStatusUpdate.current = true;
       updateStatus(
         { id: item.id, status: targetStatus, position: null },
-        { onSettled: () => { isPendingStatusUpdate.current = false; } },
+        {
+          onSettled: () => {
+            isPendingStatusUpdate.current = false;
+            queryClient.invalidateQueries({ queryKey: ['cycle-items', cycleId] });
+          },
+        },
       );
     };
 
@@ -171,7 +179,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
       isPendingReorder.current = true;
       reorderItems(
         { column: sourceColumnId, ids: columnIds },
-        { onSettled: () => { isPendingReorder.current = false; } },
+        {
+          onSettled: () => {
+            isPendingReorder.current = false;
+            queryClient.invalidateQueries({ queryKey: ['cycle-items', cycleId] });
+          },
+        },
       );
       return;
     }
@@ -186,7 +199,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     isPendingStatusUpdate.current = true;
     updateStatus(
       { id: draggedItem.id, status: targetStatus, position: null },
-      { onSettled: () => { isPendingStatusUpdate.current = false; } },
+      {
+        onSettled: () => {
+          isPendingStatusUpdate.current = false;
+          queryClient.invalidateQueries({ queryKey: ['cycle-items', cycleId] });
+        },
+      },
     );
   }
 
@@ -277,7 +295,6 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
             />
           </div>
 
-          {/* No drop animation — optimistic updates make the move instant */}
           <DragOverlay dropAnimation={null}>
             {activeItem ? <CycleBoardCardContent item={activeItem} lifted /> : null}
           </DragOverlay>

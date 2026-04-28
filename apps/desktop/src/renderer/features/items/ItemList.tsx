@@ -3,7 +3,8 @@ import type { Item } from '@queuepilot/core/types';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { useUiStore, type FilterState, type SortOrder } from '../../store/ui.store';
 import { ItemListHeader } from './ItemListHeader';
-import { ItemRow, type ItemWithCounts } from './ItemRow';
+import { ItemRow } from './ItemRow';
+import type { ItemWithCounts } from './types';
 import { useItems } from './hooks/useItems';
 
 function sortItems<T extends Item>(items: T[], order: SortOrder): T[] {
