@@ -125,16 +125,21 @@ describe('cycles — CRUD and item membership', () => {
     });
     const cycle = await cycleRes.json();
 
-    // Create 3 todo items in this cycle
+    // Create 3 todo items and add them to the cycle via the proper two-step path
     const ids: string[] = [];
     for (const title of ['Alpha', 'Beta', 'Gamma']) {
       const r = await app.request('/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, status: 'todo', cycle_id: cycle.id }),
+        body: JSON.stringify({ title, status: 'todo' }),
       });
       const item = await r.json();
       ids.push(item.id);
+      await app.request(`/cycles/${cycle.id}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: item.id }),
+      });
     }
 
     // Reorder: Gamma, Alpha, Beta
@@ -165,9 +170,14 @@ describe('cycles — CRUD and item membership', () => {
     const itemRes = await app.request('/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'In progress item', status: 'in_progress', cycle_id: cycle.id }),
+      body: JSON.stringify({ title: 'In progress item', status: 'in_progress' }),
     });
     const item = await itemRes.json();
+    await app.request(`/cycles/${cycle.id}/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: item.id }),
+    });
 
     // Try to reorder an in_progress item as if it were in the todo column
     const res = await app.request(`/cycles/${cycle.id}/reorder`, {

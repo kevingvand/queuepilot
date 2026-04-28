@@ -52,11 +52,17 @@ export async function listCycleItems(c: Context<AppEnv>) {
   const db = c.get('db');
   const { id } = c.req.param();
 
+  // Null positions (new/moved items) sort to the top; explicitly positioned items follow in order.
+  // Within the null group, most recently created items appear first.
   const rows = db
     .select()
     .from(items)
     .where(eq(items.cycle_id, id))
-    .orderBy(asc(items.position), asc(items.created_at))
+    .orderBy(
+      sql`CASE WHEN ${items.position} IS NULL THEN 0 ELSE 1 END ASC`,
+      asc(items.position),
+      sql`${items.created_at} DESC`,
+    )
     .all();
 
   return c.json(rows);

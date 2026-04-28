@@ -10,8 +10,9 @@ import { arrayMove } from '@dnd-kit/sortable';
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Item } from '@queuepilot/core/types';
 import type { Cycle } from '@queuepilot/core/types';
-import { useCycleItems, useReorderCycleItems, useUpdateItemStatus } from '../items/hooks/useItems';
 import { useCycles } from './hooks/useCycles';
+import { useCycleItems, useReorderCycleItems } from './hooks/useCycleItems';
+import { useUpdateItemStatus } from '../items/hooks/useItems';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCard';
 import { CycleBoardColumn } from './CycleBoardColumn';
@@ -33,10 +34,11 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   // Local ordered list — kept in sync with server data when not dragging
   const [localItems, setLocalItems] = useState<Item[]>(allItems);
   const isDragging = useRef(false);
+  const isPendingReorder = useRef(false);
 
-  // Sync server data → local when not dragging
+  // Sync server data → local when not dragging and no reorder is in-flight
   useEffect(() => {
-    if (!isDragging.current) {
+    if (!isDragging.current && !isPendingReorder.current) {
       setLocalItems(allItems);
     }
   }, [allItems]);
@@ -110,9 +112,12 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    // Clear drag state BEFORE any early returns so the overlay always hides
     isDragging.current = false;
     setActiveItem(null);
-    const { active, over } = event;
+
     if (!over) return;
 
     const draggedItem = localItems.find((i) => i.id === active.id);
@@ -134,11 +139,15 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
       const columnIds = localItems
         .filter((i) => columnStatuses.includes(i.status))
         .map((i) => i.id);
-      reorderItems({ column: sourceColumnId, ids: columnIds });
+      isPendingReorder.current = true;
+      reorderItems(
+        { column: sourceColumnId, ids: columnIds },
+        { onSettled: () => { isPendingReorder.current = false; } },
+      );
       return;
     }
 
-    // Cross-column: status change (position cleared by server on next fetch via NULLS LAST)
+    // Cross-column: status change + reset position so item falls to bottom of new column
     const targetStatus = resolveTargetStatus(targetColumnId, draggedItem.status);
     if (!targetStatus) return;
     if (targetStatus === draggedItem.status) return;
@@ -146,7 +155,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
     const allowed = VALID_TRANSITIONS[draggedItem.status] ?? [];
     if (!allowed.includes(targetStatus)) return;
 
-    updateStatus({ id: draggedItem.id, status: targetStatus });
+    updateStatus({ id: draggedItem.id, status: targetStatus, position: null });
   }
 
   const todoItems = filteredItems.filter((i) => i.status === 'todo' || i.status === 'inbox');
