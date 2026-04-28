@@ -9,6 +9,8 @@ export function CycleBoardColumn({
   accent,
   items,
   emptyText = 'Nothing here yet',
+  activeDragId,
+  compact = false,
   onCardClick,
 }: {
   columnId: string;
@@ -16,22 +18,30 @@ export function CycleBoardColumn({
   accent: string;
   items: Item[];
   emptyText?: string;
+  /** ID of the item currently being dragged — used to show drop placeholder. */
+  activeDragId?: string | null;
+  /** When true, removes the fixed minWidth so a parent can control sizing. */
+  compact?: boolean;
   onCardClick: (item: Item) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: columnId });
+
+  // Show a drop placeholder only when hovering with a card that isn't already in this column.
+  const showDropPlaceholder =
+    isOver && activeDragId != null && !items.some((i) => i.id === activeDragId);
 
   return (
     <div
       ref={setNodeRef}
       style={{
         flex: '1 1 0',
-        minWidth: '200px',
+        minWidth: compact ? 0 : '200px',
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: isOver ? 'var(--surface-hover)' : 'var(--bg-secondary)',
         borderRadius: '8px',
-        border: '1px solid var(--border)',
-        transition: 'background-color 150ms',
+        border: isOver ? '1px solid var(--accent)' : '1px solid var(--border)',
+        transition: 'background-color 150ms, border-color 150ms',
         overflow: 'hidden',
       }}
     >
@@ -75,7 +85,21 @@ export function CycleBoardColumn({
             </div>
           ))}
         </SortableContext>
-        {items.length === 0 && (
+
+        {showDropPlaceholder && (
+          <div
+            aria-hidden
+            style={{
+              border: '2px dashed var(--accent)',
+              borderRadius: '6px',
+              height: '56px',
+              flexShrink: 0,
+              opacity: 0.6,
+            }}
+          />
+        )}
+
+        {items.length === 0 && !showDropPlaceholder && (
           <div
             style={{
               flex: 1,

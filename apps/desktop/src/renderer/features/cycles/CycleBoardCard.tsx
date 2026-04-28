@@ -1,6 +1,7 @@
 import { GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
 import type { Item } from '@queuepilot/core/types';
 
 const PRIORITY_COLOR: Record<number, string> = {
@@ -11,47 +12,41 @@ const PRIORITY_COLOR: Record<number, string> = {
   4: '#ef4444',
 };
 
-export function CycleBoardCard({
+/** Pure visual card — no dnd-kit hooks. Safe to render inside DragOverlay. */
+export function CycleBoardCardContent({
   item,
-  isDragOverlay = false,
+  dragListeners,
+  dragAttributes,
+  lifted = false,
 }: {
   item: Item;
-  isDragOverlay?: boolean;
+  dragListeners?: DraggableSyntheticListeners;
+  dragAttributes?: DraggableAttributes;
+  lifted?: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isDragOverlay ? undefined : transition,
-    opacity: isDragging && !isDragOverlay ? 0.4 : 1,
-  };
-
   return (
     <div
-      ref={setNodeRef}
       style={{
-        ...style,
         backgroundColor: 'var(--surface)',
         border: '1px solid var(--border)',
         borderLeftColor: PRIORITY_COLOR[item.priority ?? 0],
         borderLeftWidth: '3px',
         borderRadius: '6px',
         padding: '10px 12px',
-        boxShadow: isDragOverlay ? '0 8px 24px rgba(0,0,0,0.3)' : undefined,
-        cursor: isDragOverlay ? 'grabbing' : 'pointer',
+        boxShadow: lifted ? '0 12px 32px rgba(0,0,0,0.35)' : undefined,
+        transform: lifted ? 'rotate(1.5deg) scale(1.03)' : undefined,
+        cursor: lifted ? 'grabbing' : 'pointer',
         userSelect: 'none',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
         <button
-          {...attributes}
-          {...listeners}
+          {...dragAttributes}
+          {...dragListeners}
           aria-label="Drag to reorder"
           style={{
             color: 'var(--text-muted)',
-            cursor: 'grab',
+            cursor: lifted ? 'grabbing' : 'grab',
             flexShrink: 0,
             marginTop: '1px',
             background: 'none',
@@ -95,6 +90,26 @@ export function CycleBoardCard({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Sortable card — wraps CycleBoardCardContent with @dnd-kit/sortable. Use inside SortableContext only. */
+export function CycleBoardCard({ item }: { item: Item }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1,
+      }}
+    >
+      <CycleBoardCardContent item={item} dragListeners={listeners} dragAttributes={attributes} />
     </div>
   );
 }
