@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -6,10 +6,11 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Item } from '@queuepilot/core/types';
 import type { Cycle } from '@queuepilot/core/types';
-import { useCycleItems, useUpdateItemStatus } from '../items/hooks/useItems';
+import { useCycleItems, useReorderCycleItems, useUpdateItemStatus } from '../items/hooks/useItems';
 import { useCycles } from './hooks/useCycles';
 import { useUiStore } from '../../store/ui.store';
 import { CycleBoardCardContent } from './CycleBoardCard';
@@ -25,9 +26,20 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   const { data: allItems = [] } = useCycleItems(cycleId);
   const { data: cycles = [] } = useCycles();
   const { mutate: updateStatus } = useUpdateItemStatus();
+  const { mutate: reorderItems } = useReorderCycleItems(cycleId);
   const { setSelectedItemId, selectedItemId } = useUiStore();
   const [search, setSearch] = useState('');
   const [activeItem, setActiveItem] = useState<Item | null>(null);
+  // Local ordered list — kept in sync with server data when not dragging
+  const [localItems, setLocalItems] = useState<Item[]>(allItems);
+  const isDragging = useRef(false);
+
+  // Sync server data → local when not dragging
+  useEffect(() => {
+    if (!isDragging.current) {
+      setLocalItems(allItems);
+    }
+  }, [allItems]);
 
   const cycle: Cycle | undefined = cycles.find((c) => c.id === cycleId);
 
@@ -36,10 +48,10 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   );
 
   const filteredItems = useMemo(() => {
-    if (!search.trim()) return allItems;
+    if (!search.trim()) return localItems;
     const q = search.toLowerCase();
-    return allItems.filter((item) => item.title.toLowerCase().includes(q));
-  }, [allItems, search]);
+    return localItems.filter((item) => item.title.toLowerCase().includes(q));
+  }, [localItems, search]);
 
   /** Per-column drag status: computed once when a drag starts. */
   const columnDragStatus = useMemo((): Record<ColumnId, ColumnDragStatus> | null => {
@@ -61,24 +73,72 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const item = allItems.find((i) => i.id === event.active.id);
+    isDragging.current = true;
+    const item = localItems.find((i) => i.id === event.active.id);
     setActiveItem(item ?? null);
   }
 
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    if (search.trim()) return; // Don't reorder while filtered
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    const activeItem = localItems.find((i) => i.id === activeId);
+    if (!activeItem) return;
+
+    // Determine source and target columns
+    const sourceCol = itemStatusToColumn(activeItem.status);
+
+    // over.id could be a column or an item
+    const overItem = localItems.find((i) => i.id === overId);
+    const targetCol = overItem ? itemStatusToColumn(overItem.status) : overId;
+
+    // Only reorder within the same column
+    if (sourceCol !== targetCol) return;
+    if (!overItem) return; // hovering the column droppable, not a card — no reorder
+
+    // Reorder locally
+    setLocalItems((prev) => {
+      const oldIndex = prev.findIndex((i) => i.id === activeId);
+      const newIndex = prev.findIndex((i) => i.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    isDragging.current = false;
     setActiveItem(null);
     const { active, over } = event;
     if (!over) return;
 
-    const draggedItem = allItems.find((i) => i.id === active.id);
+    const draggedItem = localItems.find((i) => i.id === active.id);
     if (!draggedItem) return;
 
     let targetColumnId = String(over.id);
-    const overItem = allItems.find((i) => i.id === over.id);
+    const overItem = localItems.find((i) => i.id === over.id);
     if (overItem) {
       targetColumnId = itemStatusToColumn(overItem.status);
     }
 
+    const sourceColumnId = itemStatusToColumn(draggedItem.status);
+
+    if (targetColumnId === sourceColumnId) {
+      // Same-column drop: persist the new order
+      if (search.trim()) return; // reordering disabled while searching
+      const columnStatuses =
+        sourceColumnId === 'todo' ? ['inbox', 'todo'] : [sourceColumnId];
+      const columnIds = localItems
+        .filter((i) => columnStatuses.includes(i.status))
+        .map((i) => i.id);
+      reorderItems({ column: sourceColumnId, ids: columnIds });
+      return;
+    }
+
+    // Cross-column: status change (position cleared by server on next fetch via NULLS LAST)
     const targetStatus = resolveTargetStatus(targetColumnId, draggedItem.status);
     if (!targetStatus) return;
     if (targetStatus === draggedItem.status) return;
@@ -112,7 +172,7 @@ export function CycleBoard({ cycleId }: { cycleId: string }) {
           alignItems: 'stretch',
         }}
       >
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
           <CycleBoardColumn
             columnId="todo"
             label="Todo"

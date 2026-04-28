@@ -116,4 +116,65 @@ describe('cycles — CRUD and item membership', () => {
     expect(itemsStillInCycle.status).toBe(200);
     expect(await itemsStillInCycle.json()).toEqual([]);
   });
+
+  it('reorders items within a column via POST /cycles/:id/reorder', async () => {
+    const cycleRes = await app.request('/cycles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Reorder Sprint' }),
+    });
+    const cycle = await cycleRes.json();
+
+    // Create 3 todo items in this cycle
+    const ids: string[] = [];
+    for (const title of ['Alpha', 'Beta', 'Gamma']) {
+      const r = await app.request('/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, status: 'todo', cycle_id: cycle.id }),
+      });
+      const item = await r.json();
+      ids.push(item.id);
+    }
+
+    // Reorder: Gamma, Alpha, Beta
+    const reordered = [ids[2], ids[0], ids[1]];
+    const res = await app.request(`/cycles/${cycle.id}/reorder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ column: 'todo', ids: reordered }),
+    });
+    expect(res.status).toBe(200);
+    expect((await res.json()).ok).toBe(true);
+
+    // Verify order is persisted
+    const listRes = await app.request(`/cycles/${cycle.id}/items`);
+    const items: { id: string; position: number }[] = await listRes.json();
+    const returnedIds = items.map((i) => i.id);
+    expect(returnedIds).toEqual(reordered);
+  });
+
+  it('rejects reorder with ids from wrong column', async () => {
+    const cycleRes = await app.request('/cycles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Bad Reorder Sprint' }),
+    });
+    const cycle = await cycleRes.json();
+
+    const itemRes = await app.request('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'In progress item', status: 'in_progress', cycle_id: cycle.id }),
+    });
+    const item = await itemRes.json();
+
+    // Try to reorder an in_progress item as if it were in the todo column
+    const res = await app.request(`/cycles/${cycle.id}/reorder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ column: 'todo', ids: [item.id] }),
+    });
+    expect(res.status).toBe(400);
+  });
 });
