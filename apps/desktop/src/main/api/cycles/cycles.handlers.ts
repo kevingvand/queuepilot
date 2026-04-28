@@ -53,13 +53,12 @@ export async function listCycleItems(c: Context<AppEnv>) {
   const { id } = c.req.param();
 
   const rows = db
-    .select({ item: items })
-    .from(cycleItems)
-    .innerJoin(items, eq(cycleItems.item_id, items.id))
-    .where(eq(cycleItems.cycle_id, id))
+    .select()
+    .from(items)
+    .where(eq(items.cycle_id, id))
     .all();
 
-  return c.json(rows.map((r) => r.item));
+  return c.json(rows);
 }
 
 export async function addItemToCycle(c: Context<AppEnv>) {
