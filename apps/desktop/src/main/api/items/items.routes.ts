@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { insertItemSchema } from '@queuepilot/core/types';
 import type { AppEnv } from '../index';
 import {
   addTagToItem,
@@ -31,6 +30,17 @@ const linkBodySchema = z.object({
   kind: z.enum(['blocks', 'blocked_by', 'relates_to', 'duplicate']),
 });
 
+const createItemBodySchema = z.object({
+  title: z.string().min(1),
+  body: z.string().optional().nullable(),
+  status: z.string().optional(),
+  priority: z.number().int().min(0).max(4).optional().nullable(),
+  due_at: z.number().int().optional().nullable(),
+  scheduled_at: z.number().int().optional().nullable(),
+  start_at: z.number().int().optional().nullable(),
+  parent_id: z.string().optional().nullable(),
+});
+
 const updateItemBodySchema = z.object({
   title: z.string().min(1).optional(),
   body: z.string().optional().nullable(),
@@ -46,7 +56,7 @@ const updateItemBodySchema = z.object({
 });
 
 itemsRoutes.get('/', listItems);
-itemsRoutes.post('/', zValidator('json', insertItemSchema as never), createItem);
+itemsRoutes.post('/', zValidator('json', createItemBodySchema), createItem);
 itemsRoutes.get('/:id', getItem);
 itemsRoutes.patch('/:id', zValidator('json', updateItemBodySchema as never), updateItem);
 itemsRoutes.delete('/:id', discardItem);

@@ -204,6 +204,9 @@ export async function reorderCycleItems(c: Context<AppEnv>) {
   if (!COLUMN_STATUSES[column]) return c.json({ error: 'Invalid column' }, 400);
   if (!Array.isArray(ids) || ids.length === 0) return c.json({ error: 'ids must be a non-empty array' }, 400);
 
+  const cycle = db.select().from(cycles).where(eq(cycles.id, cycleId)).get();
+  if (!cycle) return c.json({ error: 'Cycle not found' }, 404);
+
   const validStatuses = COLUMN_STATUSES[column];
 
   const existing = db

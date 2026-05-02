@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Cycle, Item } from '@queuepilot/core/types';
 import { cn } from '../../../lib/utils';
 import { useApi } from '../../../hooks/useApi';
+import { useToast } from '../../../components/ui/toast';
 
 function formatDate(ts: number | null | undefined): string | null {
   if (!ts) return null;
@@ -89,10 +90,10 @@ interface CycleFieldProps {
   cycles: Cycle[];
   editingField: EditableField | null;
   setEditingField: (f: EditableField | null) => void;
-  onSave: (field: EditableField, value: string | null) => void;
+  onSaveCycle: (value: string | null) => void;
 }
 
-function CycleField({ item, cycles, editingField, setEditingField, onSave }: CycleFieldProps) {
+function CycleField({ item, cycles, editingField, setEditingField, onSaveCycle }: CycleFieldProps) {
   const isEditing = editingField === 'cycle_id';
   const currentCycle = cycles.find((c) => c.id === item.cycle_id);
 
@@ -105,7 +106,7 @@ function CycleField({ item, cycles, editingField, setEditingField, onSave }: Cyc
             autoFocus
             defaultValue={item.cycle_id ?? ''}
             className="bg-[var(--bg-secondary)] text-xs text-foreground border border-border rounded px-1 py-0.5 focus:outline-none focus:border-primary"
-            onChange={(e) => onSave('cycle_id', e.target.value || null)}
+            onChange={(e) => onSaveCycle(e.target.value || null)}
             onBlur={() => setEditingField(null)}
           >
             <option value="">No cycle</option>
@@ -236,6 +237,7 @@ function ParentField({ item, onSave }: { item: Item; onSave: (value: string | nu
 export function DetailMeta({ item }: { item: Item }) {
   const api = useApi();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingField, setEditingField] = useState<EditableField | null>(null);
 
@@ -261,6 +263,22 @@ export function DetailMeta({ item }: { item: Item }) {
       ...(prevParentId ? [queryClient.invalidateQueries({ queryKey: ['subtasks', prevParentId] })] : []),
       ...(value ? [queryClient.invalidateQueries({ queryKey: ['subtasks', value] })] : []),
     ]);
+  }
+
+  async function saveCycleId(newCycleId: string | null) {
+    setEditingField(null);
+    const prevCycleId = item.cycle_id;
+    if (prevCycleId === newCycleId) return;
+    try {
+      if (prevCycleId) await api.cycles.removeItem(prevCycleId, item.id);
+      if (newCycleId) await api.cycles.addItem(newCycleId, item.id);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['item', item.id] }),
+        queryClient.invalidateQueries({ queryKey: ['items'] }),
+      ]);
+    } catch {
+      toast({ message: 'Failed to update cycle', variant: 'destructive' });
+    }
   }
 
   return (
@@ -296,7 +314,7 @@ export function DetailMeta({ item }: { item: Item }) {
               <dd className="text-foreground">{formatDate(item.created_at)}</dd>
             </>
           )}
-          <CycleField item={item} cycles={cycles} editingField={editingField} setEditingField={setEditingField} onSave={saveField} />
+          <CycleField item={item} cycles={cycles} editingField={editingField} setEditingField={setEditingField} onSaveCycle={saveCycleId} />
           <ParentField item={item} onSave={saveParentId} />
           {item.source_id && (
             <>

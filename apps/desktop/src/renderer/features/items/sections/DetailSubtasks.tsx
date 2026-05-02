@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Item } from '@queuepilot/core/types';
 import { useApi } from '../../../hooks/useApi';
+import { useToast } from '../../../components/ui/toast';
 
 function SubtaskRow({ subtask, onToggle, onDelete, onRename }: {
   subtask: Item;
@@ -83,6 +84,7 @@ function SubtaskRow({ subtask, onToggle, onDelete, onRename }: {
 export function DetailSubtasks({ item }: { item: Item }) {
   const api = useApi();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [newTitle, setNewTitle] = useState('');
   const addInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,30 +101,46 @@ export function DetailSubtasks({ item }: { item: Item }) {
   const pct = total > 0 ? (done / total) * 100 : 0;
 
   async function toggleDone(subtask: Item) {
-    await api.items.update(subtask.id, { status: subtask.status === 'done' ? 'todo' : 'done' });
-    queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
-    queryClient.invalidateQueries({ queryKey: ['items'] });
+    try {
+      await api.items.update(subtask.id, { status: subtask.status === 'done' ? 'todo' : 'done' });
+      queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+    } catch {
+      toast({ message: 'Failed to update subtask', variant: 'destructive' });
+    }
   }
 
   async function renameSubtask(subtask: Item, title: string) {
-    await api.items.update(subtask.id, { title });
-    queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
+    try {
+      await api.items.update(subtask.id, { title });
+      queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
+    } catch {
+      toast({ message: 'Failed to rename subtask', variant: 'destructive' });
+    }
   }
 
   async function deleteSubtask(subtask: Item) {
-    await api.items.delete(subtask.id);
-    queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
-    queryClient.invalidateQueries({ queryKey: ['items'] });
+    try {
+      await api.items.delete(subtask.id);
+      queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+    } catch {
+      toast({ message: 'Failed to delete subtask', variant: 'destructive' });
+    }
   }
 
   async function addSubtask() {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
     setNewTitle('');
-    await api.items.create({ title: trimmed, parent_id: item.id, status: 'inbox' });
-    queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
-    queryClient.invalidateQueries({ queryKey: ['items'] });
-    addInputRef.current?.focus();
+    try {
+      await api.items.create({ title: trimmed, parent_id: item.id, status: 'inbox' });
+      queryClient.invalidateQueries({ queryKey: ['subtasks', item.id] });
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      addInputRef.current?.focus();
+    } catch {
+      toast({ message: 'Failed to add subtask', variant: 'destructive' });
+    }
   }
 
   return (

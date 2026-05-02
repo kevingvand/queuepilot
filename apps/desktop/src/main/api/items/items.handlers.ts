@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { and, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, like, not, or, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import { ulid } from 'ulid';
 import {
@@ -61,7 +61,7 @@ export async function listItems(c: Context<AppEnv>) {
       done: sql<number>`sum(case when ${items.status} = 'done' then 1 else 0 end)`,
     })
     .from(items)
-    .where(inArray(items.parent_id as never, ids))
+    .where(and(isNotNull(items.parent_id), inArray(items.parent_id as never, ids), not(eq(items.status, 'discarded'))))
     .groupBy(items.parent_id)
     .all();
 
